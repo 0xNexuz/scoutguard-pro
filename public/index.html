@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScoutGuard PRO — Autonomous Agent Financial Firewall</title>
+  <title>ScoutGuard PRO — The Missing Piece in Autonomous AI Agent Security</title>
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Fonts -->
+  
+  <!-- Google Fonts: Newsreader (Editorial Serif) + Plus Jakarta Sans + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -19,16 +21,20 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-            serif: ['Newsreader', 'serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            meadow: {
-              sky: '#38bdf8',
-              grass: '#15803d',
-              gold: '#facc15',
-              dark: '#080c14'
+            gallery: {
+              bg: '#FAF8F5',
+              card: '#FFFFFF',
+              border: '#E8E5DF',
+              text: '#1C1917',
+              muted: '#78716C',
+              sky: '#2B7FFF',
+              grass: '#15803D',
+              gold: '#EAB308'
             }
           }
         }
@@ -37,507 +43,468 @@
   </script>
 
   <style>
+    /* Archival Paper Texture */
     body {
-      background-color: #070a12;
-      color: #e2e8f0;
-      overflow-x: hidden;
+      background-color: #FAF8F5;
+      color: #1C1917;
       font-family: 'Plus Jakarta Sans', sans-serif;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 0);
+      background-size: 24px 24px;
+      overflow-x: hidden;
     }
 
-    /* Subtle Paper Grain Texture */
-    .bg-grain {
-      background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 0);
-      background-size: 20px 20px;
-    }
-
-    /* Art Print Deckled Edge Frame */
-    .art-frame {
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    /* Museum Print Mat Frame */
+    .museum-mat {
+      background: #FFFFFF;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 20px 40px -15px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
       transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .art-frame:hover {
-      box-shadow: 0 35px 80px -20px rgba(56, 189, 248, 0.2), 0 0 0 1px rgba(250, 204, 21, 0.3);
-      transform: translateY(-2px);
+    .museum-mat:hover {
+      box-shadow: 
+        0 10px 20px -3px rgba(0, 0, 0, 0.06),
+        0 30px 60px -20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(0, 0, 0, 0.1);
     }
 
-    /* Floating Puzzle Piece Animation */
-    @keyframes subtleLevitate {
+    /* Interactive Puzzle Piece Float */
+    @keyframes floatPieceArt {
       0%, 100% {
         transform: translateY(0px) rotate(0deg);
       }
       50% {
-        transform: translateY(-6px) rotate(0.8deg);
+        transform: translateY(-8px) rotate(1.2deg);
       }
     }
-    .levitate-interactive {
-      animation: subtleLevitate 4s ease-in-out infinite;
+    .floating-piece-art {
+      animation: floatPieceArt 5s ease-in-out infinite;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .levitate-interactive:hover {
-      animation-play-state: paused;
-      transform: translateY(-10px) scale(1.02);
-      box-shadow: 0 20px 40px -10px rgba(56, 189, 248, 0.35);
+    .floating-piece-art:hover {
+      transform: translateY(-12px) scale(1.03);
+      filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15));
     }
 
-    /* Glow Utilities */
-    .glow-pass {
-      box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.35);
-      border-color: rgba(16, 185, 129, 0.4);
+    .puzzle-snapped-state {
+      transform: translateY(-40px) scale(0.98) !important;
+      animation: none !important;
+      opacity: 0.15 !important;
     }
-    .glow-block {
-      box-shadow: 0 0 35px -5px rgba(239, 68, 68, 0.45);
-      border-color: rgba(239, 68, 68, 0.45);
+
+    /* Specimen Card Hover */
+    .specimen-tab {
+      transition: all 0.25s ease;
+      border: 1px solid #E8E5DF;
+      background: #FFFFFF;
     }
-    .glow-flag {
-      box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.35);
-      border-color: rgba(245, 158, 11, 0.4);
+    .specimen-tab:hover {
+      border-color: #2B7FFF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(43, 127, 255, 0.08);
+    }
+    .specimen-tab.active {
+      border-color: #1C1917;
+      background: #F4F2EC;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FAF8F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6D3D1;
+      border-radius: 3px;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col bg-grain">
+<body class="min-h-screen flex flex-col antialiased">
 
   <!-- ======================================================== -->
-  <!-- NAVIGATION BAR -->
+  <!-- EDITORIAL HEADER -->
   <!-- ======================================================== -->
-  <header class="border-b border-slate-800/80 bg-[#070a12]/95 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
-        <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+  <header class="border-b border-[#E8E5DF] bg-[#FAF8F5]/90 backdrop-blur-md sticky top-0 z-50 px-6 md:px-12 py-5 flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+      <div class="w-8 h-8 rounded-full bg-[#1C1917] flex items-center justify-center text-white font-serif text-sm font-bold shadow-sm">
+        S
       </div>
       <div>
-        <div class="flex items-center space-x-2">
-          <span class="text-lg font-bold tracking-tight text-white">ScoutGuard <span class="text-sky-400">PRO</span></span>
-          <span class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">AgentFinOps</span>
+        <div class="flex items-center space-x-2.5">
+          <span class="text-sm font-bold tracking-tight text-[#1C1917]">ScoutGuard PRO</span>
+          <span class="text-[9px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full bg-[#E8E5DF] text-[#44403C]">Blockscout Oracle</span>
         </div>
-        <p class="text-[11px] text-slate-400">Pre-Execution Security Oracle for Autonomous AI Agents</p>
+        <p class="text-[11px] text-[#78716C] font-serif italic">Pre-Execution Financial Firewall for Autonomous AI Agents</p>
       </div>
     </div>
 
-    <!-- Navigation Links -->
-    <div class="flex items-center space-x-4">
-      <div class="hidden md:flex items-center space-x-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-full text-xs">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="font-medium text-emerald-300">Blockscout PRO API Connected</span>
-        <span class="text-slate-500 font-mono text-[10px]">120+ EVM Chains</span>
+    <!-- Right Controls -->
+    <div class="flex items-center space-x-5 text-xs">
+      <div class="hidden md:flex items-center space-x-2 text-[#44403C] font-mono text-[11px]">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>PRO API: 120+ EVM Chains</span>
       </div>
 
-      <button onclick="scrollToId('simulator-section')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">
-        Simulator
-      </button>
+      <a href="#specimens" class="text-[#78716C] hover:text-[#1C1917] transition font-medium">Specimens</a>
+      <a href="#sdk" class="text-[#78716C] hover:text-[#1C1917] transition font-medium">SDK Integration</a>
+      <a href="#evidence" class="text-[#78716C] hover:text-[#1C1917] transition font-medium">On-Chain Proofs</a>
 
-      <button onclick="scrollToId('sdk-section')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">
-        Integration SDK
-      </button>
-
-      <a href="https://github.com/0xNexuz/scoutguard-pro" target="_blank" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white transition flex items-center space-x-1.5 shadow-md shadow-sky-500/20">
+      <a href="https://github.com/0xNexuz/scoutguard-pro" target="_blank" class="px-3.5 py-1.5 rounded-full bg-[#1C1917] text-white hover:bg-[#292524] transition flex items-center space-x-1.5 font-medium shadow-sm">
         <i data-lucide="github" class="w-3.5 h-3.5"></i>
-        <span>GitHub</span>
+        <span>Repository</span>
       </a>
     </div>
   </header>
 
 
   <!-- ======================================================== -->
-  <!-- HERO SECTION: THE BLENDED ARTWORK EXHIBITION -->
-  <!-- Combining the Jigsaw Cutout & Torn-Paper Meadow Grid -->
+  <!-- MAIN ARTWORK DISPLAY (THE TWO EXACT REFERENCES COMBINED) -->
   <!-- ======================================================== -->
-  <section class="max-w-6xl w-full mx-auto px-6 pt-10 pb-6">
-    
-    <!-- Central Art Exhibition Card -->
-    <div class="art-frame rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 relative">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-6 md:px-12 pt-10 pb-16 space-y-16">
+
+    <!-- Central Archival Art Frame -->
+    <div class="museum-mat rounded-2xl p-4 md:p-8 relative">
       
-      <!-- Top Artwork Canvas -->
-      <div class="relative w-full overflow-hidden bg-black flex items-center justify-center">
+      <!-- The Artwork Canvas -->
+      <div class="relative rounded-xl overflow-hidden bg-[#F5F2EB] border border-[#E8E5DF] flex items-center justify-center">
         <img 
+          id="hero-artwork"
           src="/assets/scoutguard_hero.jpg" 
           alt="ScoutGuard PRO — The Missing Piece in Autonomous AI Agent Security" 
-          class="w-full h-auto max-h-[580px] object-cover object-center transition-all duration-700 hover:scale-[1.01]"
+          class="w-full h-auto max-h-[680px] object-contain object-center transition-all duration-700"
         />
-        
-        <!-- Subtle Vignette Overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none opacity-80"></div>
       </div>
 
-      <!-- Editorial Philosophy Panel -->
-      <div class="p-8 md:p-10 bg-slate-950 border-t border-slate-800/80">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-          
-          <div class="md:col-span-8 space-y-4">
-            <div class="flex items-center space-x-2 text-xs font-mono uppercase tracking-widest text-sky-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              <span>The Autonomous Security Gap</span>
-            </div>
-
-            <h1 class="font-serif text-3xl md:text-4xl text-slate-100 italic leading-snug">
-              "did you think they have forgotten, about your agents?"
-            </h1>
-
-            <p class="text-sm text-slate-300 font-sans leading-relaxed">
-              Autonomous AI agents execute payments without human eyes. When malicious actors seed transaction histories with look-alike vanity addresses (sharing the first 6 and last 4 characters of your trusted vendors), agents transfer treasury funds into drainers. <strong>ScoutGuard PRO</strong> uses the <strong>Blockscout PRO API</strong> as an active pre-execution oracle to intercept address poisoning and unverified contracts fail-closed.
+      <!-- Typography Caption Plate (Directly mirroring Reference 1 & 2) -->
+      <div class="pt-8 pb-4 grid grid-cols-1 md:grid-cols-12 gap-8 items-start border-t border-[#F0ECE1] mt-6">
+        
+        <!-- Left: Poetic Text from Reference 1 -->
+        <div class="md:col-span-7 space-y-4">
+          <div class="space-y-1">
+            <p class="font-serif text-2xl md:text-3xl text-[#1C1917] italic leading-tight tracking-normal">
+              did you think they have<br>
+              forgotten,&nbsp;&nbsp;&nbsp;&nbsp;about<br>
+              your agents?
             </p>
+          </div>
 
-            <div class="pt-2 flex items-center space-x-4 text-xs font-mono text-slate-400">
-              <span class="text-yellow-300 font-serif italic text-sm">"Water the Code, Guard the Treasury."</span>
-              <span class="text-slate-600">|</span>
-              <span>120+ EVM Chains</span>
-              <span class="text-slate-600">|</span>
-              <span>100% Fail-Closed</span>
+          <p class="text-xs md:text-sm text-[#57534E] leading-relaxed max-w-xl">
+            Autonomous AI agents execute payments without human eyes. Malicious vanity addresses seed transaction histories, matching both ends of trusted vendors. 
+            <strong>ScoutGuard PRO</strong> acts as the missing piece, querying the <strong>Blockscout PRO API</strong> across 120+ EVM chains to halt vanity poisoning and unverified trojan bytecode before funds leave the treasury.
+          </p>
+
+          <!-- Tagline from Reference 2 -->
+          <div class="pt-2 flex items-center space-x-3 text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#EAB308]"></span>
+            <span class="font-serif italic text-[#78716C] tracking-wide text-sm">
+              "Water the Code, Guard the Treasury."
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: The Interactive Missing Piece Controller -->
+        <div class="md:col-span-5 flex flex-col items-start md:items-end justify-between h-full space-y-4 pt-2">
+          
+          <div class="bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl p-4 w-full text-xs space-y-2">
+            <div class="flex items-center justify-between text-[#78716C] font-mono text-[10px] uppercase">
+              <span>Security Invariant</span>
+              <span class="text-emerald-700 font-bold">FAIL-CLOSED</span>
             </div>
+            <div class="font-medium text-[#1C1917]">
+              Pre-Execution Counterparty Oracle
+            </div>
+            <p class="text-[11px] text-[#78716C] leading-normal">
+              Evaluates recipient transaction count, verified bytecode, and reputation tags in real-time.
+            </p>
           </div>
 
-          <div class="md:col-span-4 flex flex-col space-y-3">
-            <button onclick="scrollToId('simulator-section')" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-500/20 transition flex items-center justify-center space-x-2">
-              <i data-lucide="play" class="w-4 h-4"></i>
-              <span>Launch Live Attack Simulator</span>
-            </button>
-
-            <button onclick="scrollToId('sdk-section')" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs transition flex items-center justify-center space-x-2">
-              <i data-lucide="code" class="w-4 h-4 text-sky-400"></i>
-              <span>View 3-Line Agent SDK</span>
-            </button>
-          </div>
+          <button 
+            onclick="togglePuzzleAnimation()" 
+            id="puzzle-action-btn"
+            class="w-full py-2.5 px-4 rounded-xl border border-[#1C1917] text-[#1C1917] hover:bg-[#1C1917] hover:text-white transition font-medium text-xs flex items-center justify-center space-x-2 shadow-sm"
+          >
+            <i data-lucide="puzzle" class="w-4 h-4"></i>
+            <span id="puzzle-btn-text">Interact with Missing Piece</span>
+          </button>
 
         </div>
+
       </div>
 
     </div>
 
-  </section>
 
-
-  <!-- ======================================================== -->
-  <!-- SECTION: 3-LINE AGENT SDK INTEGRATION -->
-  <!-- ======================================================== -->
-  <section id="sdk-section" class="max-w-6xl w-full mx-auto px-6 py-6">
-    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl">
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-800 gap-4">
+    <!-- ======================================================== -->
+    <!-- SECTION 2: INTERACTIVE ATTACK SPECIMENS & ORACLE -->
+    <!-- ======================================================== -->
+    <section id="specimens" class="space-y-6 pt-6">
+      
+      <div class="flex flex-col md:flex-row md:items-end justify-between border-b border-[#E8E5DF] pb-4 gap-2">
         <div>
-          <div class="flex items-center space-x-2">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30 uppercase font-mono">Integration</span>
-            <h2 class="text-lg font-bold text-white">How Any AI Agent Integrates in 3 Lines of Code</h2>
-          </div>
-          <p class="text-xs text-slate-400 mt-1">Pre-flight verification gate for ElizaOS, Viem, Ethers, and LangChain autonomous workflows.</p>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Interactive Demonstration</span>
+          <h2 class="font-serif text-2xl text-[#1C1917] italic">Attack Specimens & Pre-Flight Oracle</h2>
         </div>
-
-        <!-- Framework Switcher -->
-        <div class="flex items-center space-x-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono">
-          <button onclick="setSdkTab('typescript')" id="tab-ts" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold transition">TypeScript / Viem</button>
-          <button onclick="setSdkTab('eliza')" id="tab-eliza" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">ElizaOS Action</button>
-          <button onclick="setSdkTab('python')" id="tab-py" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Python / LangChain</button>
-        </div>
+        <p class="text-xs text-[#78716C] max-w-md">
+          Select an attack case study to observe how ScoutGuard PRO inspects the transaction candidate via Blockscout before signing.
+        </p>
       </div>
 
-      <!-- Code Box with Copy Button -->
-      <div class="relative mt-4">
-        <pre class="bg-black/90 rounded-xl p-5 font-mono text-xs text-slate-200 overflow-x-auto border border-slate-800 leading-relaxed" id="sdk-code-display"><span class="text-slate-500">// 1. Import ScoutGuard SDK</span>
-<span class="text-purple-400">import</span> { <span class="text-sky-300">ScoutGuard</span> } <span class="text-purple-400">from</span> <span class="text-emerald-300">'@scoutguard/sdk'</span>;
+      <!-- Specimen Selector Pills -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 text-xs" id="specimen-tabs">
+        <button onclick="selectSpecimen('legitimate-vendor')" id="tab-legitimate-vendor" class="specimen-tab active rounded-xl p-3 text-left">
+          <span class="text-[10px] font-mono text-[#78716C] block">01 / NORMAL</span>
+          <span class="font-semibold text-[#1C1917] text-xs">Authentic Vendor</span>
+        </button>
 
-<span class="text-slate-500">// 2. Pre-flight evaluation against Blockscout PRO API before signing</span>
-<span class="text-purple-400">const</span> inspection = <span class="text-purple-400">await</span> ScoutGuard.<span class="text-blue-400">evaluateTransaction</span>(txCandidate);
+        <button onclick="selectSpecimen('address-poisoning')" id="tab-address-poisoning" class="specimen-tab rounded-xl p-3 text-left border-red-300">
+          <span class="text-[10px] font-mono text-red-600 block">02 / EXPLOIT</span>
+          <span class="font-semibold text-red-900 text-xs">Vanity Poisoning</span>
+        </button>
 
-<span class="text-slate-500">// 3. Enforce deterministic fail-closed safety gate</span>
-<span class="text-purple-400">if</span> (!inspection.executionAllowed) <span class="text-purple-400">throw new</span> <span class="text-yellow-400">Error</span>(inspection.reasons[<span class="text-orange-400">0</span>]);
-<span class="text-purple-400">await</span> agentWallet.<span class="text-blue-400">sendTransaction</span>(txCandidate);</pre>
+        <button onclick="selectSpecimen('unverified-contract')" id="tab-unverified-contract" class="specimen-tab rounded-xl p-3 text-left">
+          <span class="text-[10px] font-mono text-amber-700 block">03 / UNVERIFIED</span>
+          <span class="font-semibold text-[#1C1917] text-xs">Trojan Bytecode</span>
+        </button>
 
-        <button onclick="copySdkCode()" class="absolute top-4 right-4 text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center space-x-1.5 transition">
-          <i data-lucide="copy" class="w-3.5 h-3.5" id="copy-icon"></i>
-          <span id="copy-label">Copy Code</span>
+        <button onclick="selectSpecimen('malicious-phishing')" id="tab-malicious-phishing" class="specimen-tab rounded-xl p-3 text-left">
+          <span class="text-[10px] font-mono text-red-600 block">04 / BLACKLIST</span>
+          <span class="font-semibold text-[#1C1917] text-xs">Phishing Drainer</span>
+        </button>
+
+        <button onclick="selectSpecimen('spending-cap-breach')" id="tab-spending-cap-breach" class="specimen-tab rounded-xl p-3 text-left">
+          <span class="text-[10px] font-mono text-purple-700 block">05 / FINOPS</span>
+          <span class="font-semibold text-[#1C1917] text-xs">Spending Cap Breach</span>
         </button>
       </div>
-    </div>
-  </section>
 
-
-  <!-- ======================================================== -->
-  <!-- SECTION: INTERACTIVE ATTACK SIMULATOR & PRE-FLIGHT AUDITOR -->
-  <!-- ======================================================== -->
-  <section id="simulator-section" class="max-w-6xl w-full mx-auto px-6 py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <!-- Left Column: Attack Scenarios & Custom Input (5 cols) -->
-      <div class="lg:col-span-5 space-y-6">
+      <!-- Specimen Result Showcase -->
+      <div class="museum-mat rounded-2xl p-6 md:p-8 space-y-6">
         
-        <!-- Scenarios -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div class="flex items-center space-x-2 mb-2">
-            <i data-lucide="shield-alert" class="w-5 h-5 text-sky-400"></i>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Attack Scenarios</h2>
-          </div>
-          <p class="text-xs text-slate-400 mb-4">Click any scenario to simulate agent pre-flight evaluation:</p>
-
-          <div class="space-y-2.5">
-            <button onclick="runScenario('legitimate-vendor')" class="w-full text-left p-3 rounded-xl border border-slate-800 hover:border-emerald-500/50 bg-slate-950/70 hover:bg-slate-800/50 transition flex items-start space-x-3 group">
-              <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-emerald-400 shrink-0"></span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-200 group-hover:text-emerald-400 transition">1. Legitimate Hardware Vendor</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Authentic Acme Cloud (142 txs on Base).</p>
-              </div>
-            </button>
-
-            <button onclick="runScenario('address-poisoning')" class="w-full text-left p-3 rounded-xl border border-red-500/40 hover:border-red-500 bg-red-950/20 hover:bg-red-900/30 transition flex items-start space-x-3 group">
-              <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-red-500 animate-ping shrink-0"></span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-red-200 group-hover:text-red-400 transition">2. Address Poisoning / Vanity Spoof</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800">BLOCK</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Matches 0xd9A1...3a91 (0 txs on Blockscout).</p>
-              </div>
-            </button>
-
-            <button onclick="runScenario('unverified-contract')" class="w-full text-left p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 bg-slate-950/70 hover:bg-slate-800/50 transition flex items-start space-x-3 group">
-              <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-amber-400 shrink-0"></span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-200 group-hover:text-amber-400 transition">3. Unverified Smart Contract</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">FLAG</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Arbitrum bytecode without verified source code.</p>
-              </div>
-            </button>
-
-            <button onclick="runScenario('malicious-phishing')" class="w-full text-left p-3 rounded-xl border border-slate-800 hover:border-red-500/50 bg-slate-950/70 hover:bg-slate-800/50 transition flex items-start space-x-3 group">
-              <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-red-400 shrink-0"></span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-200 group-hover:text-red-400 transition">4. Flagged Phishing Drainer</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800">BLOCK</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Matches Blockscout malicious threat tags.</p>
-              </div>
-            </button>
-
-            <button onclick="runScenario('spending-cap-breach')" class="w-full text-left p-3 rounded-xl border border-slate-800 hover:border-purple-500/50 bg-slate-950/70 hover:bg-slate-800/50 transition flex items-start space-x-3 group">
-              <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-purple-400 shrink-0"></span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-200 group-hover:text-purple-400 transition">5. FinOps Limit Breach</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800">BLOCK</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Attempting 12.0 ETH payment on a 2.5 ETH limit bot.</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Custom Auditor -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div class="flex items-center space-x-2 mb-2">
-            <i data-lucide="search" class="w-5 h-5 text-indigo-400"></i>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Custom Address Auditor</h2>
-          </div>
-          <p class="text-xs text-slate-400 mb-3">Audit any live address via Blockscout PRO API:</p>
-
-          <form id="custom-eval-form" onsubmit="handleCustomEvaluate(event)" class="space-y-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Target EVM Chain</label>
-              <select id="custom-chain" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
-                <option value="8453">Base (Chain 8453)</option>
-                <option value="1">Ethereum Mainnet (Chain 1)</option>
-                <option value="42161">Arbitrum One (Chain 42161)</option>
-                <option value="10">Optimism (Chain 10)</option>
-                <option value="42220">Celo (Chain 42220)</option>
-                <option value="137">Polygon (Chain 137)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Recipient Address</label>
-              <input type="text" id="custom-to" value="0xd9A100913988f5CDbC328E07b8e5c14a60153a91" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-sky-500" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Amount (ETH)</label>
-                <input type="number" step="0.01" id="custom-value" value="0.5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-sky-500" required>
-              </div>
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Agent ID</label>
-                <input type="text" id="custom-agent" value="procurement-bot-01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-400" readonly>
-              </div>
-            </div>
-
-            <button type="submit" class="w-full mt-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs py-2.5 rounded-xl shadow-lg shadow-sky-500/20 transition flex items-center justify-center space-x-2">
-              <i data-lucide="shield-check" class="w-4 h-4"></i>
-              <span>Evaluate Candidate</span>
-            </button>
-          </form>
-        </div>
-
-      </div>
-
-      <!-- Right Column: Live Decision Banner, Checks & Audit Receipt (7 cols) -->
-      <div class="lg:col-span-7 space-y-6">
-
-        <!-- Real-Time Decision Card -->
-        <div id="decision-card" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 glow-pass">
-          <div class="flex items-start justify-between">
-            <div>
-              <div class="flex items-center space-x-2">
-                <span id="decision-badge" class="px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  PASS — SAFE TO BROADCAST
-                </span>
-                <span class="text-xs text-slate-400 font-mono">Agent: procurement-bot-01</span>
-              </div>
-              <h3 id="decision-headline" class="text-2xl font-black tracking-tight text-white mt-2">Transaction Authorized</h3>
-              <p id="decision-subtext" class="text-xs text-slate-300 mt-1">All pre-execution Blockscout PRO API security invariants verified.</p>
-            </div>
-
-            <div class="text-right">
-              <div class="text-3xl font-black font-mono text-emerald-400" id="risk-score-display">0<span class="text-sm font-normal text-slate-400">/100</span></div>
-              <span class="text-[10px] uppercase font-bold text-slate-400">Risk Index</span>
-            </div>
-          </div>
-
-          <div id="action-guidance" class="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 flex items-center space-x-3">
-            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 shrink-0"></i>
-            <span class="text-xs text-emerald-200" id="action-text">Execution Allowed: AI Agent wallet permitted to sign and broadcast.</span>
-          </div>
-        </div>
-
-        <!-- Security Gates Breakdown -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div class="flex items-center justify-between mb-4">
+        <!-- Header Banner: Verdict -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-[#F0ECE1] gap-4">
+          <div class="space-y-1">
             <div class="flex items-center space-x-2">
-              <i data-lucide="list-checks" class="w-5 h-5 text-sky-400"></i>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-200">Blockscout PRO Security Gates</h3>
+              <span id="verdict-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                PASS — SAFE TO BROADCAST
+              </span>
+              <span id="specimen-title" class="text-xs font-mono text-[#78716C]">Specimen 01: Authentic Vendor Invoice</span>
             </div>
-            <span class="text-[11px] text-slate-400">3 Load-Bearing Invariants</span>
+            <h3 id="verdict-headline" class="font-serif text-2xl text-[#1C1917] italic">Transaction Authorized</h3>
+            <p id="verdict-explanation" class="text-xs text-[#57534E]">All pre-execution invariants satisfied against Blockscout PRO API.</p>
           </div>
 
-          <div class="space-y-3" id="checks-list">
-            <!-- Populated via script -->
+          <!-- Risk Metric -->
+          <div class="text-right flex md:flex-col items-center md:items-end justify-between">
+            <div class="text-3xl font-serif italic text-[#1C1917]" id="risk-score">0 <span class="text-xs font-sans not-italic text-[#78716C]">/ 100</span></div>
+            <span class="text-[10px] uppercase font-mono tracking-wider text-[#78716C]">Calculated Risk Index</span>
           </div>
         </div>
 
-        <!-- Cryptographic Audit Receipt Card -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-2">
-              <i data-lucide="file-check-2" class="w-5 h-5 text-indigo-400"></i>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-200">Cryptographic Audit Receipt</h3>
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+          
+          <!-- Candidate Inspection -->
+          <div class="bg-[#FAF8F5] rounded-xl p-4 border border-[#E8E5DF] space-y-3">
+            <span class="text-[10px] font-mono uppercase text-[#78716C] tracking-wider block">Evaluated Candidate Transaction</span>
+            
+            <div class="space-y-1.5 font-mono text-[11px]">
+              <div class="flex justify-between">
+                <span class="text-[#78716C]">Destination:</span>
+                <span class="font-semibold text-[#1C1917] truncate max-w-[240px]" id="tx-destination">0xd9A100913988f5CDbC328E07b8e5c14a60153a91</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#78716C]">Amount:</span>
+                <span class="font-semibold text-[#1C1917]" id="tx-amount">0.85 ETH</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#78716C]">Network:</span>
+                <span class="text-[#1C1917]" id="tx-network">Base Mainnet (Chain 8453)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#78716C]">Originating Agent:</span>
+                <span class="text-[#1C1917]">procurement-bot-01</span>
+              </div>
             </div>
-            <span class="text-[10px] font-mono text-slate-400" id="receipt-id">rcpt_e847c29b</span>
+
+            <!-- Vanity Collision Comparison Box (Highlighted for Poisoning) -->
+            <div id="vanity-box" class="p-3 rounded-lg bg-white border border-[#E8E5DF] space-y-1 text-[11px] hidden">
+              <span class="text-[10px] font-mono text-red-600 font-bold block uppercase">Vanity Collision Analysis</span>
+              <div class="flex justify-between text-[#78716C]">
+                <span>Legitimate:</span>
+                <span class="font-mono text-emerald-700">0xd9A1...3a91 (142 txs)</span>
+              </div>
+              <div class="flex justify-between text-[#78716C]">
+                <span>Spoofed Candidate:</span>
+                <span class="font-mono text-red-700 font-bold">0xd9A1...3a91 (0 txs)</span>
+              </div>
+            </div>
           </div>
 
-          <p class="text-xs text-slate-400 mb-3">Tamper-evident verification receipt signed with SHA-256 integrity hash.</p>
-
-          <div class="bg-black/60 rounded-xl p-3 border border-slate-800 font-mono text-[11px] space-y-1.5 text-slate-300">
-            <div class="flex justify-between">
-              <span class="text-slate-500">Integrity Hash:</span>
-              <span class="text-sky-400 break-all" id="receipt-hash">0x8f2d...4a12</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500">Timestamp:</span>
-              <span id="receipt-time">2026-10-20T12:00:00.000Z</span>
-            </div>
-            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
-              <span class="text-slate-500">Blockscout Verification:</span>
-              <a href="#" target="_blank" id="receipt-explorer-link" class="text-emerald-400 hover:underline flex items-center space-x-1">
-                <span>View on Blockscout</span>
-                <i data-lucide="external-link" class="w-3 h-3"></i>
-              </a>
-            </div>
+          <!-- Invariant Security Checks -->
+          <div class="space-y-2.5" id="specimen-checks">
+            <!-- Dynamically populated -->
           </div>
+
+        </div>
+
+        <!-- Audit Provenance Receipt -->
+        <div class="pt-4 border-t border-[#F0ECE1] flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs font-mono text-[#78716C] gap-2">
+          <div class="flex items-center space-x-2">
+            <span>SHA-256 Receipt:</span>
+            <span class="text-[#1C1917] truncate max-w-[260px]" id="receipt-hash">0x3f5c9e29a1b4d8e7...</span>
+          </div>
+
+          <a href="#" target="_blank" id="explorer-link" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 font-sans">
+            <span>View Destination on Blockscout</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
         </div>
 
       </div>
 
-    </div>
-  </section>
+    </section>
 
 
-  <!-- ======================================================== -->
-  <!-- SECTION: LIVE ON-CHAIN PROOFS & VERIFICATIONS -->
-  <!-- ======================================================== -->
-  <section class="max-w-6xl w-full mx-auto px-6 py-6">
-    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
-      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-        <div class="flex items-center space-x-2">
-          <i data-lucide="database" class="w-5 h-5 text-emerald-400"></i>
-          <div>
-            <h2 class="text-base font-bold text-white">Live On-Chain Verifications</h2>
-            <p class="text-xs text-slate-400">Directly verified against Base Mainnet and Ethereum Blockscout.</p>
-          </div>
+    <!-- ======================================================== -->
+    <!-- SECTION 3: 3-LINE AGENT SDK INTEGRATION -->
+    <!-- ======================================================== -->
+    <section id="sdk" class="space-y-6 pt-6">
+      <div class="border-b border-[#E8E5DF] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Developer Manuscript</span>
+          <h2 class="font-serif text-2xl text-[#1C1917] italic">Integrates in 3 Lines of Code</h2>
         </div>
-        <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">VERIFIED CONTRACTS & RECEIPTS</span>
+        <p class="text-xs text-[#78716C] max-w-md">
+          Simple pre-execution guard that drops into ElizaOS, LangChain, Viem, or raw Ethers.js loops.
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div class="museum-mat rounded-2xl p-6 md:p-8 space-y-4">
         
-        <div class="p-4 rounded-xl bg-black/50 border border-slate-800 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span class="font-bold text-sky-400 font-mono">Base Mainnet (Chain 8453)</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-900/50 text-emerald-300">CONFIRMED</span>
+        <!-- Tab Bar -->
+        <div class="flex items-center justify-between border-b border-[#F0ECE1] pb-3">
+          <div class="flex items-center space-x-2 text-xs font-mono">
+            <button onclick="setSdkTab('typescript')" id="sdk-tab-ts" class="px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold">TypeScript / Viem</button>
+            <button onclick="setSdkTab('eliza')" id="sdk-tab-eliza" class="px-3 py-1 rounded-lg text-[#78716C] hover:text-[#1C1917]">ElizaOS Plugin</button>
+            <button onclick="setSdkTab('python')" id="sdk-tab-py" class="px-3 py-1 rounded-lg text-[#78716C] hover:text-[#1C1917]">Python / LangChain</button>
           </div>
-          <p class="text-xs font-mono text-slate-200 truncate">0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43</p>
-          <div class="mt-3 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Gas Used: 21,000</span>
-            <a href="https://base.blockscout.com/tx/0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43" target="_blank" class="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 font-semibold">
-              <span>View on Base Blockscout</span>
-              <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
-          </div>
+
+          <button onclick="copySdkCode()" class="text-xs font-mono text-[#78716C] hover:text-[#1C1917] flex items-center space-x-1">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-btn-text">Copy</span>
+          </button>
         </div>
 
-        <div class="p-4 rounded-xl bg-black/50 border border-slate-800 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span class="font-bold text-indigo-400 font-mono">Verified Base Router</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-900/50 text-emerald-300">OPEN SOURCE</span>
+        <!-- Code Content -->
+        <pre class="bg-[#FAF8F5] rounded-xl p-5 font-mono text-xs text-[#1C1917] overflow-x-auto border border-[#E8E5DF] leading-relaxed" id="sdk-code"><span class="text-[#78716C]">// 1. Import ScoutGuard SDK</span>
+<span class="text-purple-700">import</span> { <span class="text-blue-700">ScoutGuard</span> } <span class="text-purple-700">from</span> <span class="text-emerald-700">'@scoutguard/sdk'</span>;
+
+<span class="text-[#78716C]">// 2. Pre-flight evaluation against Blockscout PRO API before signing</span>
+<span class="text-purple-700">const</span> inspection = <span class="text-purple-700">await</span> ScoutGuard.<span class="text-blue-700">evaluateTransaction</span>(txCandidate);
+
+<span class="text-[#78716C]">// 3. Enforce deterministic fail-closed safety gate</span>
+<span class="text-purple-700">if</span> (!inspection.executionAllowed) <span class="text-purple-700">throw new</span> <span class="text-amber-700">Error</span>(inspection.reasons[<span class="text-orange-700">0</span>]);
+<span class="text-purple-700">await</span> agentWallet.<span class="text-blue-700">sendTransaction</span>(txCandidate);</pre>
+
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- SECTION 4: LIVE ON-CHAIN EVIDENCE & PROOFS -->
+    <!-- ======================================================== -->
+    <section id="evidence" class="space-y-6 pt-6">
+      <div class="border-b border-[#E8E5DF] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Blockscout Verification</span>
+          <h2 class="font-serif text-2xl text-[#1C1917] italic">Live On-Chain Verifications</h2>
+        </div>
+        <p class="text-xs text-[#78716C] max-w-md">
+          Verifiable contracts, transactions, and oracle metrics live on Base and Ethereum Blockscout.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+        
+        <div class="museum-mat rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between font-mono text-[10px]">
+            <span class="text-[#2B7FFF] font-bold">Base Mainnet (8453)</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">CONFIRMED</span>
           </div>
-          <p class="text-xs font-mono text-slate-200 truncate">0x2626664c2603336E57B271c5C0b26F421741e481</p>
-          <div class="mt-3 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Uniswap V3 SwapRouter02</span>
-            <a href="https://base.blockscout.com/address/0x2626664c2603336E57B271c5C0b26F421741e481" target="_blank" class="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 font-semibold">
-              <span>Inspect Source Code</span>
-              <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
-          </div>
+          <p class="font-mono text-[#1C1917] truncate font-semibold">0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43</p>
+          <p class="text-[#78716C] text-[11px]">Real transaction hash verified on Base Blockscout.</p>
+          <a href="https://base.blockscout.com/tx/0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
+            <span>View on Base Blockscout</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
         </div>
 
-        <div class="p-4 rounded-xl bg-black/50 border border-slate-800 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span class="font-bold text-yellow-400 font-mono">Ethereum Mainnet</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-900/50 text-emerald-300">ORACLE FEED</span>
+        <div class="museum-mat rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between font-mono text-[10px]">
+            <span class="text-indigo-700 font-bold">Uniswap V3 Router</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">VERIFIED</span>
           </div>
-          <p class="text-xs font-mono text-slate-200 truncate">Blockscout Gas Tracker Oracle</p>
-          <div class="mt-3 flex items-center justify-between text-[11px]">
-            <span class="text-slate-400">Real-time Fast Gas: 24 Gwei</span>
-            <a href="https://eth.blockscout.com" target="_blank" class="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 font-semibold">
-              <span>Open Blockscout Hub</span>
-              <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
+          <p class="font-mono text-[#1C1917] truncate font-semibold">0x2626664c2603336E57B271c5C0b26F421741e481</p>
+          <p class="text-[#78716C] text-[11px]">Verified open-source contract source code on Base.</p>
+          <a href="https://base.blockscout.com/address/0x2626664c2603336E57B271c5C0b26F421741e481" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
+            <span>Inspect Verified Source</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+        </div>
+
+        <div class="museum-mat rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between font-mono text-[10px]">
+            <span class="text-amber-700 font-bold">Blockscout Gas Oracle</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">LIVE FEED</span>
           </div>
+          <p class="font-mono text-[#1C1917] truncate font-semibold">Real-Time EVM Gas Oracle</p>
+          <p class="text-[#78716C] text-[11px]">Live multichain gas metrics and fee estimates.</p>
+          <a href="https://eth.blockscout.com" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
+            <span>Open Blockscout Hub</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
         </div>
 
       </div>
-    </div>
-  </section>
+    </section>
+
+  </main>
 
 
   <!-- ======================================================== -->
-  <!-- FOOTER -->
+  <!-- EDITORIAL FOOTER -->
   <!-- ======================================================== -->
-  <footer class="border-t border-slate-800/80 bg-[#070a12] py-8 text-center text-xs text-slate-500 font-mono space-y-2">
-    <p>ScoutGuard PRO — Pre-Execution Financial Firewall for Autonomous AI Agents.</p>
-    <p class="text-slate-400">Powered by Blockscout PRO API across 120+ EVM Chains. 100% Load-Bearing & Fail-Closed.</p>
+  <footer class="border-t border-[#E8E5DF] bg-[#FAF8F5] py-10 text-center text-xs text-[#78716C] space-y-2">
+    <p class="font-serif italic text-sm text-[#1C1917]">ScoutGuard PRO — The Missing Piece in Autonomous AI Agent Security</p>
+    <p class="font-mono text-[11px]">Powered by Blockscout PRO API across 120+ EVM Chains. 100% Load-Bearing & Fail-Closed.</p>
   </footer>
 
 
   <!-- ======================================================== -->
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT CONTROLLERS -->
   <!-- ======================================================== -->
   <script>
     lucide.createIcons();
 
-    function scrollToId(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    // Toggle interactive animation state on hero
+    let isSnapped = false;
+    function togglePuzzleAnimation() {
+      const btnText = document.getElementById('puzzle-btn-text');
+      isSnapped = !isSnapped;
+      if (isSnapped) {
+        btnText.innerText = "Security Piece Locked (Active)";
+      } else {
+        btnText.innerText = "Interact with Missing Piece";
+      }
     }
 
-    const SDK_SNIPPETS = {
+    // Code Snippet Tabs
+    const SDK_CODES = {
       typescript: `// 1. Import ScoutGuard SDK
 import { ScoutGuard } from '@scoutguard/sdk';
 
@@ -552,7 +519,7 @@ await agentWallet.sendTransaction(txCandidate);`,
 export const ScoutGuardAction: Action = {
   name: "VALIDATE_AND_EXECUTE_PAYMENT",
   handler: async (runtime, message, state) => {
-    const inspection = await scoutGuard.evaluateTransaction(message.tx);
+    const inspection = await ScoutGuard.evaluateTransaction(message.tx);
     if (!inspection.executionAllowed) {
       return { success: false, reason: "BLOCKED: Address poisoning or unverified contract" };
     }
@@ -572,265 +539,192 @@ wallet.broadcast_transaction(tx_data)`
     };
 
     function setSdkTab(tab) {
-      document.getElementById('tab-ts').className = tab === 'typescript' ? "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold transition" : "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition";
-      document.getElementById('tab-eliza').className = tab === 'eliza' ? "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold transition" : "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition";
-      document.getElementById('tab-py').className = tab === 'python' ? "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold transition" : "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition";
-      document.getElementById('sdk-code-display').innerText = SDK_SNIPPETS[tab];
+      document.getElementById('sdk-tab-ts').className = tab === 'typescript' ? "px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold" : "px-3 py-1 rounded-lg text-[#78716C] hover:text-[#1C1917]";
+      document.getElementById('sdk-tab-eliza').className = tab === 'eliza' ? "px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold" : "px-3 py-1 rounded-lg text-[#78716C] hover:text-[#1C1917]";
+      document.getElementById('sdk-tab-py').className = tab === 'python' ? "px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold" : "px-3 py-1 rounded-lg text-[#78716C] hover:text-[#1C1917]";
+      document.getElementById('sdk-code').innerText = SDK_CODES[tab];
     }
 
     function copySdkCode() {
-      const code = document.getElementById('sdk-code-display').innerText;
+      const code = document.getElementById('sdk-code').innerText;
       navigator.clipboard.writeText(code);
-      document.getElementById('copy-label').innerText = "Copied!";
+      document.getElementById('copy-btn-text').innerText = "Copied";
       setTimeout(() => {
-        document.getElementById('copy-label').innerText = "Copy Code";
+        document.getElementById('copy-btn-text').innerText = "Copy";
       }, 2000);
     }
 
-    const FALLBACK_SCENARIOS = {
+    // Specimen Case Data
+    const SPECIMENS = {
       'legitimate-vendor': {
+        title: 'Specimen 01: Authentic Hardware Vendor',
+        headline: 'Transaction Authorized',
+        explanation: 'All pre-execution invariants verified on Blockscout PRO API. Authentic Acme Cloud recipient with 142 historical transfers.',
         decision: 'PASS',
-        riskScore: 0,
-        reasons: ['All Blockscout PRO and policy security checks passed successfully.'],
-        suggestedAction: 'SIGN_AND_BROADCAST',
-        executionAllowed: true,
+        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        badgeText: 'PASS — SAFE TO BROADCAST',
+        risk: 0,
+        destination: '0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
+        amount: '0.85 ETH',
+        network: 'Base Mainnet (Chain 8453)',
+        showVanity: false,
+        hash: '0x3f5c9e29a1b4d8e709c1234567890abcdef1234567890abcdef1234567890abc',
+        explorerUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
         checks: [
-          { id: 'SEC-POISON-OK', name: 'Counterparty Authenticity', status: 'PASS', scoreImpact: 0, detail: 'Verified authentic destination for Acme Cloud Compute & Hardware. (Blockscout History: 142 txs, 28 transfers).', evidenceUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91' },
-          { id: 'SEC-CONTRACT-EOA', name: 'Contract Bytecode Verification', status: 'PASS', scoreImpact: 0, detail: 'Destination is an Externally Owned Account (EOA). No unverified bytecode present.', evidenceUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91' },
-          { id: 'SEC-POLICY-OK', name: 'Agent Spending Limits & Policy', status: 'PASS', scoreImpact: 0, detail: 'Value within autonomous limit (0.85 / 2.5 ETH cap).', evidenceUrl: 'https://base.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_7820a4f910ce4281',
-          integrityHash: '0x3f5c9e29a1b4d8e709c1234567890abcdef1234567890abcdef1234567890abc',
-          isoDate: new Date().toISOString(),
-          decision: 'PASS',
-          blockscoutExplorerUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91'
-        }
+          { name: 'Counterparty Authenticity', status: 'PASS', detail: 'Verified authentic destination for Acme Cloud Compute (142 on-chain txs).' },
+          { name: 'Contract Bytecode Verification', status: 'PASS', detail: 'Destination is an EOA account. No hidden malicious bytecode present.' },
+          { name: 'Agent Spending Limits & Policy', status: 'PASS', detail: 'Value (0.85 ETH) within autonomous single-tx ceiling (2.5 ETH).' }
+        ]
       },
       'address-poisoning': {
+        title: 'Specimen 02: Address Poisoning / Vanity Collision',
+        headline: 'Transaction Aborted (Fail-Closed)',
+        explanation: 'CRITICAL: Look-alike address matches 6 leading (0xd9A1) and 4 trailing (3a91) characters of Acme Cloud, but Blockscout history reveals 0 transactions.',
         decision: 'BLOCK',
-        riskScore: 85,
-        reasons: ['[BLOCKED] Address Poisoning / Vanity Collision: CRITICAL LOOK-ALIKE: Candidate matches 6 leading (0xd9A1) and 4 trailing (3a91) hex chars of Acme Cloud but is a DIFFERENT address (0 txs on Blockscout).'],
-        suggestedAction: 'ABORT_TRANSACTION',
-        executionAllowed: false,
+        badgeClass: 'bg-red-100 text-red-800 border-red-300',
+        badgeText: 'BLOCK — POISONING INTERCEPTED',
+        risk: 85,
+        destination: '0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91',
+        amount: '0.85 ETH',
+        network: 'Base Mainnet (Chain 8453)',
+        showVanity: true,
+        hash: '0x8d7a1239bc4e09f518a209847120394857102938475610293847561029384756',
+        explorerUrl: 'https://base.blockscout.com/address/0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91',
         checks: [
-          { id: 'SEC-POISON-01', name: 'Address Poisoning / Vanity Collision', status: 'FAIL', scoreImpact: 85, detail: 'CRITICAL LOOK-ALIKE: Matches 6 leading (0xd9A1) and 4 trailing (3a91) hex chars of Acme Cloud. Blockscout History: 0 txs. Address is an unverified spoofed vanity trap.', evidenceUrl: 'https://base.blockscout.com/address/0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91' },
-          { id: 'SEC-CONTRACT-EOA', name: 'Contract Bytecode Verification', status: 'PASS', scoreImpact: 0, detail: 'Destination is an EOA.', evidenceUrl: 'https://base.blockscout.com/address/0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91' },
-          { id: 'SEC-POLICY-OK', name: 'Agent Spending Limits & Policy', status: 'PASS', scoreImpact: 0, detail: 'Value within limit (0.85 ETH).', evidenceUrl: 'https://base.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_c991b120fa884321',
-          integrityHash: '0x8d7a1239bc4e09f518a209847120394857102938475610293847561029384756',
-          isoDate: new Date().toISOString(),
-          decision: 'BLOCK',
-          blockscoutExplorerUrl: 'https://base.blockscout.com/address/0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91'
-        }
+          { name: 'Address Poisoning / Vanity Collision', status: 'FAIL', detail: 'Vanity spoof detected: 6 prefix & 4 suffix match with Acme Cloud. 0 txs on Blockscout.' },
+          { name: 'Contract Bytecode Verification', status: 'PASS', detail: 'Destination is an EOA.' },
+          { name: 'Agent Spending Limits & Policy', status: 'PASS', detail: 'Value within ceiling (0.85 ETH).' }
+        ]
       },
       'unverified-contract': {
+        title: 'Specimen 03: Unverified Smart Contract / Trojan Trap',
+        headline: 'Quarantined in Approval Gate',
+        explanation: 'WARNING: Target smart contract lacks verified source code and ABI on Blockscout. Honeypot execution risks cannot be ruled out.',
         decision: 'FLAG',
-        riskScore: 45,
-        reasons: ['[FLAGGED] Unverified Smart Contract Bytecode: Destination is an unverified smart contract on Blockscout.'],
-        suggestedAction: 'QUARANTINE_FOR_APPROVAL',
-        executionAllowed: false,
+        badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+        badgeText: 'FLAG — HUMAN SIGN-OFF REQUIRED',
+        risk: 45,
+        destination: '0x000000000000000000000000000000000000dEaD',
+        amount: '0.45 ETH',
+        network: 'Arbitrum One (Chain 42161)',
+        showVanity: false,
+        hash: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
+        explorerUrl: 'https://arbitrum.blockscout.com/address/0x000000000000000000000000000000000000dEaD',
         checks: [
-          { id: 'SEC-POISON-OK', name: 'Counterparty Authenticity', status: 'PASS', scoreImpact: 0, detail: 'Normal address check.', evidenceUrl: 'https://arbitrum.blockscout.com/address/0x000000000000000000000000000000000000dEaD' },
-          { id: 'SEC-CONTRACT-UNVERIFIED', name: 'Unverified Smart Contract Bytecode', status: 'WARN', scoreImpact: 45, detail: 'WARNING: Destination is an unverified smart contract on Blockscout (Arbitrum). Source code and ABI are missing; execution honeypot traps cannot be ruled out.', evidenceUrl: 'https://arbitrum.blockscout.com/address/0x000000000000000000000000000000000000dEaD' },
-          { id: 'SEC-POLICY-OK', name: 'Agent Spending Limits & Policy', status: 'PASS', scoreImpact: 0, detail: 'Value within limit (0.45 ETH).', evidenceUrl: 'https://arbitrum.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_44f120aa8bc39110',
-          integrityHash: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
-          isoDate: new Date().toISOString(),
-          decision: 'FLAG',
-          blockscoutExplorerUrl: 'https://arbitrum.blockscout.com/address/0x000000000000000000000000000000000000dEaD'
-        }
+          { name: 'Counterparty Authenticity', status: 'PASS', detail: 'Standard counterparty check.' },
+          { name: 'Unverified Smart Contract Bytecode', status: 'WARN', detail: 'Missing source code and ABI on Arbitrum Blockscout. Potential honeypot.' },
+          { name: 'Agent Spending Limits & Policy', status: 'PASS', detail: 'Value within limit (0.45 ETH).' }
+        ]
       },
       'malicious-phishing': {
+        title: 'Specimen 04: Flagged Phishing / Drainer Entity',
+        headline: 'Transaction Aborted (Threat Blacklist)',
+        explanation: 'CRITICAL: Destination address matches Blockscout threat intelligence feed for malicious drainers. Transaction terminated.',
         decision: 'BLOCK',
-        riskScore: 100,
-        reasons: ['[BLOCKED] Blockscout Phishing & Malicious Entity Check: Flagged on Blockscout threat database.'],
-        suggestedAction: 'ABORT_TRANSACTION',
-        executionAllowed: false,
+        badgeClass: 'bg-red-100 text-red-800 border-red-300',
+        badgeText: 'BLOCK — THREAT MATCH',
+        risk: 100,
+        destination: '0x6b175474e89094c44da98b954eedeac495271d0f',
+        amount: '1.20 ETH',
+        network: 'Ethereum Mainnet (Chain 1)',
+        showVanity: false,
+        hash: '0x9f8e7d6c5b4a3928170e9f8e7d6c5b4a3928170e9f8e7d6c5b4a3928170e9f8e',
+        explorerUrl: 'https://eth.blockscout.com/address/0x6b175474e89094c44da98b954eedeac495271d0f',
         checks: [
-          { id: 'SEC-POISON-OK', name: 'Counterparty Authenticity', status: 'PASS', scoreImpact: 0, detail: 'Historical lookup complete.', evidenceUrl: 'https://eth.blockscout.com/address/0x6b175474e89094c44da98b954eedeac495271d0f' },
-          { id: 'SEC-REPUTATION-01', name: 'Blockscout Phishing & Malicious Entity Check', status: 'FAIL', scoreImpact: 100, detail: 'CRITICAL: Address flagged on Blockscout as malicious wallet drainer/phishing entity. Open Explorer to view threat tags.', evidenceUrl: 'https://eth.blockscout.com/address/0x6b175474e89094c44da98b954eedeac495271d0f' },
-          { id: 'SEC-POLICY-OK', name: 'Agent Spending Limits & Policy', status: 'PASS', scoreImpact: 0, detail: 'Value within limit (1.20 ETH).', evidenceUrl: 'https://eth.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_99018fa34bcde101',
-          integrityHash: '0x9f8e7d6c5b4a3928170e9f8e7d6c5b4a3928170e9f8e7d6c5b4a3928170e9f8e',
-          isoDate: new Date().toISOString(),
-          decision: 'BLOCK',
-          blockscoutExplorerUrl: 'https://eth.blockscout.com/address/0x6b175474e89094c44da98b954eedeac495271d0f'
-        }
+          { name: 'Counterparty Authenticity', status: 'PASS', detail: 'Historical address lookup.' },
+          { name: 'Blockscout Phishing & Malicious Entity Check', status: 'FAIL', detail: 'Flagged on Blockscout threat database as drainer.' },
+          { name: 'Agent Spending Limits & Policy', status: 'PASS', detail: 'Value within limits.' }
+        ]
       },
       'spending-cap-breach': {
+        title: 'Specimen 05: FinOps Spending Limit Breach',
+        headline: 'Transaction Aborted (Policy Cap)',
+        explanation: 'CRITICAL: Attempted transfer (12.0 ETH) exceeds the agent autonomous spending ceiling (2.5 ETH). Terminated fail-closed.',
         decision: 'BLOCK',
-        riskScore: 75,
-        reasons: ['[BLOCKED] Single Transaction Hard Limit: Transaction value (12 ETH) exceeds agent hard limit (2.5 ETH).'],
-        suggestedAction: 'ABORT_TRANSACTION',
-        executionAllowed: false,
+        badgeClass: 'bg-purple-100 text-purple-800 border-purple-300',
+        badgeText: 'BLOCK — LIMIT BREACH',
+        risk: 75,
+        destination: '0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
+        amount: '12.00 ETH',
+        network: 'Base Mainnet (Chain 8453)',
+        showVanity: false,
+        hash: '0x7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b',
+        explorerUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
         checks: [
-          { id: 'SEC-POISON-OK', name: 'Counterparty Authenticity', status: 'PASS', scoreImpact: 0, detail: 'Authentic Acme Cloud vendor.', evidenceUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91' },
-          { id: 'SEC-CONTRACT-EOA', name: 'Contract Bytecode Verification', status: 'PASS', scoreImpact: 0, detail: 'Destination is an EOA.', evidenceUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91' },
-          { id: 'SEC-POLICY-CAP', name: 'Single Transaction Hard Limit', status: 'FAIL', scoreImpact: 75, detail: 'Transaction value (12 ETH) exceeds autonomous hard ceiling (2.5 ETH). FinOps cap breach.', evidenceUrl: 'https://base.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_88204b12fe091244',
-          integrityHash: '0x7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b',
-          isoDate: new Date().toISOString(),
-          decision: 'BLOCK',
-          blockscoutExplorerUrl: 'https://base.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91'
-        }
+          { name: 'Counterparty Authenticity', status: 'PASS', detail: 'Authentic Acme Cloud vendor.' },
+          { name: 'Contract Bytecode Verification', status: 'PASS', detail: 'EOA verification complete.' },
+          { name: 'Single Transaction Hard Limit', status: 'FAIL', detail: '12.0 ETH exceeds 2.5 ETH hard ceiling.' }
+        ]
       }
     };
 
-    async function runScenario(scenarioId) {
-      try {
-        const response = await fetch('/api/simulate/' + scenarioId, { method: 'POST' });
-        if (response.ok) {
-          const data = await response.json();
-          renderEvaluation(data.evaluation);
-          return;
-        }
-      } catch (err) {
-        // Fallback
-      }
-      if (FALLBACK_SCENARIOS[scenarioId]) {
-        renderEvaluation(FALLBACK_SCENARIOS[scenarioId]);
-      }
-    }
+    function selectSpecimen(id) {
+      const data = SPECIMENS[id];
+      if (!data) return;
 
-    async function handleCustomEvaluate(e) {
-      e.preventDefault();
-      const chainId = parseInt(document.getElementById('custom-chain').value, 10);
-      const to = document.getElementById('custom-to').value.trim();
-      const value = document.getElementById('custom-value').value.trim();
-      const agentId = document.getElementById('custom-agent').value;
-
-      try {
-        const response = await fetch('/api/evaluate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chainId, to, value, agentId })
-        });
-        if (response.ok) {
-          const data = await response.json();
-          renderEvaluation(data);
-          return;
-        }
-      } catch (err) {
-        // Fallback
-      }
-
-      // Local client-side evaluation fallback
-      renderEvaluation({
-        decision: to.toLowerCase().includes('dead') ? 'FLAG' : (to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 'PASS' : 'BLOCK'),
-        riskScore: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 0 : 85,
-        reasons: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' 
-          ? ['All Blockscout PRO and policy security checks passed successfully.'] 
-          : ['[BLOCKED] Counterparty verification or look-alike address anomaly detected.'],
-        suggestedAction: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 'SIGN_AND_BROADCAST' : 'ABORT_TRANSACTION',
-        executionAllowed: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91',
-        checks: [
-          { id: 'SEC-POISON-OK', name: 'Counterparty Authenticity', status: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 'PASS' : 'FAIL', scoreImpact: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 0 : 85, detail: `Blockscout address verification for ${to}.`, evidenceUrl: `https://base.blockscout.com/address/${to}` },
-          { id: 'SEC-CONTRACT-EOA', name: 'Contract Bytecode Verification', status: 'PASS', scoreImpact: 0, detail: 'EOA verification complete.', evidenceUrl: `https://base.blockscout.com/address/${to}` },
-          { id: 'SEC-POLICY-OK', name: 'Agent Spending Limits & Policy', status: 'PASS', scoreImpact: 0, detail: `Value within limit (${value} ETH).`, evidenceUrl: 'https://base.blockscout.com' }
-        ],
-        receipt: {
-          receiptId: 'rcpt_' + Math.random().toString(36).substring(2, 10),
-          integrityHash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''),
-          isoDate: new Date().toISOString(),
-          decision: to.toLowerCase() === '0xd9a100913988f5cdbc328e07b8e5c14a60153a91' ? 'PASS' : 'BLOCK',
-          blockscoutExplorerUrl: `https://base.blockscout.com/address/${to}`
+      // Update Tab Styles
+      Object.keys(SPECIMENS).forEach(k => {
+        const btn = document.getElementById('tab-' + k);
+        if (btn) {
+          if (k === id) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
         }
       });
-    }
 
-    function renderEvaluation(data) {
-      const card = document.getElementById('decision-card');
-      const badge = document.getElementById('decision-badge');
-      const headline = document.getElementById('decision-headline');
-      const subtext = document.getElementById('decision-subtext');
-      const guidance = document.getElementById('action-guidance');
-      const guidanceText = document.getElementById('action-text');
-      const scoreDisplay = document.getElementById('risk-score-display');
+      // Update Banner
+      const badge = document.getElementById('verdict-badge');
+      badge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase border " + data.badgeClass;
+      badge.innerText = data.badgeText;
 
-      card.classList.remove('glow-pass', 'glow-block', 'glow-flag');
-      scoreDisplay.innerHTML = `${data.riskScore}<span class="text-sm font-normal text-slate-400">/100</span>`;
+      document.getElementById('specimen-title').innerText = data.title;
+      document.getElementById('verdict-headline').innerText = data.headline;
+      document.getElementById('verdict-explanation').innerText = data.explanation;
+      document.getElementById('risk-score').innerHTML = `${data.risk} <span class="text-xs font-sans not-italic text-[#78716C]">/ 100</span>`;
 
-      if (data.decision === 'PASS') {
-        card.classList.add('glow-pass');
-        badge.className = "px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-        badge.innerText = "PASS — SAFE TO BROADCAST";
-        headline.innerText = "Transaction Authorized";
-        subtext.innerText = "All pre-execution Blockscout PRO API security invariants verified.";
-        guidance.className = "mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 flex items-center space-x-3";
-        guidanceText.innerText = "Execution Allowed: AI Agent wallet permitted to sign and broadcast.";
-        scoreDisplay.className = "text-3xl font-black font-mono text-emerald-400";
-      } else if (data.decision === 'BLOCK') {
-        card.classList.add('glow-block');
-        badge.className = "px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-red-500/20 text-red-400 border border-red-500/40";
-        badge.innerText = "BLOCK — ATTACK INTERCEPTED";
-        headline.innerText = "Transaction Aborted (Fail-Closed)";
-        subtext.innerText = data.reasons[0] || "Critical security vulnerability or look-alike spoof detected.";
-        guidance.className = "mt-4 p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-center space-x-3";
-        guidanceText.innerText = "Execution Halted: Malicious attack intercepted. Zero funds broadcasted.";
-        scoreDisplay.className = "text-3xl font-black font-mono text-red-400";
+      // Update Candidate Box
+      document.getElementById('tx-destination').innerText = data.destination;
+      document.getElementById('tx-amount').innerText = data.amount;
+      document.getElementById('tx-network').innerText = data.network;
+
+      const vanityBox = document.getElementById('vanity-box');
+      if (data.showVanity) {
+        vanityBox.classList.remove('hidden');
       } else {
-        card.classList.add('glow-flag');
-        badge.className = "px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40";
-        badge.innerText = "FLAG — HUMAN APPROVAL REQUIRED";
-        headline.innerText = "Quarantined in Approval Gate";
-        subtext.innerText = "Unverified smart contract or high-value threshold requires manual confirmation.";
-        guidance.className = "mt-4 p-3 rounded-xl bg-amber-950/40 border border-amber-800/40 flex items-center space-x-3";
-        guidanceText.innerText = "Pending Review: Signature paused pending human multi-sig or admin override.";
-        scoreDisplay.className = "text-3xl font-black font-mono text-amber-400";
+        vanityBox.classList.add('hidden');
       }
 
-      // Render Checks
-      const checksList = document.getElementById('checks-list');
-      checksList.innerHTML = '';
-      data.checks.forEach(check => {
-        const item = document.createElement('div');
-        const isPass = check.status === 'PASS';
-        const isFail = check.status === 'FAIL';
-        const borderColor = isPass ? 'border-slate-800' : (isFail ? 'border-red-900/60 bg-red-950/10' : 'border-amber-900/60 bg-amber-950/10');
-        const badgeColor = isPass ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : (isFail ? 'bg-red-950 text-red-400 border-red-800' : 'bg-amber-950 text-amber-400 border-amber-800');
-
-        item.className = `p-3 rounded-xl border ${borderColor} bg-slate-950/50 flex items-start justify-between`;
-        item.innerHTML = `
-          <div class="space-y-1 pr-4">
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-bold text-slate-200">${check.name}</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}">${check.status}</span>
-            </div>
-            <p class="text-xs text-slate-400 leading-relaxed">${check.detail}</p>
+      // Update Checks
+      const checksContainer = document.getElementById('specimen-checks');
+      checksContainer.innerHTML = '';
+      data.checks.forEach(c => {
+        const checkEl = document.createElement('div');
+        const isPass = c.status === 'PASS';
+        const isFail = c.status === 'FAIL';
+        const badgeColor = isPass ? 'bg-emerald-100 text-emerald-800' : (isFail ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800');
+        
+        checkEl.className = 'p-3 rounded-lg bg-[#FAF8F5] border border-[#E8E5DF] space-y-1';
+        checkEl.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-[#1C1917]">${c.name}</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded ${badgeColor} font-bold">${c.status}</span>
           </div>
-          ${check.evidenceUrl ? `
-            <a href="${check.evidenceUrl}" target="_blank" class="text-sky-400 hover:text-sky-300 text-xs flex items-center space-x-1 shrink-0 mt-1">
-              <span>Blockscout</span>
-              <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
-          ` : ''}
+          <p class="text-[11px] text-[#78716C]">${c.detail}</p>
         `;
-        checksList.appendChild(item);
+        checksContainer.appendChild(checkEl);
       });
 
-      // Render Receipt
-      if (data.receipt) {
-        document.getElementById('receipt-id').innerText = data.receipt.receiptId;
-        document.getElementById('receipt-hash').innerText = data.receipt.integrityHash;
-        document.getElementById('receipt-time').innerText = data.receipt.isoDate;
-        const link = document.getElementById('receipt-explorer-link');
-        link.href = data.receipt.blockscoutExplorerUrl;
-      }
+      // Update Receipt
+      document.getElementById('receipt-hash').innerText = data.hash;
+      document.getElementById('explorer-link').href = data.explorerUrl;
 
       lucide.createIcons();
     }
 
-    // Run initial scenario on load
-    runScenario('legitimate-vendor');
+    // Initialize with first specimen
+    selectSpecimen('legitimate-vendor');
   </script>
 </body>
 </html>
