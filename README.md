@@ -1,137 +1,50 @@
-# 🛡️ ScoutGuard PRO — AgentFinOps Security Firewall
-> **The Missing Piece in Autonomous AI Agent Security**  
-> *Pre-Execution Security Oracle & Policy Guardrails Powered by Blockscout PRO API across 120+ EVM Chains.*
+# ScoutGuard PRO
 
-[![Blockscout PRO API](https://img.shields.io/badge/Blockscout%20PRO%20API-120%2B%20EVM%20Chains-10B981)](https://docs.blockscout.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-13%2F13%20Passing-blue)](test/scoutguard.test.ts)
-[![Live App](https://img.shields.io/badge/Production-scoutguard.vercel.app-sky)](https://scoutguard.vercel.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+Pre-signing risk checks for EVM payment agents. The service evaluates an intended native-asset transfer against Blockscout address history, reputation metadata, contract source verification, a local counterparty registry, and deterministic policy limits. It returns `PASS`, `FLAG`, or `BLOCK`; it never signs or broadcasts a transaction.
 
----
+## What works
 
-## 1. Visual Philosophy: "The Missing Piece"
+- `POST /api/evaluate` runs a live Blockscout-backed check on seven configured chains: Ethereum, Base, Arbitrum, Optimism, Celo, Polygon, and Sepolia. It blocks when required upstream data is unavailable.
+- `POST /api/simulate/:scenarioId` runs five explicitly simulated scenarios through the same decision engine using fixtures. These results are for demonstrations only.
+- The web dashboard shows the computed result, individual checks, and a local SHA-256 receipt digest. The digest is neither a signature nor an on-chain attestation.
+- The server does not enforce signing or control a wallet. The caller must check `executionAllowed`, bind the result to the exact transaction being signed, and fail closed if the service is unavailable.
 
-> *"did you think they have forgotten, about your agents?"*  
-> *"Water the Code, Guard the Treasury."*
+Source verification does not mean a contract is safe or audited. Similarity checks only compare against a configured registry; the production registry is empty until an operator supplies trusted counterparties in code. The hourly policy limit is not implemented. No claim of broad threat-feed coverage or 120-chain support is made.
 
-Autonomous AI agents execute payments without human eyes. When transacting programmatically, they possess a critical cutout hole in their security perimeter: **address poisoning attacks** and **unverified smart contract traps**. 
+## Run locally
 
-ScoutGuard PRO acts as the missing puzzle piece that restores explorer-grade sight to automated agent treasuries.
-
----
-
-## 2. The Core Problem
-
-Autonomous AI payment agents (procurement bots, automated treasury sweepers, DeFi trading agents) are transacting billions across EVM ecosystems. However, programmatic execution exposes them to severe attack vectors:
-
-1. **Address Poisoning Attacks:** Attackers generate vanity addresses sharing matching prefix and suffix characters with legitimate vendors (e.g. `0xd9A1...3a91`), dust the agent's recent history with zero-value transfers, and trick the agent or human signer into sending funds to the wrong address.
-2. **Unverified Smart Contract / Trojan Traps:** Agents calling newly deployed, unverified bytecode with hidden honeypots or drainer logic.
-3. **Phishing & Malicious Entities:** Transfers routed into wallets flagged across threat databases.
-4. **Runaway Agent Spending:** Lack of deterministic hard limits and human-in-the-loop quarantine thresholds.
-
----
-
-## 3. How Any AI Agent Integrates in 3 Lines of Code
-
-ScoutGuard PRO drops directly into any AI agent framework (ElizaOS, LangChain, AutoGPT, Viem, Ethers):
-
-```typescript
-import { ScoutGuard } from '@scoutguard/sdk';
-
-// 1. Pre-flight evaluation against Blockscout PRO API before signing
-const inspection = await ScoutGuard.evaluateTransaction(txCandidate);
-
-// 2. Enforce deterministic fail-closed safety gate
-if (!inspection.executionAllowed) throw new Error(inspection.reasons[0]);
-
-// 3. Safe to broadcast with cryptographic audit proof
-await agentWallet.sendTransaction(txCandidate);
-```
-
-### ElizaOS Agent Action Plugin
-```typescript
-export const ScoutGuardAction: Action = {
-  name: "VALIDATE_AND_EXECUTE_PAYMENT",
-  handler: async (runtime, message, state) => {
-    const inspection = await ScoutGuard.evaluateTransaction(message.tx);
-    if (!inspection.executionAllowed) {
-      return { success: false, reason: `BLOCKED: ${inspection.reasons[0]}` };
-    }
-    return await executeOnChainPayment(message.tx);
-  }
-};
-```
-
----
-
-## 4. Architecture & Blockscout PRO API Integration
-
-```
-[ Autonomous AI Agent / Bot ]
-             │
-             ▼ (Pre-Flight Tx Candidate)
-┌────────────────────────────────────────────────────────┐
-│                   SCOUTGUARD PRO                       │
-│                                                        │
-│  1. Poisoning Detector: Vanity Collision Algorithm     │
-│  2. Contract Gate: Bytecode Verification & Threat Feed │
-│  3. Policy Engine: Deterministic Spending Limits       │
-│  4. Receipt Signer: Cryptographic SHA-256 Receipts     │
-└────────────────────────────────────────────────────────┘
-             │ (Load-Bearing Queries)
-             ▼
-┌────────────────────────────────────────────────────────┐
-│               BLOCKSCOUT PRO API                       │
-│  • /api/v2/addresses/{addr}/counters                   │
-│  • /api/v2/addresses/{addr} (Reputation & Tags)        │
-│  • module=contract&action=getsourcecode                │
-│  • module=gastracker&action=gasoracle                  │
-└────────────────────────────────────────────────────────┘
-             │
-             ▼ (Deterministic Decision)
-  ┌──────────────────┬───────────────────┬──────────────────┐
-  │   PASS (Green)   │   FLAG (Amber)    │   BLOCK (Red)    │
-  │ Broadcast Signed │ Quarantine Gate   │ Fail-Closed Halt │
-  └──────────────────┴───────────────────┴──────────────────┘
-```
-
----
-
-## 5. Live On-Chain Proofs & Blockscout Verifications
-
-Every check in ScoutGuard is verifiable against real, live EVM explorer data:
-
-| Network | Contract / Address / Tx Hash | Type | Blockscout Verification Link |
-| :--- | :--- | :---: | :--- |
-| **Base Mainnet (8453)** | `0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43` | Confirmed Tx | [View on Base Blockscout](https://base.blockscout.com/tx/0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43) |
-| **Base Mainnet (8453)** | `0x2626664c2603336E57B271c5C0b26F421741e481` | Uniswap V3 Router | [Inspect Source Code](https://base.blockscout.com/address/0x2626664c2603336E57B271c5C0b26F421741e481) |
-| **Ethereum (1)** | `0xd9A100913988f5CDbC328E07b8e5c14a60153a91` | Verified Vendor | [Inspect on Ethereum Blockscout](https://eth.blockscout.com/address/0xd9A100913988f5CDbC328E07b8e5c14a60153a91) |
-| **Ethereum (1)** | Real-Time Gas Oracle Feed | Gas Tracker | [Open Blockscout Hub](https://eth.blockscout.com) |
-
----
-
-## 6. Verification & Automated Tests
-
-Run the test suite to verify all 13 security invariants:
+Requires Node.js 22+.
 
 ```bash
-npm install
-npx tsx --test test/scoutguard.test.ts
+npm ci
+npm run build
+npm test
+npm start
 ```
 
-All 13 unit, integration, and invariant tests pass cleanly:
-- `PoisoningDetector`: Exact vendor match $\to$ `CLEAN`; Vanity collision spoof $\to$ `CRITICAL`.
-- `ContractVerificationGate`: Scam feed tag $\to$ `FAIL`; EOA $\to$ `PASS`; Unverified contract $\to$ `WARN`.
-- `PolicyEngine`: Within cap $\to$ `PASS`; Over hard limit $\to$ `FAIL`; Above human threshold $\to$ `WARN`.
-- `ReceiptSigner`: Valid SHA-256 integrity hash and Blockscout URL.
-- `ScoutGuard Orchestrator`: Invariant 1 (Address Poisoning Blocked) & Invariant 2 (Legitimate Vendor Passed).
+Open `http://localhost:3030`. The dashboard demo works without a Blockscout key. Live evaluations may return `BLOCK` if public Blockscout endpoints reject or time out. Set `BLOCKSCOUT_API_KEY` in the environment to use the authenticated PRO gateway. Keep keys on the server. A local authenticated Ethereum evaluation passed on 2026-10-20; Base returned HTTP 402 because chain 8453 requires a paid Blockscout plan for this key. Chain access depends on your plan.
 
----
+For local setup, copy `.env.example` to `.env` and fill in `BLOCKSCOUT_API_KEY`. The server loads `.env` automatically. `.env` is Git-ignored. Generate your own long random `SCOUTGUARD_SERVICE_KEY` for a protected live endpoint; it is not issued by Blockscout. Never put either value in browser code, a Git commit, a screenshot, or a chat message.
 
-## 7. Local Development
+On Windows hosts whose Node trust store does not recognize the system certificate authority, run with `NODE_OPTIONS=--use-system-ca`. Keep TLS verification enabled.
+
+## Evaluate a live candidate
 
 ```bash
-# Start local server & simulation studio:
-npm run dev
-# -> Opens http://localhost:3030
+curl -X POST http://localhost:3030/api/evaluate \
+  -H 'Content-Type: application/json' \
+  -H 'x-scoutguard-key: YOUR_SERVICE_KEY' \
+  -d '{"from":"0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be","to":"0x2626664c2603336e57b271c5c0b26f421741e481","value":"0.1","chainId":8453,"agentId":"procurement-bot-01"}'
 ```
+
+`value` is a decimal amount in the chain's native unit, up to 18 decimal places. No ERC-20 amount conversion or calldata inspection is implemented. The service key header is required when `SCOUTGUARD_SERVICE_KEY` is set, and that variable is mandatory in production. Requests are limited to 60 per minute per client IP in a single process. Put an authenticated reverse proxy and shared rate limiter in front of a scaled deployment.
+
+## Deployment
+
+The checked-in Dockerfile builds TypeScript and local Tailwind CSS, then runs the API and dashboard in one Node service. Production startup requires both `SCOUTGUARD_SERVICE_KEY` and `BLOCKSCOUT_API_KEY`; supply them using the deployment platform's secret manager. Do not set `NODE_TLS_REJECT_UNAUTHORIZED=0`. The old static Vercel configuration was removed because it could not serve the API.
+
+The authenticated Ethereum PRO evaluation was verified locally; public deployment and Docker image execution were not. See [submission status](docs/build-harness/12_submission-map.md), [sanitized evidence](docs/evidence/2026-10-20-pro-ethereum.md), and [test plan](docs/build-harness/08_test-plan.md) before claiming production or hackathon completion.
+
+## License
+
+No license file is currently included. Confirm the intended license before public reuse.

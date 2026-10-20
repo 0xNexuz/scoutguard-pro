@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@source "./index.html";
+@source "./app.js";
+@theme {
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}

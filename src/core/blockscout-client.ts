@@ -62,21 +62,23 @@ export const SUPPORTED_CHAINS: Record<number, ChainConfig> = {
 
 export class BlockscoutClient {
   private apiKey: string;
-  private proApiBase: string;
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.BLOCKSCOUT_API_KEY || '';
-    this.proApiBase = 'https://api.blockscout.com/v2/api';
+  }
+
+  private v2Url(chainId: number, route: string): string {
+    const chain = this.getChainConfig(chainId);
+    const base = this.apiKey ? `https://api.blockscout.com/${chainId}` : chain.baseUrl;
+    const url = new URL(`api/v2/${route}`, `${base}/`);
+    if (this.apiKey) url.searchParams.set('apikey', this.apiKey);
+    return url.toString();
   }
 
   public getChainConfig(chainId: number): ChainConfig {
-    return SUPPORTED_CHAINS[chainId] || {
-      chainId,
-      name: `EVM Chain ${chainId}`,
-      baseUrl: 'https://eth.blockscout.com',
-      apiUrl: 'https://eth.blockscout.com/api',
-      currency: 'ETH'
-    };
+    const chain = SUPPORTED_CHAINS[chainId];
+    if (!chain) throw new Error(`Unsupported chain ID: ${chainId}`);
+    return chain;
   }
 
   public getExplorerAddressUrl(chainId: number, address: string): string {
@@ -93,34 +95,34 @@ export class BlockscoutClient {
    * Fetches address transaction counters from Blockscout
    */
   public async getAddressCounters(chainId: number, address: string): Promise<AddressCounterData> {
-    const chain = this.getChainConfig(chainId);
-    const endpoint = `${chain.baseUrl}/api/v2/addresses/${address}/counters`;
+    const endpoint = this.v2Url(chainId, `addresses/${address}/counters`);
 
     try {
       const response = await fetch(endpoint, {
-        headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(12000)
       });
 
       if (response.ok) {
         const data = await response.json();
+        if (data.transactions_count === undefined || data.token_transfers_count === undefined) {
+          throw new Error('Malformed counters response');
+        }
+        const transactionsCount = Number(data.transactions_count);
+        const tokenTransfersCount = Number(data.token_transfers_count);
+        if (!Number.isSafeInteger(transactionsCount) || !Number.isSafeInteger(tokenTransfersCount)) {
+          throw new Error('Invalid counters values');
+        }
         return {
-          transactionsCount: parseInt(data.transactions_count || '0', 10),
-          tokenTransfersCount: parseInt(data.token_transfers_count || '0', 10),
+          transactionsCount,
+          tokenTransfersCount,
           gasUsageCount: parseInt(data.gas_usage_count || '0', 10),
           isContract: false // Address details endpoint clarifies this
         };
       }
-    } catch {
-      // Fallback or network error
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      throw new Error(`Blockscout counters unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    return {
-      transactionsCount: 0,
-      tokenTransfersCount: 0,
-      gasUsageCount: 0,
-      isContract: false
-    };
   }
 
   /**
@@ -133,17 +135,16 @@ export class BlockscoutClient {
     tags: string[];
     reputationScore: number;
   }> {
-    const chain = this.getChainConfig(chainId);
-    const endpoint = `${chain.baseUrl}/api/v2/addresses/${address}`;
+    const endpoint = this.v2Url(chainId, `addresses/${address}`);
 
     try {
       const response = await fetch(endpoint, {
-        headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(12000)
       });
 
       if (response.ok) {
         const data = await response.json();
+        if (typeof data.is_contract !== 'boolean') throw new Error('Malformed address details response');
         const tags: string[] = [];
         if (data.public_tags) {
           tags.push(...data.public_tags.map((t: { label?: string; tag?: string }) => t.label || t.tag || ''));
@@ -162,89 +163,38 @@ export class BlockscoutClient {
           reputationScore: isScam ? 0 : (data.is_verified ? 95 : 60)
         };
       }
-    } catch {
-      // Network fallback
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      throw new Error(`Blockscout address details unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    return {
-      isContract: false,
-      isScamOrPhishing: false,
-      tags: [],
-      reputationScore: 50
-    };
   }
 
   /**
    * Inspects smart contract verification and source code status
    */
   public async getContractSecurity(chainId: number, address: string): Promise<ContractSecurityData> {
-    const chain = this.getChainConfig(chainId);
-    const endpoint = `${chain.apiUrl}?module=contract&action=getsourcecode&address=${address}${this.apiKey ? `&apikey=${this.apiKey}` : ''}`;
+    const endpoint = this.v2Url(chainId, `smart-contracts/${address}`);
 
     try {
       const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(12000)
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.status === '1' && Array.isArray(data.result) && data.result.length > 0) {
-          const item = data.result[0];
-          const hasSource = Boolean(item.SourceCode && item.SourceCode !== '');
-          const isProxy = Boolean(item.Proxy === '1' || item.Implementation);
-
-          return {
-            isContract: true,
-            isVerified: hasSource,
-            contractName: item.ContractName || undefined,
-            hasProxyPattern: isProxy,
-            isScamOrPhishing: false
-          };
-        }
+        return {
+          isContract: true,
+          isVerified: Boolean(data.is_verified || data.source_code),
+          contractName: data.name || undefined,
+          hasProxyPattern: Boolean(data.is_proxy || data.implementations?.length),
+          isScamOrPhishing: false
+        };
       }
-    } catch {
-      // Network fallback
+      if (response.status === 404) return { isContract: true, isVerified: false };
+      throw new Error(`HTTP ${response.status} or invalid contract response`);
+    } catch (error) {
+      throw new Error(`Blockscout contract data unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    return {
-      isContract: false,
-      isVerified: false
-    };
   }
 
-  /**
-   * Queries real-time gas tracker oracle
-   */
-  public async getGasOracle(chainId: number): Promise<{
-    safeGasPrice: string;
-    proposeGasPrice: string;
-    fastGasPrice: string;
-  }> {
-    const chain = this.getChainConfig(chainId);
-    const endpoint = `${chain.apiUrl}?module=gastracker&action=gasoracle${this.apiKey ? `&apikey=${this.apiKey}` : ''}`;
-
-    try {
-      const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(3000)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === '1' && data.result) {
-          return {
-            safeGasPrice: data.result.SafeGasPrice || '15',
-            proposeGasPrice: data.result.ProposeGasPrice || '20',
-            fastGasPrice: data.result.FastGasPrice || '25'
-          };
-        }
-      }
-    } catch {
-      // Fallback
-    }
-
-    return {
-      safeGasPrice: '20',
-      proposeGasPrice: '25',
-      fastGasPrice: '30'
-    };
-  }
 }

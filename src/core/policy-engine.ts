@@ -51,10 +51,9 @@ export class PolicyEngine {
   }
 
   public getPolicy(agentId?: string): AgentPolicyConfig {
-    if (agentId && this.policies.has(agentId)) {
-      return this.policies.get(agentId)!;
-    }
-    return this.policies.get('procurement-bot-01')!;
+    const policy = this.policies.get(agentId || 'procurement-bot-01');
+    if (!policy) throw new Error(`Unknown agent policy: ${agentId}`);
+    return policy;
   }
 
   /**
@@ -65,7 +64,10 @@ export class PolicyEngine {
     explorerUrl: string
   ): SecurityCheckResult {
     const policy = this.getPolicy(tx.agentId);
-    const valueNum = parseFloat(tx.value) || 0;
+    const valueNum = Number(tx.value);
+    if (!Number.isFinite(valueNum) || valueNum < 0 || !/^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(tx.value)) {
+      throw new Error('Invalid native transaction amount');
+    }
 
     // 1. Allowed chain check
     if (!policy.allowedChains.includes(tx.chainId)) {
@@ -174,7 +176,7 @@ export class PolicyEngine {
     return {
       decision: 'PASS',
       riskScore,
-      reasons: ['All Blockscout PRO and policy security checks passed successfully.'],
+      reasons: ['All supplied address-data and policy checks passed. This is not a guarantee of transaction safety.'],
       suggestedAction: 'SIGN_AND_BROADCAST',
       executionAllowed: true
     };

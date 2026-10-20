@@ -5,28 +5,28 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Project Identity
 
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
-- **Repository:** `C:/Users/USER/.gemini/antigravity/scratch/scoutguard`
+- **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** VERIFICATION / READINESS
-- **Overall status:** VERIFIED
+- **Current workflow stage:** DEVELOPMENT / SUBMISSION_PREPARATION
+- **Overall status:** PARTIAL — local mechanism and authenticated Ethereum PRO integration verified; deployment and public submission pending
 - **Last updated date:** 2026-10-20
 
 ## Git State
 
-- **Branch:** main / uninitialized local git
-- **HEAD:** initial
-- **Working tree:** clean
-- **Relevant remote or PR:** None (Local hackathon development)
-- **Last verified milestone:** Milestone 6 (Full MVP Implementation & Invariant Verification)
+- **Branch:** main
+- **HEAD:** `1584646` at clone
+- **Working tree:** uncommitted implementation and documentation changes from this task
+- **Relevant remote or PR:** `origin` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
+- **Last verified milestone:** Local build, 17 tests, and authenticated Ethereum PRO evaluation (2026-10-20)
 
 ## Hackathon Context
 
-- **Competition:** Blockscout PRO API Buildathon (Sprint 2)
+- **Competition:** Blockscout PRO API Buildathon (currently Sprint 1)
 - **Organizer:** Blockscout Core Team
 - **Platform:** Craftora (`craftora.tech`)
-- **Prizes:** $1,200 USDC
+- **Prizes:** Up to $1,200 equivalent in PRO API credits per official brief (page badge is inconsistent)
 - **Eligibility:** 1 to 4 Devs, EVM builders
-- **Official source links:** https://craftora.tech, https://docs.blockscout.com/
+- **Official source links:** https://www.craftora.tech/sprints/blockscout-pro-api-buildathon/ and https://docs.blockscout.com/
 
 ## Strategic Decisions
 
@@ -47,7 +47,7 @@ Keep this file concise and evidence-based. Update current state in place, append
   - `ReceiptSigner`: Generates immutable audit receipts with Blockscout explorer links.
   - `Interactive Dashboard`: High-conversion UI showing live simulations and real address audits.
 - **Required integrations:** Blockscout PRO API (`/v2/api` and REST endpoints, multi-chain address counters, contract verification).
-- **Security assumptions:** Fail-closed design (if Blockscout or network is unreachable or an address is flagged, transactions block or quarantine, never blindly pass).
+- **Security assumptions:** Blockscout failure returns `BLOCK`; caller must enforce the returned decision and bind it to the exact transaction. The server does not sign or broadcast.
 
 ## Development Progress
 
@@ -59,20 +59,20 @@ Keep this file concise and evidence-based. Update current state in place, append
   - M5: Interactive Verification & Attack Simulation Web Dashboard
   - M6: Automated Test Suite & Proof of Verification
 - **Completed features:**
-  - [x] M1: Core Blockscout PRO API Client with 120+ EVM chain support (Ethereum, Base, Arbitrum, Optimism, Celo, Polygon, Sepolia)
+  - [x] M1: Blockscout API client for seven configured EVM chains; authenticated Ethereum PRO calls verified locally, Base gated by plan
   - [x] M2: Address Poisoning & Vanity Collision Detector (prefix & suffix collision algorithms)
-  - [x] M3: Contract Verification Gate & Phishing Threat Intelligence feed
-  - [x] M4: Deterministic Policy Firewall (hard caps, human approval gate) & SHA-256 Receipt Signer
-  - [x] M5: Full-stack interactive simulation & live auditor dashboard at `http://localhost:3030`
-  - [x] M6: Automated security test suite with 13/13 passing invariant tests
-- **Implemented but unverified:** None
-- **Pending features:** None (Core MVP complete)
-- **P0 priorities:** Core security oracle, address poisoning detection, Blockscout PRO API client, automated test suite — ALL SATISFIED.
-- **P1 priorities:** Interactive simulation web studio, audit receipt generator — ALL SATISFIED.
-- **P2 priorities:** Standalone agent SDK wrapper — Implemented in `src/core/scoutguard.ts`.
-- **P3 priorities:** UI visual polish — Completed in `public/index.html`.
-- **Current milestone:** Milestone 6 Complete
-- **Known blockers:** None
+  - [x] M3: Contract source verification and address tag checks; broad threat-feed coverage unverified
+  - [x] M4: Per-transaction hard cap, `FLAG` decision, and local SHA-256 digest; no human approval workflow or signed receipt
+  - [x] M5: Local full-stack fixture simulation dashboard; live Ethereum auditor verified through local HTTP
+  - [x] M6: 17 passing local tests after hardening; no deployed end-to-end proof
+- **Implemented but unverified:** Container deployment and deployed browser behavior.
+- **Pending features:** Live deployment and browser verification, demo recording, project submission; hourly volume enforcement and human approval workflow remain unimplemented.
+- **P0 priorities:** Package a working public demo and submit before Sprint 1 closes.
+- **P1 priorities:** Production integration contract and transaction binding; browser/deployment verification.
+- **P2 priorities:** Standalone SDK is not published.
+- **P3 priorities:** Further visual polish after proof gates.
+- **Current milestone:** Local PRO integration verified; deployment and submission drafts in progress.
+- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. No authorized deployment, push, or submission.
 
 ## Verification
 
@@ -85,13 +85,24 @@ Keep this file concise and evidence-based. Update current state in place, append
 | 2026-10-20 | TypeScript Compilation (`npm run build`) | Local Windows PowerShell | VERIFIED | `tsc` exited with code 0, 0 compiler errors |
 | 2026-10-20 | Security Test Suite (`npx tsx --test test/scoutguard.test.ts`) | Local Windows PowerShell | VERIFIED | 13/13 unit and invariant tests passing (0 failures) |
 | 2026-10-20 | Server Startup & Health Check (`/api/health`) | Local Windows PowerShell | VERIFIED | Server started on port 3030, status: ONLINE, blockscoutIntegration: ACTIVE |
+| 2026-10-20 | `npm ci`, `npm run build`, `npm test` | Current local checkout | VERIFIED | 16 tests passed; Tailwind built locally |
+| 2026-10-20 | Local HTTP smoke check on port 3038 | Current local checkout | VERIFIED | health ONLINE, simulated poisoning BLOCK, simulated vendor PASS, malformed evaluate 400 |
+| 2026-10-20 | Live no-key Base evaluation | Current local checkout | BLOCKED | Blockscout counters returned HTTP 403; engine returned fail-closed BLOCK |
+| 2026-10-20 | `npm audit fix`, audit | Current local checkout | VERIFIED | 0 vulnerabilities after lockfile update |
+| 2026-10-20 | Browser inspection | Local in-app browser | VERIFIED | Mobile layout, demo jump link, scenario switching and simulated label |
+| 2026-10-20 | Docker build | Current host | BLOCKED | Docker executable unavailable |
+| 2026-10-20 | `npm run build`, `npm test` after PRO URL fix | Current local checkout | VERIFIED | 17 tests passed, including chain-scoped PRO URL regression |
+| 2026-10-20 | Authenticated Blockscout PRO request | Ethereum chain 1, local | VERIFIED | Address details and counters returned HTTP 200; sanitized evidence in `docs/evidence/2026-10-20-pro-ethereum.md` |
+| 2026-10-20 | Authenticated live evaluation | Ethereum chain 1, local | VERIFIED | `PASS`, `executionAllowed: true`, three check IDs; no transaction signed or broadcast |
+| 2026-10-20 | Authenticated Base PRO request | Base chain 8453, local | BLOCKED BY PLAN | HTTP 402; Builder, Business, or Pro plan required |
+| 2026-10-20 | Production-mode local HTTP smoke check | Port 3039, local | VERIFIED | 401 without service key; `PASS` with service key |
 
 ### Integration and Evidence Status
 
-- **Real integrations:** Blockscout PRO API endpoints across 120+ EVM chains (Ethereum, Base, Arbitrum, Optimism, Celo, Polygon, Sepolia).
-- **Simulated functionality:** 5 deterministic simulation scenarios for repeatable judge demos (Legitimate Vendor, Address Poisoning, Unverified Trojan Contract, Phishing Drainer, Spending Cap Breach).
-- **Verified evidence links:** Generated on every transaction evaluation (pointing to `https://eth.blockscout.com`, `https://base.blockscout.com`, etc.).
-- **Unverified claims:** None.
+- **Real integrations:** Authenticated PRO gateway and local evaluation verified on Ethereum chain 1. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
+- **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
+- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`. Explorer URLs in responses are navigation links, not transaction proofs or independent verification.
+- **Unverified claims:** Deployed service, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution.
 
 ## Decision Log
 
@@ -114,7 +125,21 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Launch `npm run dev` to showcase the interactive dashboard at `http://localhost:3030` or record demo walkthrough.
-- **Next authorized action:** Presentation to user and readiness check.
-- **Next approved milestone:** READINESS / SUBMISSION_PREPARATION.
+- **Next recommended action:** Deploy the complete service with secrets, verify a public live flow, and record a short demo.
+- **Next authorized action:** Continue local hardening and evidence preparation; external push/deployment/submission require separate authorization.
+- **Next approved milestone:** Complete Sprint 1 evidence gates.
 - **Approval boundary:** External deployment, submission, or pushing to remote git repository requires explicit user consent.
+
+### 2026-10-20 — Evidence correction and local hardening
+
+- **Decision:** Treat the earlier “MVP verified / submission ready” narrative as historical and unsupported for live PRO and production use. Preserve its record above, but use the corrected current status and build-harness evidence.
+- **Reason:** Repository inspection found silent upstream fallbacks, hardcoded UI outcomes, simulated phishing overrides, a static-only deployment config, and unsupported claims.
+- **Evidence:** Current local build, 16 tests, HTTP smoke check; real no-key Blockscout request returned 403.
+- **Status:** VERIFIED locally / BLOCKED for live PRO and submission.
+
+### 2026-10-20 — Authenticated Ethereum PRO evaluation
+
+- **Decision:** Use Ethereum chain 1 as the live evidence path for this key; keep Base marked plan-gated.
+- **Reason:** The authenticated PRO gateway returned HTTP 200 for Ethereum address detail and counters, while Base returned HTTP 402 requiring a paid tier. A chain-scoped URL bug was fixed and protected by a regression test.
+- **Evidence:** 17 passing tests, local authenticated `PASS` evaluation, and production-mode local HTTP check with 401 unauthenticated / `PASS` authenticated. Sanitized details are in `docs/evidence/2026-10-20-pro-ethereum.md`.
+- **Status:** VERIFIED locally; public deployment, recording, push, and submission pending.

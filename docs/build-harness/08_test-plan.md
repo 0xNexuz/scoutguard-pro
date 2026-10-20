@@ -1,0 +1,5 @@
+# Test plan
+
+Executed on 2026-10-20: `npm ci`, `npm run build`, `npm test` (17 passed after the PRO URL regression test), `node --check public/app.js`, `git diff --check`, local health/all five demo routes/API validation checks, mobile browser inspection and scenario switching, and `npm audit` (0 vulnerabilities after lockfile update). A no-key Base evaluation returned HTTP 403 and a fail-closed `BLOCK`. With the supplied key, Ethereum PRO address detail and counters returned HTTP 200 and a local evaluation returned `PASS`. A production-mode local HTTP check returned 401 without the service key and `PASS` with it. Base returned HTTP 402 due to the key's plan. Docker build was not run because Docker is unavailable on this host.
+
+Before claiming submission readiness: run `npm ci && npm run build && npm test` on a clean checkout; compare live response fields with Blockscout Explorer; verify auth and rate limits in a deployed environment; test desktop and mobile browser flows there; build and health-check the Docker image; inspect logs for leaked keys. A real signing-agent integration is still needed before production use.

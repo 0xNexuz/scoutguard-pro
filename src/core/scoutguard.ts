@@ -1,8 +1,9 @@
-import { BlockscoutClient } from './blockscout-client.js';
+import { BlockscoutClient, SUPPORTED_CHAINS } from './blockscout-client.js';
 import { PoisoningDetector } from './poisoning-detector.js';
 import { ContractVerificationGate } from './contract-gate.js';
 import { PolicyEngine } from './policy-engine.js';
 import { ReceiptSigner } from './receipt-signer.js';
+import { isAddress } from 'ethers';
 import {
   TransactionCandidate,
   EvaluationResult,
@@ -21,44 +22,15 @@ export class ScoutGuard {
   constructor(options?: {
     apiKey?: string;
     customCounterparties?: KnownCounterparty[];
+    blockscoutClient?: BlockscoutClient;
   }) {
-    this.blockscout = new BlockscoutClient(options?.apiKey);
+    this.blockscout = options?.blockscoutClient || new BlockscoutClient(options?.apiKey);
     this.poisoningDetector = new PoisoningDetector();
     this.contractGate = new ContractVerificationGate();
     this.policyEngine = new PolicyEngine();
     this.receiptSigner = new ReceiptSigner();
 
-    // Default registered legitimate counterparties
-    this.knownCounterparties = options?.customCounterparties || [
-      {
-        address: '0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
-        name: 'Acme Cloud Compute & Hardware',
-        category: 'VENDOR',
-        verifiedSince: '2024-03-15',
-        totalTransfers: 142
-      },
-      {
-        address: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-        name: '1inch Aggregator Router v5',
-        category: 'CONTRACT',
-        verifiedSince: '2022-11-10',
-        totalTransfers: 184500
-      },
-      {
-        address: '0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5',
-        name: 'ENS Registrar Controller',
-        category: 'CONTRACT',
-        verifiedSince: '2020-05-04',
-        totalTransfers: 920400
-      },
-      {
-        address: '0x4200000000000000000000000000000000000006',
-        name: 'Base WETH Deposit Bridge',
-        category: 'TREASURY',
-        verifiedSince: '2023-08-01',
-        totalTransfers: 3500000
-      }
-    ];
+    this.knownCounterparties = options?.customCounterparties ?? [];
   }
 
   public getKnownCounterparties(): KnownCounterparty[] {
@@ -74,15 +46,23 @@ export class ScoutGuard {
    */
   public async evaluateTransaction(tx: TransactionCandidate): Promise<EvaluationResult> {
     const checks: SecurityCheckResult[] = [];
-    const explorerUrl = this.blockscout.getExplorerAddressUrl(tx.chainId, tx.to);
+    const valid = isAddress(tx.to) && isAddress(tx.from) &&
+      typeof tx.value === 'string' && /^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(tx.value) &&
+      Number.isFinite(Number(tx.value)) && Number.isSafeInteger(tx.chainId) &&
+      !tx.tokenAddress && !tx.data;
+    const explorerUrl = valid && SUPPORTED_CHAINS[tx.chainId]
+      ? this.blockscout.getExplorerAddressUrl(tx.chainId, tx.to) : '';
 
     try {
-      // 1. Fetch live or fallback data from Blockscout PRO API
-      const [counters, details, contractSecurity] = await Promise.all([
+      if (!valid || !SUPPORTED_CHAINS[tx.chainId]) throw new Error('Invalid transaction candidate or unsupported chain');
+      // A missing upstream response must never be interpreted as clean history.
+      const [counters, details] = await Promise.all([
         this.blockscout.getAddressCounters(tx.chainId, tx.to),
-        this.blockscout.getAddressDetails(tx.chainId, tx.to),
-        this.blockscout.getContractSecurity(tx.chainId, tx.to)
+        this.blockscout.getAddressDetails(tx.chainId, tx.to)
       ]);
+      const contractSecurity = details.isContract
+        ? await this.blockscout.getContractSecurity(tx.chainId, tx.to)
+        : { isContract: false, isVerified: false };
 
       // 2. Check 1: Address Poisoning & Vanity Collision
       const poisoningCheck = this.poisoningDetector.evaluatePoisoningRisk(

@@ -31,7 +31,7 @@ export class PoisoningDetector {
           matchedVendor: vendor,
           prefixMatchLength: 40,
           suffixMatchLength: 40,
-          explanation: `Exact match with known verified vendor: ${vendor.name}`
+          explanation: `Exact match with registered counterparty: ${vendor.name}`
         };
       }
 
@@ -93,8 +93,7 @@ export class PoisoningDetector {
 
   /**
    * Correlates vanity collision findings with Blockscout PRO API address counter metrics.
-   * If an address mimics a known vendor but has near-zero transactions on Blockscout,
-   * confidence of malicious poisoning reaches 99.9%.
+   * Recent or absent history can increase concern but does not prove intent.
    */
   public evaluatePoisoningRisk(
     candidateAddress: string,
@@ -113,7 +112,7 @@ export class PoisoningDetector {
         name: 'Address Poisoning / Vanity Collision',
         status: 'FAIL',
         scoreImpact,
-        detail: `${vanityResult.explanation} (Blockscout History: ${counterData.transactionsCount} txs, ${counterData.tokenTransfersCount} transfers). Address is an unverified spoof.`,
+        detail: `${vanityResult.explanation} (Blockscout History: ${counterData.transactionsCount} txs, ${counterData.tokenTransfersCount} transfers). Treat as a potential look-alike until independently verified.`,
         evidenceUrl: explorerUrl,
         metadata: {
           matchedVendor: vanityResult.matchedVendor?.name,
@@ -149,7 +148,7 @@ export class PoisoningDetector {
         name: 'Counterparty Authenticity',
         status: 'PASS',
         scoreImpact: 0,
-        detail: `Verified authentic destination for ${vanityResult.matchedVendor.name}.`,
+        detail: `Exact match with registered counterparty ${vanityResult.matchedVendor.name}.`,
         evidenceUrl: explorerUrl,
         metadata: {
           matchedVendor: vanityResult.matchedVendor.name,

@@ -57,7 +57,7 @@ export class ContractVerificationGate {
       name: 'Contract Verification & Integrity',
       status: 'PASS',
       scoreImpact: 0,
-      detail: `Verified smart contract on Blockscout (${contractData.contractName || 'Verified Contract'}). Open source audited.`,
+        detail: `Source-verified smart contract on Blockscout (${contractData.contractName || 'Verified Contract'}). Verification does not establish safety or an audit.`,
       evidenceUrl: explorerUrl,
       metadata: {
         contractName: contractData.contractName,

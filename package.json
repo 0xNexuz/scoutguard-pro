@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tailwindcss -i public/styles.src.css -o public/styles.css --minify",
     "start": "node dist/server/index.js",
     "dev": "tsx watch src/server/index.ts",
-    "test": "node --test --loader ts-node/esm test/**/*.test.ts"
+    "test": "tsx --test test/*.test.ts"
   },
   "keywords": [
     "blockscout",
@@ -23,11 +23,14 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.1"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.2",
+    "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"

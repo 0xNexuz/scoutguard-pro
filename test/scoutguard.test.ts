@@ -5,9 +5,17 @@ import { ContractVerificationGate } from '../src/core/contract-gate.js';
 import { PolicyEngine } from '../src/core/policy-engine.js';
 import { ReceiptSigner } from '../src/core/receipt-signer.js';
 import { ScoutGuard } from '../src/core/scoutguard.js';
+import { BlockscoutClient } from '../src/core/blockscout-client.js';
 import { KnownCounterparty, TransactionCandidate } from '../src/types/index.js';
 
 describe('ScoutGuard PRO — Automated Security Test Suite', () => {
+
+  it('routes authenticated PRO requests through the selected chain ID', () => {
+    const client = new BlockscoutClient('test-key');
+    const url = (client as any).v2Url(8453, 'addresses/0x0000000000000000000000000000000000000000');
+    assert.ok(url.startsWith('https://api.blockscout.com/8453/api/v2/addresses/'));
+    assert.strictEqual(new URL(url).searchParams.get('apikey'), 'test-key');
+  });
 
   const knownVendor: KnownCounterparty = {
     address: '0xd9A100913988f5CDbC328E07b8e5c14a60153a91',
@@ -161,12 +169,16 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
   });
 
   describe('5. ScoutGuard Orchestrator — End-to-End Invariants', () => {
-    const guard = new ScoutGuard();
+    const fixtureClient = Object.assign(new BlockscoutClient(), {
+      getAddressCounters: async () => ({ transactionsCount: 142, tokenTransfersCount: 25, gasUsageCount: 0, isContract: false }),
+      getAddressDetails: async () => ({ isContract: false, isScamOrPhishing: false, tags: [], reputationScore: 60 })
+    });
+    const guard = new ScoutGuard({ blockscoutClient: fixtureClient, customCounterparties: [knownVendor] });
 
     it('INVARIANT 1: Address poisoning attack MUST be intercepted and BLOCKED', async () => {
       const poisonTx: TransactionCandidate = {
-        from: '0xAgent',
-        to: '0xd9A1846b801a2E3cD49e917A00bB9e22e9283a91', // Spoofed look-alike
+        from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
+        to: '0xd9a1846b801a2e3cd49e917a00bb9e22e9283a91', // Spoofed look-alike
         value: '0.5',
         chainId: 8453,
         agentId: 'procurement-bot-01'
@@ -182,8 +194,8 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
 
     it('INVARIANT 2: Legitimate vendor payment MUST PASS with executionAllowed=true', async () => {
       const validTx: TransactionCandidate = {
-        from: '0xAgent',
-        to: '0xd9A100913988f5CDbC328E07b8e5c14a60153a91', // Exact authentic Acme Cloud
+        from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
+        to: '0xd9a100913988f5cdbc328e07b8e5c14a60153a91', // Exact demo vendor
         value: '0.5',
         chainId: 8453,
         agentId: 'procurement-bot-01'
@@ -194,6 +206,39 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
       assert.strictEqual(result.executionAllowed, true);
       assert.strictEqual(result.suggestedAction, 'SIGN_AND_BROADCAST');
       assert.strictEqual(result.riskScore, 0);
+    });
+
+    it('INVARIANT 3: unavailable Blockscout data MUST BLOCK', async () => {
+      const unavailable = Object.assign(new BlockscoutClient(), {
+        getAddressCounters: async () => { throw new Error('upstream unavailable'); },
+        getAddressDetails: async () => ({ isContract: false, isScamOrPhishing: false, tags: [], reputationScore: 60 })
+      });
+      const result = await new ScoutGuard({ blockscoutClient: unavailable }).evaluateTransaction({
+        from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
+        to: knownVendor.address.toLowerCase(), value: '0.5', chainId: 8453
+      });
+      assert.strictEqual(result.decision, 'BLOCK');
+      assert.strictEqual(result.executionAllowed, false);
+      assert.strictEqual(result.checks[0].id, 'SEC-FAIL-CLOSED');
+    });
+
+    it('INVARIANT 4: unsupported transaction calldata MUST NOT PASS', async () => {
+      const result = await guard.evaluateTransaction({
+        from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
+        to: knownVendor.address.toLowerCase(), value: '0.5', chainId: 8453, data: '0xabcdef'
+      });
+      assert.strictEqual(result.decision, 'BLOCK');
+      assert.strictEqual(result.executionAllowed, false);
+    });
+
+    it('INVARIANT 5: unknown agent policy MUST NOT inherit a default policy', async () => {
+      const result = await guard.evaluateTransaction({
+        from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
+        to: knownVendor.address.toLowerCase(), value: '0.5', chainId: 8453,
+        agentId: 'unregistered-agent'
+      });
+      assert.strictEqual(result.decision, 'BLOCK');
+      assert.strictEqual(result.executionAllowed, false);
     });
   });
 
