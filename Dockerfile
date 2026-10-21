@@ -17,4 +17,4 @@ COPY --from=build /app/public ./public
 USER node
 EXPOSE 3030
 HEALTHCHECK --interval=30s --timeout=5s CMD node -e "fetch('http://127.0.0.1:3030/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-CMD ["node", "dist/server/index.js"]
+CMD ["node", "dist/index.js"]

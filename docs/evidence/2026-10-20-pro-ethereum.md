@@ -15,7 +15,7 @@ Environment: local Windows checkout, Node.js 24, authenticated Blockscout PRO ga
 | Same request with service key | `PASS`, `executionAllowed: true` |
 | Authenticated PRO Base chain 8453 | HTTP 402; gateway stated Builder, Business, or Pro plan required |
 
-The Explorer URL is the address page linked by the application. It is not proof that an on-chain transfer occurred, and no transaction was signed or broadcast. The direct address/counters responses and evaluation were observed locally; an independent Explorer comparison and public deployment were not completed.
+The Explorer URL is the address page linked by the application. It is not proof that an on-chain transfer occurred, and no transaction was signed or broadcast. On 2026-10-20, the public Ethereum Explorer API and authenticated PRO gateway each returned HTTP 200 for this address. Both reported `hash` `0x1111111111111111111111111111111111111111`, `is_contract: false`, `transactions_count: 303`, and `token_transfers_count: 50173`. This is an independent endpoint comparison, although the Explorer webpage itself did not load reliably in the in-app browser. Public deployment was not completed at this point.
 
 ## Regression and limitations
 

@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc && tailwindcss -i public/styles.src.css -o public/styles.css --minify",
-    "start": "node dist/server/index.js",
-    "dev": "tsx watch src/server/index.ts",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
     "test": "tsx --test test/*.test.ts"
   },
   "keywords": [

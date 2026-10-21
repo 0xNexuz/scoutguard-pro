@@ -14,9 +14,9 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Git State
 
 - **Branch:** main
-- **HEAD:** `1584646` at clone
-- **Working tree:** uncommitted implementation and documentation changes from this task
-- **Relevant remote or PR:** `origin` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
+- **HEAD:** `4617a97` pushed to origin/main; subsequent deployment preparation is uncommitted
+- **Working tree:** uncommitted Vercel entry point and evidence update
+- **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
 - **Last verified milestone:** Local build, 17 tests, and authenticated Ethereum PRO evaluation (2026-10-20)
 
 ## Hackathon Context
@@ -72,7 +72,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
 - **Current milestone:** Local PRO integration verified; deployment and submission drafts in progress.
-- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. No authorized deployment, push, or submission.
+- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. Vercel CLI authentication is pending; user retained demo recording and Craftora submission.
 
 ## Verification
 
@@ -96,12 +96,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 | 2026-10-20 | Authenticated live evaluation | Ethereum chain 1, local | VERIFIED | `PASS`, `executionAllowed: true`, three check IDs; no transaction signed or broadcast |
 | 2026-10-20 | Authenticated Base PRO request | Base chain 8453, local | BLOCKED BY PLAN | HTTP 402; Builder, Business, or Pro plan required |
 | 2026-10-20 | Production-mode local HTTP smoke check | Port 3039, local | VERIFIED | 401 without service key; `PASS` with service key |
+| 2026-10-20 | Public Explorer API versus authenticated PRO | Ethereum chain 1, local | VERIFIED | Both HTTP 200; same address, EOA status, transaction count 303 and token-transfer count 50173 |
+| 2026-10-20 | Vercel entry point relocation | Current local checkout | VERIFIED locally | `npm run build`, 17 tests, and production-mode local root/health HTTP 200; public deployment pending account authentication |
 
 ### Integration and Evidence Status
 
 - **Real integrations:** Authenticated PRO gateway and local evaluation verified on Ethereum chain 1. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
 - **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
-- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`. Explorer URLs in responses are navigation links, not transaction proofs or independent verification.
+- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`. Public Explorer API fields match PRO gateway fields; Explorer URLs in responses are navigation links, not transaction proofs.
 - **Unverified claims:** Deployed service, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution.
 
 ## Decision Log
@@ -125,10 +127,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Deploy the complete service with secrets, verify a public live flow, and record a short demo.
-- **Next authorized action:** Continue local hardening and evidence preparation; external push/deployment/submission require separate authorization.
+- **Next recommended action:** Finish Vercel login, deploy the complete service with secrets, and verify a public live flow. The user will record the demo and submit on Craftora.
+- **Next authorized action:** Deployment and GitHub push are authorized; Craftora submission and demo recording are explicitly left to the user.
 - **Next approved milestone:** Complete Sprint 1 evidence gates.
-- **Approval boundary:** External deployment, submission, or pushing to remote git repository requires explicit user consent.
+- **Approval boundary:** Deployment and push were authorized by the user. Do not perform Craftora submission or demo recording after the user's explicit correction.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -143,3 +145,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Reason:** The authenticated PRO gateway returned HTTP 200 for Ethereum address detail and counters, while Base returned HTTP 402 requiring a paid tier. A chain-scoped URL bug was fixed and protected by a regression test.
 - **Evidence:** 17 passing tests, local authenticated `PASS` evaluation, and production-mode local HTTP check with 401 unauthenticated / `PASS` authenticated. Sanitized details are in `docs/evidence/2026-10-20-pro-ethereum.md`.
 - **Status:** VERIFIED locally; public deployment, recording, push, and submission pending.
+
+### 2026-10-20 — GitHub push and Explorer comparison
+
+- **Decision:** Push the hardened MVP and prepare an Express entry point compatible with Vercel while preserving the Docker route.
+- **Reason:** User authorized the push and deployment, then retained responsibility for the demo and Craftora submission.
+- **Evidence:** Commit `4617a97` pushed to `origin/main`; public Explorer API and authenticated PRO gateway fields matched on Ethereum. Vercel entry point passed local build, tests, root, and health checks.
+- **Status:** GitHub push VERIFIED; public deployment pending Vercel CLI login.

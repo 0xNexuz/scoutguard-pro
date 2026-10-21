@@ -2,13 +2,13 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { ScoutGuard } from '../core/scoutguard.js';
-import { SUPPORTED_CHAINS } from '../core/blockscout-client.js';
-import { BlockscoutClient } from '../core/blockscout-client.js';
+import { ScoutGuard } from './core/scoutguard.js';
+import { SUPPORTED_CHAINS } from './core/blockscout-client.js';
+import { BlockscoutClient } from './core/blockscout-client.js';
 import { isAddress } from 'ethers';
 import { timingSafeEqual } from 'node:crypto';
 import { rateLimit } from 'express-rate-limit';
-import { TransactionCandidate } from '../types/index.js';
+import { TransactionCandidate } from './types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +29,7 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false }));
 // Serve static UI assets from public directory
-app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 const guard = new ScoutGuard();
 

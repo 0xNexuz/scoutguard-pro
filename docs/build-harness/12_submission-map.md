@@ -15,9 +15,9 @@ Sprint 1 asks for a working MVP, public repository, product/write-up, and short 
 
 | Requirement | Status | Next action |
 |---|---|---|
-| Public GitHub repository | URL known; current edits only local | Review then push with authorization |
+| Public GitHub repository | Hardened MVP pushed at `4617a97`; Vercel adapter update pending push | Use https://github.com/0xNexuz/scoutguard-pro |
 | Authenticated PRO API proof | VERIFIED locally on Ethereum | Include redacted live check in the demo; Base needs a paid plan |
-| Live product URL | UNVERIFIED | Deploy with authorization; test full stack |
+| Live product URL | UNVERIFIED | Finish Vercel sign-in, deploy with server secrets, test full stack |
 | Short demo | NOT PRODUCED | Record real and simulated flows distinctly |
 | Stage write-up | DRAFT below | Align with final verified evidence |
 | Craftora squad/project submission | NOT DONE | Submit with authorization before round closes |

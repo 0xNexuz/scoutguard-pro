@@ -41,9 +41,9 @@ curl -X POST http://localhost:3030/api/evaluate \
 
 ## Deployment
 
-The checked-in Dockerfile builds TypeScript and local Tailwind CSS, then runs the API and dashboard in one Node service. Production startup requires both `SCOUTGUARD_SERVICE_KEY` and `BLOCKSCOUT_API_KEY`; supply them using the deployment platform's secret manager. Do not set `NODE_TLS_REJECT_UNAUTHORIZED=0`. The old static Vercel configuration was removed because it could not serve the API.
+The checked-in Dockerfile builds TypeScript and local Tailwind CSS, then runs the API and dashboard in one Node service. The Express entry point is also in `src/index.ts` for Vercel detection; Vercel serves `public/` from its CDN. Production startup requires both `SCOUTGUARD_SERVICE_KEY` and `BLOCKSCOUT_API_KEY`; supply them using the deployment platform's secret manager. Do not set `NODE_TLS_REJECT_UNAUTHORIZED=0`. The old static Vercel configuration was removed because it could not serve the API.
 
-The authenticated Ethereum PRO evaluation was verified locally; public deployment and Docker image execution were not. See [submission status](docs/build-harness/12_submission-map.md), [sanitized evidence](docs/evidence/2026-10-20-pro-ethereum.md), and [test plan](docs/build-harness/08_test-plan.md) before claiming production or hackathon completion.
+The authenticated Ethereum PRO evaluation and public Explorer API comparison were verified locally; public deployment and Docker image execution were not. See [submission status](docs/build-harness/12_submission-map.md), [sanitized evidence](docs/evidence/2026-10-20-pro-ethereum.md), and [test plan](docs/build-harness/08_test-plan.md) before claiming production or hackathon completion.
 
 ## License
 
