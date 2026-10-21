@@ -4,7 +4,7 @@ Official source: [Craftora Blockscout PRO API Buildathon](https://www.craftora.t
 
 | Criterion | Weight | Current evidence |
 |---|---:|---|
-| Blockscout integration | 30% | Authenticated Ethereum PRO proof verified locally; public demo pending |
+| Blockscout integration | 30% | Authenticated Ethereum PRO proof verified locally and on the public deployment; user demo recording pending |
 | Real-world utility | 20% | Clear use case; user validation missing |
 | Technical execution | 20% | Local build, 17 tests, and deployed Ethereum live check pass |
 | Creativity | 15% | Policy composition; differentiation unverified |
@@ -15,13 +15,13 @@ Sprint 1 asks for a working MVP, public repository, product/write-up, and short 
 
 | Requirement | Status | Next action |
 |---|---|---|
-| Public GitHub repository | Full-stack deployment version pushed at `2d1f0f6` | Use https://github.com/0xNexuz/scoutguard-pro |
+| Public GitHub repository | Final application version pushed at `f033f3c`; deployment record at `8d4a1cd` | Use https://github.com/0xNexuz/scoutguard-pro |
 | Authenticated PRO API proof | VERIFIED locally on Ethereum | Include redacted live check in the demo; Base needs a paid plan |
 | Live product URL | VERIFIED at https://scoutguard.vercel.app/ | Health, simulation, auth, and live Ethereum evaluation passed |
 | Short demo | NOT PRODUCED | Record real and simulated flows distinctly |
 | Stage write-up | DRAFT below | Align with final verified evidence |
-| Craftora squad/project submission | NOT DONE | Submit with authorization before round closes |
-| X showcase post | Final round requirement; NOT DONE | Publish with authorization in Sprint 2 |
+| Craftora squad/project submission | NOT DONE | Builder submits before round closes |
+| X showcase post | Final round requirement; NOT DONE | Builder decides whether to publish in Sprint 2 |
 
 Draft one-line description: “ScoutGuard PRO checks Blockscout address and contract data against agent payment policy before signing, and blocks when required data is unavailable.”
 
