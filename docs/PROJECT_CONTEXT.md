@@ -14,8 +14,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Git State
 
 - **Branch:** main
-- **HEAD:** `2d1f0f6` pushed to origin/main; final deployment evidence and UI example correction uncommitted
-- **Working tree:** uncommitted deployment evidence, docs, and public integration-example correction
+- **Last verified application commit:** `f033f3c` pushed to origin/main
+- **Working tree:** clean after this deployment record is committed and pushed
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
 - **Last verified milestone:** Vercel production deployment with public health, simulated case, auth, live Ethereum evaluation, and browser interaction checks (2026-10-21)
 
@@ -130,7 +130,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Next Action
 
 - **Next recommended action:** User records a short demo of the public simulation and protected Ethereum evaluation, then submits the repo, live URL, stage write-up, and demo on Craftora.
-- **Next authorized action:** Finish local documentation and push it; Craftora submission and demo recording are explicitly left to the user.
+- **Next authorized action:** Finish the deployment record and handoff; Craftora submission and demo recording are explicitly left to the user.
 - **Next approved milestone:** Complete Sprint 1 evidence gates.
 - **Approval boundary:** Deployment and push were authorized by the user. Do not perform Craftora submission or demo recording after the user's explicit correction.
 
@@ -161,3 +161,9 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Reason:** The old Vercel project served static HTML for `/api/health`. The new deployment serves the API and dashboard together.
 - **Evidence:** Public URL returned health JSON 200, simulation PASS 200, unauthorized evaluation 401, authenticated Ethereum PASS 200, and the dashboard responded to scenario switching. Details are in `docs/evidence/2026-10-21-vercel-production.md`.
 - **Status:** PUBLIC MVP VERIFIED; user owns the demo video and Craftora submission.
+
+### 2026-10-21 — Final public revision promoted
+
+- **Decision:** Push the corrected public integration example and promote its Vercel build.
+- **Evidence:** Commit `f033f3c` pushed to `origin/main`; deployment `dpl_CZc9ZnCLT1SF3aqYqs29m2TJqhny` promoted. Public root and health returned HTTP 200, the root contained the production evaluation URL and Ethereum chain 1, and evaluation without the service key returned HTTP 401.
+- **Status:** VERIFIED on the public production URL; demo recording and Craftora submission remain with the user.

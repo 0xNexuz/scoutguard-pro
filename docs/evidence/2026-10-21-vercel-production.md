@@ -4,6 +4,7 @@
 - Production URL: https://scoutguard.vercel.app/
 - Staged and promoted deployment: `dpl_BesrPiG8zRwnGhXca7wcSDcci7ce`
 - Source commit before the final documentation polish: `2d1f0f6`
+- Final public revision: `f033f3c`, deployment `dpl_CZc9ZnCLT1SF3aqYqs29m2TJqhny`, promoted to production. The public root returned HTTP 200 and included the production `/api/evaluate` example and Ethereum `chainId: 1`; `/api/health` returned HTTP 200 `ONLINE`, while unauthenticated `/api/evaluate` returned HTTP 401.
 - Secrets: `BLOCKSCOUT_API_KEY` and `SCOUTGUARD_SERVICE_KEY` are Vercel sensitive production variables. Their values are omitted here and from Git.
 
 ## Observed public behavior
