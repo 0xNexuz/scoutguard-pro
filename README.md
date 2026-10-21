@@ -34,7 +34,7 @@ On Windows hosts whose Node trust store does not recognize the system certificat
 curl -X POST http://localhost:3030/api/evaluate \
   -H 'Content-Type: application/json' \
   -H 'x-scoutguard-key: YOUR_SERVICE_KEY' \
-  -d '{"from":"0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be","to":"0x2626664c2603336e57b271c5c0b26f421741e481","value":"0.1","chainId":8453,"agentId":"procurement-bot-01"}'
+  -d '{"from":"0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be","to":"0x1111111111111111111111111111111111111111","value":"0.1","chainId":1,"agentId":"procurement-bot-01"}'
 ```
 
 `value` is a decimal amount in the chain's native unit, up to 18 decimal places. No ERC-20 amount conversion or calldata inspection is implemented. The service key header is required when `SCOUTGUARD_SERVICE_KEY` is set, and that variable is mandatory in production. Requests are limited to 60 per minute per client IP in a single process. Put an authenticated reverse proxy and shared rate limiter in front of a scaled deployment.
@@ -43,7 +43,7 @@ curl -X POST http://localhost:3030/api/evaluate \
 
 The checked-in Dockerfile builds TypeScript and local Tailwind CSS, then runs the API and dashboard in one Node service. The Express entry point is also in `src/index.ts` for Vercel detection; Vercel serves `public/` from its CDN. Production startup requires both `SCOUTGUARD_SERVICE_KEY` and `BLOCKSCOUT_API_KEY`; supply them using the deployment platform's secret manager. Do not set `NODE_TLS_REJECT_UNAUTHORIZED=0`. The old static Vercel configuration was removed because it could not serve the API.
 
-The authenticated Ethereum PRO evaluation and public Explorer API comparison were verified locally; public deployment and Docker image execution were not. See [submission status](docs/build-harness/12_submission-map.md), [sanitized evidence](docs/evidence/2026-10-20-pro-ethereum.md), and [test plan](docs/build-harness/08_test-plan.md) before claiming production or hackathon completion.
+The authenticated Ethereum PRO evaluation and public Explorer API comparison were verified locally. The full stack is deployed at [scoutguard.vercel.app](https://scoutguard.vercel.app/), where health, simulation, service-key enforcement, and an authenticated Ethereum evaluation passed on 2026-10-21. Docker image execution and a signing-agent integration were not verified. See [submission status](docs/build-harness/12_submission-map.md), [local PRO evidence](docs/evidence/2026-10-20-pro-ethereum.md), and [deployment evidence](docs/evidence/2026-10-21-vercel-production.md) before claiming broader production readiness.
 
 ## License
 

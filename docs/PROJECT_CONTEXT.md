@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** DEVELOPMENT / SUBMISSION_PREPARATION
-- **Overall status:** PARTIAL — local mechanism and authenticated Ethereum PRO integration verified; deployment and public submission pending
-- **Last updated date:** 2026-10-20
+- **Current workflow stage:** SUBMISSION_PREPARATION
+- **Overall status:** PUBLIC MVP VERIFIED — Ethereum PRO integration and deployed full stack verified; demo and Craftora submission left to user
+- **Last updated date:** 2026-10-21
 
 ## Git State
 
 - **Branch:** main
-- **HEAD:** `4617a97` pushed to origin/main; subsequent deployment preparation is uncommitted
-- **Working tree:** uncommitted Vercel entry point and evidence update
+- **HEAD:** `2d1f0f6` pushed to origin/main; final deployment evidence and UI example correction uncommitted
+- **Working tree:** uncommitted deployment evidence, docs, and public integration-example correction
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
-- **Last verified milestone:** Local build, 17 tests, and authenticated Ethereum PRO evaluation (2026-10-20)
+- **Last verified milestone:** Vercel production deployment with public health, simulated case, auth, live Ethereum evaluation, and browser interaction checks (2026-10-21)
 
 ## Hackathon Context
 
@@ -65,14 +65,14 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] M4: Per-transaction hard cap, `FLAG` decision, and local SHA-256 digest; no human approval workflow or signed receipt
   - [x] M5: Local full-stack fixture simulation dashboard; live Ethereum auditor verified through local HTTP
   - [x] M6: 17 passing local tests after hardening; no deployed end-to-end proof
-- **Implemented but unverified:** Container deployment and deployed browser behavior.
-- **Pending features:** Live deployment and browser verification, demo recording, project submission; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Package a working public demo and submit before Sprint 1 closes.
+- **Implemented but unverified:** Docker container execution and a real signing-agent integration.
+- **Pending features:** User-owned demo recording and Craftora submission; hourly volume enforcement and human approval workflow remain unimplemented.
+- **P0 priorities:** User records the demo and submits the public MVP before Sprint 1 closes.
 - **P1 priorities:** Production integration contract and transaction binding; browser/deployment verification.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Local PRO integration verified; deployment and submission drafts in progress.
-- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. Vercel CLI authentication is pending; user retained demo recording and Craftora submission.
+- **Current milestone:** Public MVP verified at https://scoutguard.vercel.app/.
+- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
 
 ## Verification
 
@@ -98,13 +98,15 @@ Keep this file concise and evidence-based. Update current state in place, append
 | 2026-10-20 | Production-mode local HTTP smoke check | Port 3039, local | VERIFIED | 401 without service key; `PASS` with service key |
 | 2026-10-20 | Public Explorer API versus authenticated PRO | Ethereum chain 1, local | VERIFIED | Both HTTP 200; same address, EOA status, transaction count 303 and token-transfer count 50173 |
 | 2026-10-20 | Vercel entry point relocation | Current local checkout | VERIFIED locally | `npm run build`, 17 tests, and production-mode local root/health HTTP 200; public deployment pending account authentication |
+| 2026-10-21 | Vercel production deployment | Public URL | VERIFIED | Health JSON 200, fixture simulation 200, unauthenticated evaluation 401, authenticated Ethereum evaluation 200 / `PASS` |
+| 2026-10-21 | Public browser interaction | https://scoutguard.vercel.app/ | VERIFIED | Dashboard loaded; Vanity Poisoning selection changed computed labeled simulation to `BLOCK` |
 
 ### Integration and Evidence Status
 
-- **Real integrations:** Authenticated PRO gateway and local evaluation verified on Ethereum chain 1. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
+- **Real integrations:** Authenticated PRO gateway and deployed evaluation verified on Ethereum chain 1. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
 - **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
-- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`. Public Explorer API fields match PRO gateway fields; Explorer URLs in responses are navigation links, not transaction proofs.
-- **Unverified claims:** Deployed service, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution.
+- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md` and deployment evidence in `docs/evidence/2026-10-21-vercel-production.md`. Public Explorer API fields match PRO gateway fields; Explorer URLs in responses are navigation links, not transaction proofs.
+- **Unverified claims:** Docker image, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution, real signing-agent integration.
 
 ## Decision Log
 
@@ -127,8 +129,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Finish Vercel login, deploy the complete service with secrets, and verify a public live flow. The user will record the demo and submit on Craftora.
-- **Next authorized action:** Deployment and GitHub push are authorized; Craftora submission and demo recording are explicitly left to the user.
+- **Next recommended action:** User records a short demo of the public simulation and protected Ethereum evaluation, then submits the repo, live URL, stage write-up, and demo on Craftora.
+- **Next authorized action:** Finish local documentation and push it; Craftora submission and demo recording are explicitly left to the user.
 - **Next approved milestone:** Complete Sprint 1 evidence gates.
 - **Approval boundary:** Deployment and push were authorized by the user. Do not perform Craftora submission or demo recording after the user's explicit correction.
 
@@ -152,3 +154,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Reason:** User authorized the push and deployment, then retained responsibility for the demo and Craftora submission.
 - **Evidence:** Commit `4617a97` pushed to `origin/main`; public Explorer API and authenticated PRO gateway fields matched on Ethereum. Vercel entry point passed local build, tests, root, and health checks.
 - **Status:** GitHub push VERIFIED; public deployment pending Vercel CLI login.
+
+### 2026-10-21 — Production deployment and user handoff
+
+- **Decision:** Promote the staged Express deployment to the existing ScoutGuard production URL after checking its protected health, root, and chain endpoints.
+- **Reason:** The old Vercel project served static HTML for `/api/health`. The new deployment serves the API and dashboard together.
+- **Evidence:** Public URL returned health JSON 200, simulation PASS 200, unauthorized evaluation 401, authenticated Ethereum PASS 200, and the dashboard responded to scenario switching. Details are in `docs/evidence/2026-10-21-vercel-production.md`.
+- **Status:** PUBLIC MVP VERIFIED; user owns the demo video and Craftora submission.

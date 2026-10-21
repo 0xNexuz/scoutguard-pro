@@ -483,8 +483,8 @@
       typescript: `// Server-side agent example; keep keys outside the browser.
 import { parseEther } from 'ethers';
 const candidate = { from: agentAddress, to: recipientAddress,
-  value: '0.5', chainId: 8453, agentId: 'procurement-bot-01' };
-const response = await fetch('http://localhost:3030/api/evaluate', {
+  value: '0.5', chainId: 1, agentId: 'procurement-bot-01' };
+const response = await fetch(process.env.SCOUTGUARD_API_URL || 'https://scoutguard.vercel.app/api/evaluate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json',
     'x-scoutguard-key': process.env.SCOUTGUARD_SERVICE_KEY },
