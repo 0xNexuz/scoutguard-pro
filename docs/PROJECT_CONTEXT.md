@@ -144,9 +144,9 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Verify the pushed Sprint 2 release on the public Vercel URL, then continue the documented open items.
+- **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially paginated history and a shared public quota. The user owns Craftora submission and the video.
 - **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
-- **Next approved milestone:** Ship and verify the judge-feedback release, recording actual deployment evidence.
+- **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
 - **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
 
 ### 2026-10-20 — Evidence correction and local hardening
@@ -201,4 +201,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Decision:** Normalize the unsigned direct ERC-20 transfer before security checks. Treat the token contract as the transaction destination and the calldata recipient as the payment destination. Use exact raw amounts for policy and bind the unsigned fields in the receipt digest.
 - **Reason:** The earlier separate token/recipient/amount request could not prove that the evaluated payment matched the transaction an agent would sign.
 - **Evidence:** `src/core/payment-normalizer.ts`, receipt and policy changes, updated browser and integration examples, and passing automated tests. The implementation checklist and open limits are in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`.
-- **Status:** VERIFIED locally; push and deployment authorized and in progress. Craftora publication and video remain with the user.
+- **Status:** VERIFIED locally and on the public production dashboard. Craftora publication and video remain with the user.
+
+### 2026-10-23 — Sprint 2 GitHub and Vercel release
+
+- **Decision:** Push the direct-transfer and judge-feedback revision to `main`; use the Git-linked Vercel deployment for production.
+- **Evidence:** Commit `aa490c5` pushed; Vercel deployment `ALxkjdBvRyQ11SR4ot3BeGgDF75X` showed Ready / Production. Public health, dashboard, USDC PASS, cap BLOCK, and recorded replay were verified; see `docs/evidence/2026-10-23-sprint2-production.md`.
+- **Status:** PRODUCTION VERIFIED for the listed checks. The full pasted Sprint 2 prompt is partially implemented; see `docs/SPRINT2_IMPLEMENTATION_STATUS.md` for open items.
