@@ -1,4 +1,4 @@
-import { AddressCounterData, ContractSecurityData } from '../types/index.js';
+import { AddressCounterData, ContractSecurityData, KnownCounterparty, TokenConfig } from '../types/index.js';
 
 export interface ChainConfig {
   chainId: number;
@@ -60,6 +60,44 @@ export const SUPPORTED_CHAINS: Record<number, ChainConfig> = {
   }
 };
 
+// Exact canonical USDC contracts. A caller cannot relabel an arbitrary ERC-20 as USDC.
+export const SUPPORTED_TOKENS: Record<number, Record<string, TokenConfig>> = {
+  1: {
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
+      address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      symbol: 'USDC',
+      name: 'USD Coin',
+      decimals: 6
+    }
+  },
+  8453: {
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': {
+      address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+      symbol: 'USDC',
+      name: 'USD Coin',
+      decimals: 6
+    }
+  }
+};
+
+type BlockscoutAddress = {
+  hash?: string;
+  name?: string;
+  ens_domain_name?: string;
+  is_contract?: boolean;
+};
+
+type BlockscoutHistoryItem = {
+  from?: BlockscoutAddress | string;
+  to?: BlockscoutAddress | string;
+  timestamp?: string;
+  hash?: string;
+  transaction_hash?: string;
+  value?: string;
+  total?: { value?: string };
+  status?: string;
+};
+
 export class BlockscoutClient {
   private apiKey: string;
 
@@ -81,6 +119,12 @@ export class BlockscoutClient {
     return chain;
   }
 
+  public getTokenConfig(chainId: number, tokenAddress: string): TokenConfig {
+    const token = SUPPORTED_TOKENS[chainId]?.[tokenAddress.toLowerCase()];
+    if (!token) throw new Error(`Unsupported token contract on Chain ID ${chainId}`);
+    return token;
+  }
+
   public getExplorerAddressUrl(chainId: number, address: string): string {
     const chain = this.getChainConfig(chainId);
     return `${chain.baseUrl}/address/${address}`;
@@ -89,6 +133,70 @@ export class BlockscoutClient {
   public getExplorerTxUrl(chainId: number, txHash: string): string {
     const chain = this.getChainConfig(chainId);
     return `${chain.baseUrl}/tx/${txHash}`;
+  }
+
+  private addressHash(value?: BlockscoutAddress | string): string | undefined {
+    if (typeof value === 'string') return value;
+    return value?.hash;
+  }
+
+  /**
+   * Builds a counterparty registry from the sender's recent outbound Blockscout history.
+   * Incoming transfers are deliberately excluded so an attacker cannot seed trust by
+   * sending a dust transfer to the sender.
+   */
+  public async getSenderCounterparties(chainId: number, sender: string): Promise<KnownCounterparty[]> {
+    const cleanSender = sender.toLowerCase();
+    const endpoints = [
+      this.v2Url(chainId, `addresses/${sender}/transactions`),
+      this.v2Url(chainId, `addresses/${sender}/token-transfers?type=ERC-20`)
+    ];
+
+    try {
+      const responses = await Promise.all(endpoints.map(endpoint => fetch(endpoint, {
+        signal: AbortSignal.timeout(12000)
+      })));
+      for (const response of responses) {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      }
+      const payloads = await Promise.all(responses.map(response => response.json())) as Array<{ items?: BlockscoutHistoryItem[] }>;
+      const aggregate = new Map<string, KnownCounterparty>();
+
+      for (const [sourceIndex, payload] of payloads.entries()) {
+        if (!Array.isArray(payload.items)) throw new Error('Malformed sender history response');
+        for (const item of payload.items) {
+          // A zero-value call or dust-sized ERC-20 event must not become a trusted payee.
+          // Only actual outbound value is eligible as a comparison reference.
+          const value = sourceIndex === 0 ? item.value : item.total?.value;
+          if (!value || !/^\d+$/.test(value) || BigInt(value) === 0n || item.status === 'error') continue;
+          const from = this.addressHash(item.from)?.toLowerCase();
+          const to = this.addressHash(item.to)?.toLowerCase();
+          if (!from || !to || from !== cleanSender || to === cleanSender) continue;
+          const toDetails = typeof item.to === 'object' ? item.to : undefined;
+          const possibleHash = item.transaction_hash || item.hash;
+          const evidenceTxHash = possibleHash && /^0x[a-fA-F0-9]{64}$/.test(possibleHash) ? possibleHash : undefined;
+          const existing = aggregate.get(to);
+          if (existing) {
+            existing.totalTransfers += 1;
+            if (!existing.evidenceTxHash && evidenceTxHash) existing.evidenceTxHash = evidenceTxHash;
+            continue;
+          }
+          aggregate.set(to, {
+            address: to,
+            name: toDetails?.name || toDetails?.ens_domain_name || `History ${to.slice(0, 6)}…${to.slice(-4)}`,
+            category: toDetails?.is_contract ? 'CONTRACT' : 'VENDOR',
+            verifiedSince: item.timestamp || 'Blockscout recent history',
+            totalTransfers: 1,
+            source: 'BLOCKSCOUT_HISTORY',
+            evidenceTxHash
+          });
+        }
+      }
+
+      return [...aggregate.values()];
+    } catch (error) {
+      throw new Error(`Blockscout sender history unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**

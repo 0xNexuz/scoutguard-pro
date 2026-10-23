@@ -1,4 +1,5 @@
-import { GuardDecision, SecurityCheckResult, TransactionCandidate } from '../types/index.js';
+import { GuardDecision, SecurityCheckResult, TokenConfig, TransactionCandidate } from '../types/index.js';
+import { parseUnits } from 'ethers';
 
 export interface AgentPolicyConfig {
   agentId: string;
@@ -7,6 +8,8 @@ export interface AgentPolicyConfig {
   maxHourlyVolumeEth: number;
   allowedChains: number[];
   requireHumanApprovalAboveEth: number;
+  maxSingleTxValueUsdc: number;
+  requireHumanApprovalAboveUsdc: number;
   enforceWhitelist: boolean;
   whitelistedAddresses: string[];
 }
@@ -19,6 +22,8 @@ export const DEFAULT_AGENT_POLICIES: Record<string, AgentPolicyConfig> = {
     maxHourlyVolumeEth: 10.0,
     allowedChains: [1, 8453, 42161, 10, 42220, 137, 11155111],
     requireHumanApprovalAboveEth: 1.0,
+    maxSingleTxValueUsdc: 2500,
+    requireHumanApprovalAboveUsdc: 1000,
     enforceWhitelist: false,
     whitelistedAddresses: []
   },
@@ -29,6 +34,8 @@ export const DEFAULT_AGENT_POLICIES: Record<string, AgentPolicyConfig> = {
     maxHourlyVolumeEth: 25.0,
     allowedChains: [1, 8453, 42161, 42220],
     requireHumanApprovalAboveEth: 2.0,
+    maxSingleTxValueUsdc: 10000,
+    requireHumanApprovalAboveUsdc: 5000,
     enforceWhitelist: false,
     whitelistedAddresses: []
   }
@@ -61,13 +68,13 @@ export class PolicyEngine {
    */
   public evaluatePolicy(
     tx: TransactionCandidate,
-    explorerUrl: string
+    explorerUrl: string,
+    token?: TokenConfig
   ): SecurityCheckResult {
     const policy = this.getPolicy(tx.agentId);
-    const valueNum = Number(tx.value);
-    if (!Number.isFinite(valueNum) || valueNum < 0 || !/^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(tx.value)) {
-      throw new Error('Invalid native transaction amount');
-    }
+    const decimals = token?.decimals ?? 18;
+    const rawAmount = parseUnits(tx.value, decimals);
+    if (rawAmount < 0n) throw new Error('Invalid transaction amount');
 
     // 1. Allowed chain check
     if (!policy.allowedChains.includes(tx.chainId)) {
@@ -81,34 +88,40 @@ export class PolicyEngine {
       };
     }
 
+    const asset = token?.symbol || 'native units';
+    const maxValue = token ? policy.maxSingleTxValueUsdc : policy.maxSingleTxValueEth;
+    const approvalThreshold = token ? policy.requireHumanApprovalAboveUsdc : policy.requireHumanApprovalAboveEth;
+
     // 2. Max single transaction value hard cap
-    if (valueNum > policy.maxSingleTxValueEth) {
+    if (rawAmount > parseUnits(String(maxValue), decimals)) {
       return {
         id: 'SEC-POLICY-CAP',
         name: 'Single Transaction Hard Limit',
         status: 'FAIL',
         scoreImpact: 75,
-        detail: `Transaction value (${valueNum} ETH) exceeds agent hard limit (${policy.maxSingleTxValueEth} ETH).`,
+        detail: `Transaction value (${tx.value} ${asset}) exceeds agent hard limit (${maxValue} ${asset}).`,
         evidenceUrl: explorerUrl,
         metadata: {
-          attemptedValue: valueNum,
-          maxLimit: policy.maxSingleTxValueEth
+          attemptedValue: tx.value,
+          maxLimit: maxValue,
+          asset
         }
       };
     }
 
     // 3. Human Approval Gate requirement
-    if (valueNum > policy.requireHumanApprovalAboveEth) {
+    if (rawAmount > parseUnits(String(approvalThreshold), decimals)) {
       return {
         id: 'SEC-POLICY-HUMAN-GATE',
         name: 'High-Value Human Approval Policy',
         status: 'WARN',
         scoreImpact: 30,
-        detail: `Transaction value (${valueNum} ETH) exceeds autonomous limit (${policy.requireHumanApprovalAboveEth} ETH). Human signature required.`,
+        detail: `Transaction value (${tx.value} ${asset}) exceeds autonomous limit (${approvalThreshold} ${asset}). Human signature required.`,
         evidenceUrl: explorerUrl,
         metadata: {
-          attemptedValue: valueNum,
-          threshold: policy.requireHumanApprovalAboveEth
+          attemptedValue: tx.value,
+          threshold: approvalThreshold,
+          asset
         }
       };
     }
@@ -118,7 +131,7 @@ export class PolicyEngine {
       name: 'Agent Spending Limits & Policy',
       status: 'PASS',
       scoreImpact: 0,
-      detail: `Value within autonomous limit (${valueNum} / ${policy.maxSingleTxValueEth} ETH cap).`,
+      detail: `Value within autonomous limit (${tx.value} / ${maxValue} ${asset} cap).`,
       evidenceUrl: explorerUrl
     };
   }

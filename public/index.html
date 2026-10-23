@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScoutGuard PRO — The Missing Piece in Autonomous AI Agent Security</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/scoutguard-mark.svg">
   
   <link rel="stylesheet" href="/styles.css">
   <!-- Lucide Icons -->
@@ -107,9 +108,7 @@
   <!-- ======================================================== -->
   <header class="border-b border-[#E8E5DF] bg-[#FAF8F5]/90 backdrop-blur-md sticky top-0 z-50 px-6 md:px-12 py-5 flex items-center justify-between">
     <div class="flex items-center space-x-4">
-      <div class="w-8 h-8 rounded-full bg-[#1C1917] flex items-center justify-center text-white font-serif text-sm font-bold shadow-sm">
-        S
-      </div>
+      <img src="/assets/scoutguard-mark.svg" alt="" width="36" height="36" class="w-9 h-9 rounded-xl shadow-sm" />
       <div>
         <div class="flex items-center space-x-2.5">
           <span class="text-sm font-bold tracking-tight text-[#1C1917]">ScoutGuard PRO</span>
@@ -128,7 +127,8 @@
 
       <a href="#specimens" class="hidden md:inline text-[#57534E] hover:text-[#1C1917] transition font-medium">Demo</a>
       <a href="#sdk" class="hidden md:inline text-[#57534E] hover:text-[#1C1917] transition font-medium">Integration</a>
-      <a href="#evidence" class="hidden md:inline text-[#57534E] hover:text-[#1C1917] transition font-medium">Evidence</a>
+      <a href="#evidence" class="hidden md:inline text-[#57534E] hover:text-[#1C1917] transition font-medium">Live check</a>
+      <a href="#research-case" class="hidden md:inline text-[#57534E] hover:text-[#1C1917] transition font-medium">Real case</a>
 
       <a href="https://github.com/0xNexuz/scoutguard-pro" target="_blank" class="px-3.5 py-1.5 rounded-full bg-[#1C1917] text-white hover:bg-[#292524] transition flex items-center space-x-1.5 font-medium shadow-sm">
         <i data-lucide="github" class="w-3.5 h-3.5"></i>
@@ -180,7 +180,7 @@
 
           <p class="text-xs md:text-sm text-[#57534E] leading-relaxed max-w-xl">
             Autonomous AI agents execute payments without human eyes. Malicious vanity addresses seed transaction histories, matching both ends of trusted vendors. 
-            <strong>ScoutGuard PRO</strong> checks Blockscout address history, reputation tags, and contract verification before an agent signs. The interactive cases below use simulated fixtures; the evaluation API queries live Blockscout data.
+            <strong>ScoutGuard PRO</strong> checks Blockscout sender history, recipient reputation, contract verification, and payment policy before an agent signs ETH or allowlisted USDC. The interactive cases below use simulated fixtures; the live check queries Blockscout PRO.
           </p>
 
           <!-- Tagline from Reference 2 -->
@@ -365,7 +365,7 @@
           <h2 class="font-serif text-2xl text-[#1C1917] italic">Agent integration example</h2>
         </div>
         <p class="text-xs text-[#78716C] max-w-md">
-          Call the evaluation API before signing. Keep the signing key outside this service.
+          Server-side ethers example for a real USDC transfer flow. Replace the wallet inputs with your own; this page never signs.
         </p>
       </div>
 
@@ -374,7 +374,7 @@
         <!-- Tab Bar -->
         <div class="flex items-center justify-between border-b border-[#F0ECE1] pb-3">
           <div class="flex items-center space-x-2 text-xs font-mono">
-            <button onclick="setSdkTab('typescript')" id="sdk-tab-ts" class="px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold">TypeScript / Viem</button>
+            <button onclick="setSdkTab('typescript')" id="sdk-tab-ts" class="px-3 py-1 rounded-lg bg-[#1C1917] text-white font-semibold">TypeScript / ethers</button>
           </div>
 
           <button onclick="copySdkCode()" class="text-xs font-mono text-[#78716C] hover:text-[#1C1917] flex items-center space-x-1">
@@ -391,60 +391,105 @@
 
 
     <!-- ======================================================== -->
-    <!-- SECTION 4: LIVE ON-CHAIN EVIDENCE & PROOFS -->
+    <!-- SECTION 4: PUBLIC LIVE EVALUATION & EVIDENCE -->
     <!-- ======================================================== -->
     <section id="evidence" class="space-y-6 pt-6">
       <div class="border-b border-[#E8E5DF] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-2">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Blockscout Verification</span>
-          <h2 class="font-serif text-2xl text-[#1C1917] italic">Inspect the data sources</h2>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Live Blockscout PRO Verification</span>
+          <h2 class="font-serif text-2xl text-[#1C1917] italic">Run a real pre-signing check</h2>
         </div>
         <p class="text-xs text-[#78716C] max-w-md">
-          These links open Blockscout examples. They are independent explorer records, not proof that a ScoutGuard transaction was submitted.
+          Submit a proposed payment. ScoutGuard reads live Ethereum data and builds the comparison set from the sender's recent outbound history. No transaction is signed or broadcast.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
-        
-        <div class="museum-mat rounded-xl p-5 space-y-3">
-          <div class="flex items-center justify-between font-mono text-[10px]">
-            <span class="text-[#2B7FFF] font-bold">Base Mainnet (8453)</span>
-            <span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-800">EXPLORER LINK</span>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5 items-start">
+        <form id="live-evaluation-form" class="museum-mat rounded-2xl p-5 md:p-6 space-y-4 lg:col-span-2" novalidate>
+          <div>
+            <h3 class="font-semibold text-[#1C1917]">Candidate payment</h3>
+            <p class="text-xs text-[#57534E] mt-1">Ethereum Mainnet · limited to 5 public checks per minute</p>
           </div>
-          <p class="font-mono text-[#1C1917] truncate font-semibold">0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43</p>
-          <p class="text-[#57534E] text-[11px]">Example Base transaction. Check its status and contents in the explorer.</p>
-          <a href="https://base.blockscout.com/tx/0x4e08c4e48b8b0e6dfb4c2780e0c90c749b5c36315802a8e807186101d279cf43" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
-            <span>View on Base Blockscout</span>
-            <i data-lucide="external-link" class="w-3 h-3"></i>
-          </a>
+          <fieldset class="space-y-2">
+            <legend class="text-xs font-semibold text-[#1C1917]">Try a live case</legend>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-live-case="observed" class="live-case min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-xs font-semibold hover:border-[#1C1917]">Observed recipient · ETH</button>
+              <button type="button" data-live-case="usdc" class="live-case min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-xs font-semibold hover:border-[#1C1917]">USDC · live check</button>
+              <button type="button" data-live-case="cap" class="live-case min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-xs font-semibold hover:border-[#1C1917]">USDC cap · block</button>
+            </div>
+            <p class="text-[11px] leading-relaxed text-[#57534E]">Presets use public Ethereum addresses. They are proposed payments evaluated against live Blockscout data, not historical payments or verified attacks. Select a case, then run the check.</p>
+          </fieldset>
+          <div class="space-y-1.5">
+            <label for="live-from" class="block text-xs font-semibold text-[#1C1917]">Sender address</label>
+            <input id="live-from" name="from" required autocomplete="off" spellcheck="false" value="0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be" class="w-full min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-xs font-mono text-[#1C1917] focus:outline-none focus:ring-2 focus:ring-[#1C1917]" />
+            <p class="text-[11px] text-[#78716C]">Recent outbound history from this address becomes the look-alike comparison set.</p>
+          </div>
+          <div class="space-y-1.5">
+            <label for="live-to" class="block text-xs font-semibold text-[#1C1917]">Recipient address</label>
+            <input id="live-to" name="to" required autocomplete="off" spellcheck="false" value="0x3f8702cfb1662195fcc98593789682da91dfaae3" class="w-full min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-xs font-mono text-[#1C1917] focus:outline-none focus:ring-2 focus:ring-[#1C1917]" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label for="live-asset" class="block text-xs font-semibold text-[#1C1917]">Asset</label>
+              <select id="live-asset" name="asset" class="w-full min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-sm text-[#1C1917] focus:outline-none focus:ring-2 focus:ring-[#1C1917]">
+                <option value="ETH">ETH</option>
+                <option value="USDC">USDC</option>
+              </select>
+            </div>
+            <div class="space-y-1.5">
+              <label for="live-value" class="block text-xs font-semibold text-[#1C1917]">Amount</label>
+              <input id="live-value" name="value" required inputmode="decimal" value="0.1" class="w-full min-h-11 rounded-lg border border-[#D6D3D1] bg-white px-3 py-2 text-sm text-[#1C1917] focus:outline-none focus:ring-2 focus:ring-[#1C1917]" />
+            </div>
+          </div>
+          <p id="live-error" class="hidden rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800" role="alert" tabindex="-1"></p>
+          <button id="live-submit" type="submit" class="min-h-11 w-full rounded-xl bg-[#1C1917] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#292524] focus:outline-none focus:ring-2 focus:ring-[#1C1917] focus:ring-offset-2 disabled:cursor-wait disabled:opacity-50">
+            Run live Blockscout check
+          </button>
+        </form>
+
+        <div id="live-empty" class="museum-mat rounded-2xl p-6 md:p-8 lg:col-span-3 min-h-[360px] flex flex-col justify-center items-start space-y-3">
+          <span class="rounded-full border border-[#D6D3D1] bg-[#FAF8F5] px-3 py-1 text-[10px] font-mono font-bold text-[#57534E]">AWAITING LIVE REQUEST</span>
+          <h3 class="font-serif text-2xl italic text-[#1C1917]">Evidence appears here</h3>
+          <p class="max-w-xl text-sm leading-relaxed text-[#57534E]">Run a check to see the decision, live Blockscout data, recent sender-history comparison count, receipt digest, and exact Explorer address pages. An address page proves the address data source, not that a proposed payment happened.</p>
         </div>
 
-        <div class="museum-mat rounded-xl p-5 space-y-3">
-          <div class="flex items-center justify-between font-mono text-[10px]">
-            <span class="text-indigo-700 font-bold">Uniswap V3 Router</span>
-            <span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-800">EXPLORER LINK</span>
+        <div id="live-result" class="hidden museum-mat rounded-2xl p-5 md:p-7 lg:col-span-3 space-y-5" aria-live="polite">
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[#F0ECE1] pb-5">
+            <div class="space-y-2">
+              <span id="live-result-badge" class="inline-flex rounded-full border px-3 py-1 text-[10px] font-mono font-bold"></span>
+              <h3 id="live-result-title" class="font-serif text-2xl italic text-[#1C1917]"></h3>
+              <p id="live-result-summary" class="text-xs leading-relaxed text-[#57534E]"></p>
+            </div>
+            <div class="text-left sm:text-right">
+              <div id="live-risk" class="font-serif text-3xl italic text-[#1C1917]"></div>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-[#78716C]">Live risk score</span>
+            </div>
           </div>
-          <p class="font-mono text-[#1C1917] truncate font-semibold">0x2626664c2603336E57B271c5C0b26F421741e481</p>
-          <p class="text-[#57534E] text-[11px]">Example contract address for inspecting source metadata.</p>
-          <a href="https://base.blockscout.com/address/0x2626664c2603336E57B271c5C0b26F421741e481" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
-            <span>Inspect Verified Source</span>
-            <i data-lucide="external-link" class="w-3 h-3"></i>
-          </a>
-        </div>
-
-        <div class="museum-mat rounded-xl p-5 space-y-3">
-          <div class="flex items-center justify-between font-mono text-[10px]">
-            <span class="text-amber-700 font-bold">Blockscout Explorer</span>
-            <span class="px-1.5 py-0.5 rounded bg-stone-100 text-stone-800">EXTERNAL</span>
+          <div id="live-checks" class="space-y-2.5"></div>
+          <div class="space-y-2 border-t border-[#F0ECE1] pt-4">
+            <div class="font-mono text-[10px] uppercase tracking-wider text-[#78716C]">Blockscout evidence</div>
+            <div id="live-links" class="flex flex-wrap gap-2"></div>
+            <p class="text-[11px] leading-relaxed text-[#57534E]">A past transfer event link appears when Blockscout returns a transaction containing an outbound transfer between these addresses. The transaction's initiator may differ from the transfer sender. It does not prove this proposed payment occurred. ScoutGuard does not broadcast transactions.</p>
+            <p class="font-mono text-[10px] text-[#78716C] break-all">Receipt digest: <span id="live-receipt" class="text-[#1C1917]"></span></p>
           </div>
-          <p class="font-mono text-[#1C1917] truncate font-semibold">Ethereum address explorer</p>
-          <p class="text-[#57534E] text-[11px]">Compare a live address record with the evaluation API response.</p>
-          <a href="https://eth.blockscout.com" target="_blank" class="text-[#2B7FFF] hover:underline flex items-center space-x-1 pt-1 font-medium">
-            <span>Open Blockscout Hub</span>
-            <i data-lucide="external-link" class="w-3 h-3"></i>
-          </a>
         </div>
+      </div>
+    </section>
 
+    <section id="research-case" class="museum-mat rounded-2xl p-5 md:p-8 space-y-4" aria-labelledby="research-case-title">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-mono font-bold text-amber-900">RECORDED RESEARCH REPLAY</span>
+        <h2 id="research-case-title" class="font-serif text-2xl italic text-[#1C1917]">A documented address-poisoning attempt</h2>
+      </div>
+      <p class="max-w-3xl text-sm leading-relaxed text-[#57534E]">The Poison-Hunter research sample identifies a look-alike address that sent a tiny USDT transfer to a victim. Blockscout shows the historical transaction. Replay its published addresses through ScoutGuard's current similarity rule to see the pre-signing decision it would give with the original counterparty reference available.</p>
+      <button id="research-replay" type="button" class="min-h-11 rounded-xl bg-[#1C1917] px-5 py-3 text-sm font-semibold text-white hover:bg-[#292524]">Replay recorded case</button>
+      <p id="research-error" class="hidden rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800" role="alert"></p>
+      <div id="research-result" class="hidden space-y-3 rounded-xl border border-[#E8E5DF] bg-[#FAF8F5] p-4" aria-live="polite">
+        <p id="research-verdict" class="text-sm font-bold text-[#1C1917]"></p>
+        <p id="research-addresses" class="break-all font-mono text-xs text-[#57534E]"></p>
+        <p id="research-explanation" class="text-sm text-[#44403C]"></p>
+        <div id="research-links" class="flex flex-wrap gap-2"></div>
+        <p id="research-limitation" class="text-xs leading-relaxed text-[#57534E]"></p>
       </div>
     </section>
 
@@ -481,9 +526,18 @@
     // Code Snippet Tabs
     const SDK_CODES = {
       typescript: `// Server-side agent example; keep keys outside the browser.
-import { parseEther } from 'ethers';
-const candidate = { from: agentAddress, to: recipientAddress,
-  value: '0.5', chainId: 1, agentId: 'procurement-bot-01' };
+import { Interface, getAddress, parseUnits } from 'ethers';
+const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+const agentAddress = await agentWallet.getAddress(); // your server-side signer
+const recipientAddress = process.env.PAYMENT_RECIPIENT; // your approved destination
+if (!recipientAddress || !agentWallet.provider ||
+    (await agentWallet.provider.getNetwork()).chainId !== 1n) throw new Error('Expected Ethereum signer and recipient');
+const transferData = new Interface(['function transfer(address,uint256)']).encodeFunctionData(
+  'transfer', [recipientAddress, parseUnits('250', 6)]);
+const candidate = { from: agentAddress, to: USDC,
+  value: '0', data: transferData, chainId: 1,
+  agentId: 'procurement-bot-01' };
+if (!process.env.SCOUTGUARD_SERVICE_KEY) throw new Error('Missing service key');
 const response = await fetch(process.env.SCOUTGUARD_API_URL || 'https://scoutguard.vercel.app/api/evaluate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json',
@@ -493,9 +547,16 @@ const response = await fetch(process.env.SCOUTGUARD_API_URL || 'https://scoutgua
 if (!response.ok) throw new Error('ScoutGuard unavailable');
 const inspection = await response.json();
 if (!inspection.executionAllowed) throw new Error(inspection.reasons[0]);
-// Bind the approval to this exact transaction before signing.
-await agentWallet.sendTransaction({ to: candidate.to,
-  value: parseEther(candidate.value), chainId: candidate.chainId });`
+const approved = inspection.receipt.transactionSummary;
+if (approved.chainId !== 1 || getAddress(approved.from) !== getAddress(agentAddress) ||
+    getAddress(approved.to) !== getAddress(recipientAddress) ||
+    getAddress(approved.transactionTo) !== getAddress(USDC) ||
+    approved.rawAmount !== parseUnits('250', 6).toString() ||
+    approved.data.toLowerCase() !== transferData.toLowerCase()) {
+  throw new Error('Evaluation did not match the payment');
+}
+// The caller still owns policy enforcement and wallet signing.
+await agentWallet.sendTransaction({ to: candidate.to, value: 0n, data: candidate.data });`
     };
 
     function setSdkTab(tab) {

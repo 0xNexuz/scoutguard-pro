@@ -1,9 +1,9 @@
-import { BlockscoutClient, SUPPORTED_CHAINS } from './blockscout-client.js';
+import { BlockscoutClient } from './blockscout-client.js';
 import { PoisoningDetector } from './poisoning-detector.js';
 import { ContractVerificationGate } from './contract-gate.js';
 import { PolicyEngine } from './policy-engine.js';
 import { ReceiptSigner } from './receipt-signer.js';
-import { isAddress } from 'ethers';
+import { normalizePayment } from './payment-normalizer.js';
 import {
   TransactionCandidate,
   EvaluationResult,
@@ -46,36 +46,48 @@ export class ScoutGuard {
    */
   public async evaluateTransaction(tx: TransactionCandidate): Promise<EvaluationResult> {
     const checks: SecurityCheckResult[] = [];
-    const valid = isAddress(tx.to) && isAddress(tx.from) &&
-      typeof tx.value === 'string' && /^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(tx.value) &&
-      Number.isFinite(Number(tx.value)) && Number.isSafeInteger(tx.chainId) &&
-      !tx.tokenAddress && !tx.data;
-    const explorerUrl = valid && SUPPORTED_CHAINS[tx.chainId]
-      ? this.blockscout.getExplorerAddressUrl(tx.chainId, tx.to) : '';
+    let explorerUrl = '';
 
     try {
-      if (!valid || !SUPPORTED_CHAINS[tx.chainId]) throw new Error('Invalid transaction candidate or unsupported chain');
+      const payment = normalizePayment(tx);
+      const token = payment.tokenAddress ? this.blockscout.getTokenConfig(payment.chainId, payment.tokenAddress) : undefined;
+      explorerUrl = this.blockscout.getExplorerAddressUrl(payment.chainId, payment.to);
       // A missing upstream response must never be interpreted as clean history.
-      const [counters, details] = await Promise.all([
-        this.blockscout.getAddressCounters(tx.chainId, tx.to),
-        this.blockscout.getAddressDetails(tx.chainId, tx.to)
+      const [counters, details, historyCounterparties] = await Promise.all([
+        this.blockscout.getAddressCounters(payment.chainId, payment.to),
+        this.blockscout.getAddressDetails(payment.chainId, payment.to),
+        this.blockscout.getSenderCounterparties(payment.chainId, payment.from)
       ]);
+      const counterparties = new Map(historyCounterparties.map(counterparty => [counterparty.address.toLowerCase(), counterparty]));
+      for (const counterparty of this.knownCounterparties) {
+        counterparties.set(counterparty.address.toLowerCase(), { ...counterparty, source: counterparty.source || 'CONFIGURED' });
+      }
       const contractSecurity = details.isContract
-        ? await this.blockscout.getContractSecurity(tx.chainId, tx.to)
+        ? await this.blockscout.getContractSecurity(payment.chainId, payment.to)
         : { isContract: false, isVerified: false };
 
       // 2. Check 1: Address Poisoning & Vanity Collision
       const poisoningCheck = this.poisoningDetector.evaluatePoisoningRisk(
-        tx.to,
+        payment.to,
         counters,
-        this.knownCounterparties,
+        [...counterparties.values()],
         explorerUrl
       );
+      poisoningCheck.metadata = {
+        ...poisoningCheck.metadata,
+        comparisonSource: 'BLOCKSCOUT_SENDER_HISTORY',
+        counterpartiesCompared: counterparties.size
+      };
+      const matchedAddress = poisoningCheck.metadata.vendorAddress as string | undefined;
+      const matchedCounterparty = matchedAddress ? counterparties.get(matchedAddress.toLowerCase()) : counterparties.get(payment.to.toLowerCase());
+      if (matchedCounterparty?.source === 'BLOCKSCOUT_HISTORY' && matchedCounterparty.evidenceTxHash) {
+        poisoningCheck.metadata.observedTransactionUrl = this.blockscout.getExplorerTxUrl(payment.chainId, matchedCounterparty.evidenceTxHash);
+      }
       checks.push(poisoningCheck);
 
       // 3. Check 2: Contract Verification, Bytecode, & Scam Flags
       const contractCheck = this.contractGate.evaluateContractSecurity(
-        tx.to,
+        payment.to,
         counters.isContract || details.isContract,
         contractSecurity,
         details,
@@ -83,8 +95,24 @@ export class ScoutGuard {
       );
       checks.push(contractCheck);
 
+      if (token) {
+        const tokenExplorerUrl = this.blockscout.getExplorerAddressUrl(payment.chainId, token.address);
+        const tokenSecurity = await this.blockscout.getContractSecurity(payment.chainId, token.address);
+        checks.push({
+          id: tokenSecurity.isVerified ? 'SEC-TOKEN-USDC' : 'SEC-TOKEN-UNVERIFIED',
+          name: 'Supported Stablecoin Contract',
+          status: tokenSecurity.isVerified ? 'PASS' : 'FAIL',
+          scoreImpact: tokenSecurity.isVerified ? 0 : 100,
+          detail: tokenSecurity.isVerified
+            ? `${token.name} (${token.symbol}) matched the canonical allowlisted contract and is source-verified on Blockscout.`
+            : `${token.name} matched the allowlist, but Blockscout did not return verified source metadata.`,
+          evidenceUrl: tokenExplorerUrl,
+          metadata: { symbol: token.symbol, decimals: token.decimals, tokenAddress: token.address }
+        });
+      }
+
       // 4. Check 3: Spending Cap & Agent Policy
-      const policyCheck = this.policyEngine.evaluatePolicy(tx, explorerUrl);
+      const policyCheck = this.policyEngine.evaluatePolicy(payment, explorerUrl, token);
       checks.push(policyCheck);
 
       // 5. Synthesize decisions
@@ -92,7 +120,7 @@ export class ScoutGuard {
 
       // 6. Generate cryptographic audit receipt
       const receipt = this.receiptSigner.generateReceipt(
-        tx,
+        payment,
         synthesized.decision,
         synthesized.riskScore,
         checks,

@@ -7,21 +7,21 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** SUBMISSION_PREPARATION
-- **Overall status:** PUBLIC MVP VERIFIED — Ethereum PRO integration and deployed full stack verified; demo and Craftora submission left to user
-- **Last updated date:** 2026-10-21
+- **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
+- **Overall status:** SPRINT 2 FIXES VERIFIED LOCALLY — all five judge requests addressed in local code or submission draft; push, deployment, and Craftora editing pending authorization
+- **Last updated date:** 2026-10-23
 
 ## Git State
 
 - **Branch:** main
-- **Last verified application commit:** `f033f3c` pushed to origin/main
-- **Working tree:** clean after this deployment record is committed and pushed
+- **Last verified application commit:** `d02856d` on `main`
+- **Working tree:** uncommitted Sprint 2 implementation and evidence updates
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
-- **Last verified milestone:** Vercel production deployment with public health, simulated case, auth, live Ethereum evaluation, and browser interaction checks (2026-10-21)
+- **Last verified milestone:** Local public ETH and USDC evaluations with automatic Blockscout sender-history comparison and live dashboard evidence (2026-10-23)
 
 ## Hackathon Context
 
-- **Competition:** Blockscout PRO API Buildathon (currently Sprint 1)
+- **Competition:** Blockscout PRO API Buildathon (Sprint 2 improvement round)
 - **Organizer:** Blockscout Core Team
 - **Platform:** Craftora (`craftora.tech`)
 - **Prizes:** Up to $1,200 equivalent in PRO API credits per official brief (page badge is inconsistent)
@@ -65,13 +65,20 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] M4: Per-transaction hard cap, `FLAG` decision, and local SHA-256 digest; no human approval workflow or signed receipt
   - [x] M5: Local full-stack fixture simulation dashboard; live Ethereum auditor verified through local HTTP
   - [x] M6: 17 passing local tests after hardening; no deployed end-to-end proof
+- **Sprint 2 judge improvements:**
+  - [x] Canonical USDC support with asset-specific policy limits and token contract verification
+  - [x] Blockscout-derived recent sender history for poisoning detection
+  - [x] Public Ethereum evaluation endpoint with a small rate limit
+  - [x] Live dashboard evidence with exact Explorer links and explicit live/simulated provenance
+  - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
 - **Implemented but unverified:** Docker container execution and a real signing-agent integration.
-- **Pending features:** User-owned demo recording and Craftora submission; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** User records the demo and submits the public MVP before Sprint 1 closes.
-- **P1 priorities:** Production integration contract and transaction binding; browser/deployment verification.
+- **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
+- **P0 priorities:** Push and promote the verified Sprint 2 revision after user authorization, then update the Craftora project page with the prepared draft if authorized.
+- **P1 priorities:** Production integration contract, transaction binding, and a shared rate limiter for horizontally scaled deployments.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Public MVP verified at https://scoutguard.vercel.app/.
+- **Current milestone:** Five judge requests addressed locally, including live candidate presets, logo/favicon, and Craftora copy; public production still serves the Sprint 1 revision.
+- **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
 - **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
 
 ## Verification
@@ -100,12 +107,20 @@ Keep this file concise and evidence-based. Update current state in place, append
 | 2026-10-20 | Vercel entry point relocation | Current local checkout | VERIFIED locally | `npm run build`, 17 tests, and production-mode local root/health HTTP 200; public deployment pending account authentication |
 | 2026-10-21 | Vercel production deployment | Public URL | VERIFIED | Health JSON 200, fixture simulation 200, unauthenticated evaluation 401, authenticated Ethereum evaluation 200 / `PASS` |
 | 2026-10-21 | Public browser interaction | https://scoutguard.vercel.app/ | VERIFIED | Dashboard loaded; Vanity Poisoning selection changed computed labeled simulation to `BLOCK` |
+| 2026-10-23 | `npm run build`, `npm test` | Current local checkout | VERIFIED | TypeScript build passed; 21/21 tests passed, including USDC, Blockscout history, and published-case replay invariants |
+| 2026-10-23 | Production-mode public ETH and USDC HTTP checks | Port 3030, local | VERIFIED | Both returned HTTP 200 with `LIVE`, `BLOCKSCOUT_PRO`, and `PASS`; USDC included `SEC-TOKEN-USDC` |
+| 2026-10-23 | Public dashboard live form | Local in-app browser | VERIFIED | Rendered live decision, three checks, two sender-history counterparties, receipt digest, and exact Explorer links |
+| 2026-10-23 | USDC cap preset in dashboard | Local in-app browser | VERIFIED | 3,000 USDC rendered `LIVE · BLOCKSCOUT_PRO · BLOCK`, with `SEC-POLICY-CAP` and three Explorer links |
+| 2026-10-23 | Historical token transfer evidence | Blockscout PRO and local engine | VERIFIED | Transaction endpoint returned HTTP 200/`ok` with a token transfer event from sample sender to recipient; live result includes the exact transaction URL |
+| 2026-10-23 | Poison-Hunter recorded case | Published dataset, Blockscout PRO, local detector | VERIFIED as replay | Published attacker/victim/reference and tx matched an `ok` USDT dust transfer; detector found 4+4 match and `CRITICAL`. Live history missed the older reference; see `docs/evidence/2026-10-23-recorded-poisoning-replay.md`. |
+| 2026-10-23 | Recorded case browser replay | Local production-mode server and in-app browser | VERIFIED | `/api/research-case/poisoning` returned `RECORDED_RESEARCH_REPLAY` / `BLOCK`; dashboard rendered addresses, 4+4 explanation, source links, and live-coverage limitation |
 
 ### Integration and Evidence Status
 
-- **Real integrations:** Authenticated PRO gateway and deployed evaluation verified on Ethereum chain 1. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
+- **Real integrations:** Authenticated PRO gateway and deployed protected evaluation verified on Ethereum chain 1. The new public ETH/USDC evaluation and sender-history derivation are verified locally against live Blockscout data. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
 - **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
-- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md` and deployment evidence in `docs/evidence/2026-10-21-vercel-production.md`. Public Explorer API fields match PRO gateway fields; Explorer URLs in responses are navigation links, not transaction proofs.
+- **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`, deployment evidence in `docs/evidence/2026-10-21-vercel-production.md`, and Sprint 2 evidence in `docs/evidence/2026-10-23-sprint-2-feedback.md`. Explorer URLs identify the address and token pages used as supporting evidence; they are not transaction proofs.
+- **Historical transaction proof:** Blockscout PRO returned an `ok` transaction with a token transfer event from the sample sender to recipient. The live result can link that transaction; it does not claim the proposed payment happened or that the sender initiated the top-level transaction.
 - **Unverified claims:** Docker image, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution, real signing-agent integration.
 
 ## Decision Log
@@ -129,10 +144,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** User records a short demo of the public simulation and protected Ethereum evaluation, then submits the repo, live URL, stage write-up, and demo on Craftora.
-- **Next authorized action:** Finish the deployment record and handoff; Craftora submission and demo recording are explicitly left to the user.
-- **Next approved milestone:** Complete Sprint 1 evidence gates.
-- **Approval boundary:** Deployment and push were authorized by the user. Do not perform Craftora submission or demo recording after the user's explicit correction.
+- **Next recommended action:** Verify the pushed Sprint 2 release on the public Vercel URL, then continue the documented open items.
+- **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
+- **Next approved milestone:** Ship and verify the judge-feedback release, recording actual deployment evidence.
+- **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -167,3 +182,23 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Decision:** Push the corrected public integration example and promote its Vercel build.
 - **Evidence:** Commit `f033f3c` pushed to `origin/main`; deployment `dpl_CZc9ZnCLT1SF3aqYqs29m2TJqhny` promoted. Public root and health returned HTTP 200, the root contained the production evaluation URL and Ethereum chain 1, and evaluation without the service key returned HTTP 401.
 - **Status:** VERIFIED on the public production URL; demo recording and Craftora submission remain with the user.
+
+### 2026-10-23 — Sprint 2 judge requests implemented locally
+
+- **Decision:** Add canonical USDC evaluation, derive look-alike counterparties from recent Blockscout sender history, expose a constrained public live evaluation route, and replace example evidence cards with a real live dashboard result.
+- **Reason:** Judges scored Blockscout integration and demo quality at 2/5 and requested five concrete changes; the full screenshot adds the Craftora project-page expansion.
+- **Evidence:** 20 passing tests; production-mode local ETH and USDC live requests; browser result `LIVE · BLOCKSCOUT_PRO · PASS` with two history counterparties and Explorer links; `docs/evidence/2026-10-23-sprint-2-feedback.md`.
+- **Status:** VERIFIED locally for API and dashboard; Craftora text drafted, with external publication pending authorization.
+
+### 2026-10-23 — Full feedback, branding, and traceable live cases
+
+- **Decision:** Add a reusable ScoutGuard shield and route mark, browser favicon, three real-data candidate presets, and an expanded Craftora draft. Correct the integration sample to ethers and bind the returned transaction summary to its intended transfer.
+- **Evidence:** Live Blockscout sender history returned two counterparties; the selected recipient was observed there. Local live checks returned `PASS` for 0.1 ETH and 250 USDC, and `BLOCK` for 3,000 USDC. The browser cap preset produced the same `BLOCK`. Build and 20 tests passed; `git diff --check` passed.
+- **Status:** VERIFIED locally; no push, production promotion, Craftora edit, transaction signing, or broadcast performed.
+
+### 2026-10-23 — Direct USDC transaction binding
+
+- **Decision:** Normalize the unsigned direct ERC-20 transfer before security checks. Treat the token contract as the transaction destination and the calldata recipient as the payment destination. Use exact raw amounts for policy and bind the unsigned fields in the receipt digest.
+- **Reason:** The earlier separate token/recipient/amount request could not prove that the evaluated payment matched the transaction an agent would sign.
+- **Evidence:** `src/core/payment-normalizer.ts`, receipt and policy changes, updated browser and integration examples, and passing automated tests. The implementation checklist and open limits are in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`.
+- **Status:** VERIFIED locally; push and deployment authorized and in progress. Craftora publication and video remain with the user.

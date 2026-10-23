@@ -31,7 +31,7 @@ export class PoisoningDetector {
           matchedVendor: vendor,
           prefixMatchLength: 40,
           suffixMatchLength: 40,
-          explanation: `Exact match with registered counterparty: ${vendor.name}`
+          explanation: `Exact match with ${vendor.source === 'BLOCKSCOUT_HISTORY' ? 'sender-history' : 'registered'} counterparty: ${vendor.name}`
         };
       }
 
@@ -87,7 +87,7 @@ export class PoisoningDetector {
       severity: 'CLEAN',
       prefixMatchLength: 0,
       suffixMatchLength: 0,
-      explanation: 'No look-alike collisions detected against known counterparty registry.'
+      explanation: `No look-alike collisions detected against ${knownCounterparties.length} sender-history and configured counterparties.`
     };
   }
 
@@ -145,14 +145,15 @@ export class PoisoningDetector {
     if (vanityResult.matchedVendor) {
       return {
         id: 'SEC-POISON-OK',
-        name: 'Counterparty Authenticity',
+        name: vanityResult.matchedVendor.source === 'BLOCKSCOUT_HISTORY' ? 'Observed Counterparty History' : 'Counterparty Authenticity',
         status: 'PASS',
         scoreImpact: 0,
-        detail: `Exact match with registered counterparty ${vanityResult.matchedVendor.name}.`,
+        detail: `Exact match with ${vanityResult.matchedVendor.source === 'BLOCKSCOUT_HISTORY' ? 'an outbound counterparty derived from Blockscout sender history' : 'registered counterparty'} ${vanityResult.matchedVendor.name}.`,
         evidenceUrl: explorerUrl,
         metadata: {
           matchedVendor: vanityResult.matchedVendor.name,
-          category: vanityResult.matchedVendor.category
+          category: vanityResult.matchedVendor.category,
+          source: vanityResult.matchedVendor.source || 'CONFIGURED'
         }
       };
     }
@@ -174,7 +175,7 @@ export class PoisoningDetector {
       name: 'Counterparty Authenticity',
       status: 'PASS',
       scoreImpact: 0,
-      detail: `Normal recipient with ${counterData.transactionsCount} recorded transactions on Blockscout.`,
+      detail: `Normal recipient with ${counterData.transactionsCount} recorded transactions on Blockscout; no look-alike collision was found in the sender's outbound history.`,
       evidenceUrl: explorerUrl
     };
   }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">ScoutGuard shield and route mark</title>
+  <rect width="64" height="64" rx="16" fill="#1c1917"/>
+  <path d="M32 9 51 17v15c0 12-7.7 19.2-19 24C20.7 51.2 13 44 13 32V17Z" fill="none" stroke="#f7f4ee" stroke-width="3.5" stroke-linejoin="round"/>
+  <circle cx="23" cy="27" r="4" fill="#8ed8c2"/>
+  <circle cx="41" cy="36" r="4" fill="#8ed8c2"/>
+  <path d="m27 29 10 5" stroke="#8ed8c2" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

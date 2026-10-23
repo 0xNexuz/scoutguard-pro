@@ -29,7 +29,12 @@ export class ReceiptSigner {
         from: tx.from.toLowerCase(),
         to: tx.to.toLowerCase(),
         value: tx.value,
-        chainId: tx.chainId
+        chainId: tx.chainId,
+        tokenAddress: tx.tokenAddress?.toLowerCase(),
+        transactionTo: tx.transactionTo?.toLowerCase(),
+        transactionValue: tx.transactionValue,
+        rawAmount: tx.rawAmount,
+        data: tx.data?.toLowerCase()
       },
       checks: checks.map(c => ({ id: c.id, status: c.status, score: c.scoreImpact }))
     });
@@ -47,7 +52,13 @@ export class ReceiptSigner {
         from: tx.from,
         to: tx.to,
         value: tx.value,
-        chainId: tx.chainId
+        chainId: tx.chainId,
+        asset: tx.tokenAddress ? 'USDC' : 'NATIVE',
+        tokenAddress: tx.tokenAddress,
+        transactionTo: tx.transactionTo,
+        transactionValue: tx.transactionValue,
+        rawAmount: tx.rawAmount,
+        data: tx.data
       },
       integrityHash: `0x${integrityHash}`,
       blockscoutExplorerUrl

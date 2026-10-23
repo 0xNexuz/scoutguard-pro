@@ -1,11 +1,11 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ScoutGuard } from './core/scoutguard.js';
-import { SUPPORTED_CHAINS } from './core/blockscout-client.js';
-import { BlockscoutClient } from './core/blockscout-client.js';
-import { isAddress } from 'ethers';
+import { PoisoningDetector } from './core/poisoning-detector.js';
+import { BlockscoutClient, SUPPORTED_CHAINS } from './core/blockscout-client.js';
+import { normalizePayment } from './core/payment-normalizer.js';
 import { timingSafeEqual } from 'node:crypto';
 import { rateLimit } from 'express-rate-limit';
 import { TransactionCandidate } from './types/index.js';
@@ -26,12 +26,58 @@ if (process.env.NODE_ENV === 'production' && process.env.NODE_TLS_REJECT_UNAUTHO
 }
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false }));
+const publicEvaluationLimit = rateLimit({
+  windowMs: 60_000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Public live-check limit reached. Wait one minute and try again.' }
+});
 // Serve static UI assets from public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
 const guard = new ScoutGuard();
+
+function parseCandidate(body: unknown, publicMode = false): TransactionCandidate | undefined {
+  if (!body || typeof body !== 'object') return undefined;
+  const input = body as Partial<TransactionCandidate>;
+  const candidate: TransactionCandidate = {
+    from: String(input.from || ''),
+    to: String(input.to || ''),
+    value: String(input.value || ''),
+    chainId: Number(input.chainId),
+    agentId: publicMode ? 'procurement-bot-01' : input.agentId,
+    memo: publicMode ? 'Public judge live evaluation' : input.memo,
+    tokenAddress: input.tokenAddress ? String(input.tokenAddress) : undefined,
+    data: input.data ? String(input.data) : undefined
+  };
+  if (publicMode && candidate.chainId !== 1) return undefined;
+  try {
+    normalizePayment(candidate);
+    return candidate;
+  } catch {
+    return undefined;
+  }
+}
+
+async function evaluateRequest(req: Request, res: Response, publicMode = false) {
+  const candidate = parseCandidate(req.body, publicMode);
+  if (!candidate) {
+    return res.status(400).json({
+      error: publicMode
+        ? 'Provide a valid Ethereum native transfer or direct canonical USDC transfer(address,uint256) transaction.'
+        : 'Provide a valid native transfer or direct allowlisted ERC-20 transfer(address,uint256) transaction.'
+    });
+  }
+  const evaluation = await guard.evaluateTransaction(candidate);
+  res.setHeader('Cache-Control', 'no-store');
+  return publicMode
+    ? res.json({ mode: 'LIVE', source: 'BLOCKSCOUT_PRO', evaluation })
+    : res.json(evaluation);
+}
 
 // Built-in demonstration scenarios for hackathon judges & testers
 const DEMO_SCENARIOS: Record<string, {
@@ -125,7 +171,7 @@ app.get('/api/health', (req, res) => {
     status: 'ONLINE',
     service: 'ScoutGuard PRO AgentFinOps Engine',
     version: '1.0.0',
-    blockscoutIntegration: 'UNVERIFIED',
+    blockscoutIntegration: 'REQUEST_SCOPED',
     uptime: process.uptime()
   });
 });
@@ -142,6 +188,40 @@ app.get('/api/scenarios', (req, res) => {
   res.json(Object.values(DEMO_SCENARIOS));
 });
 
+// A sourced historical case replay. This runs the current similarity detector against
+// published case addresses; it is explicitly separate from the live history endpoint.
+app.get('/api/research-case/poisoning', (req, res) => {
+  const victim = '0x3e14605bf3ebc239a6ba1fdd4cd9daf01f382faf';
+  const candidate = '0xcb9d34bbb0480e714f4c004cfd8cb72b776db1b6';
+  const reference = '0xcb9da91c741820157e81ae21cddd5d207997b1b6';
+  const finding = new PoisoningDetector().detectVanityCollision(candidate, [{
+    address: reference, name: 'Research dataset reference', category: 'VENDOR',
+    verifiedSince: 'published case', totalTransfers: 1
+  }]);
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.json({
+    mode: 'RECORDED_RESEARCH_REPLAY',
+    decision: finding.severity === 'CRITICAL' ? 'BLOCK' : finding.severity === 'SUSPICIOUS' ? 'FLAG' : 'PASS',
+    candidate, reference, victim,
+    prefixMatchLength: finding.prefixMatchLength,
+    suffixMatchLength: finding.suffixMatchLength,
+    explanation: finding.explanation,
+    source: 'Poison-Hunter (ACM CCS 2024) sample dataset',
+    sourceUrl: 'https://github.com/DS2L/Poison-Hunter/blob/main/phishing_transfers_sample.csv',
+    blockscoutTxUrl: 'https://eth.blockscout.com/tx/0xd599a08dc631fbae475bf9ba90f93d5ed075a896336a23027fc321f589d9de1b',
+    limitation: 'The public live evaluator scans recent history pages and did not recover this older reference for the victim. This replay shows the decision if that reference is supplied; it is not a live detection or evidence that a later theft occurred.'
+  });
+});
+
+// Small, judge-friendly public path. It is limited to Ethereum and five checks per minute per client.
+app.post('/api/evaluate/public', publicEvaluationLimit, async (req, res) => {
+  try {
+    await evaluateRequest(req, res, true);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 app.post('/api/evaluate', (req, res, next) => {
   const expected = process.env.SCOUTGUARD_SERVICE_KEY;
   if (!expected) return next();
@@ -152,16 +232,7 @@ app.post('/api/evaluate', (req, res, next) => {
   next();
 }, async (req, res) => {
   try {
-    const candidate = req.body as TransactionCandidate;
-    if (!candidate || !isAddress(candidate.to || '') || !isAddress(candidate.from || '') ||
-        typeof candidate.value !== 'string' || !/^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(candidate.value) ||
-        !Number.isFinite(Number(candidate.value)) || !SUPPORTED_CHAINS[candidate.chainId] ||
-        candidate.tokenAddress || candidate.data) {
-      return res.status(400).json({ error: 'Provide valid from/to EVM addresses, a nonnegative native amount, and a supported chainId. Token transfers and calldata are not supported.' });
-    }
-
-    const result = await guard.evaluateTransaction(candidate);
-    res.json(result);
+    await evaluateRequest(req, res);
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
@@ -182,6 +253,7 @@ app.post('/api/simulate/:scenarioId', async (req, res) => {
     const demoClient = Object.assign(new BlockscoutClient(), {
       getAddressCounters: async () => demoCounters,
       getAddressDetails: async () => demoDetails,
+      getSenderCounterparties: async () => [],
       getContractSecurity: async () => ({ isContract: true, isVerified: false })
     });
     const demoGuard = new ScoutGuard({ blockscoutClient: demoClient, customCounterparties: [{

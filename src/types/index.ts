@@ -3,12 +3,22 @@ export type GuardDecision = 'PASS' | 'FLAG' | 'BLOCK';
 export interface TransactionCandidate {
   from: string;
   to: string;
-  value: string; // in native units or token wei
+  value: string; // decimal display units for the native asset or supported token
   chainId: number;
   data?: string;
   tokenAddress?: string;
+  transactionTo?: string; // original unsigned transaction destination
+  transactionValue?: string; // original unsigned native value
+  rawAmount?: string; // exact payment amount in smallest asset units
   agentId?: string;
   memo?: string;
+}
+
+export interface TokenConfig {
+  address: string;
+  symbol: 'USDC';
+  name: string;
+  decimals: 6;
 }
 
 export interface SecurityCheckResult {
@@ -33,6 +43,12 @@ export interface AuditReceipt {
     to: string;
     value: string;
     chainId: number;
+    asset: string;
+    tokenAddress?: string;
+    transactionTo?: string;
+    transactionValue?: string;
+    rawAmount?: string;
+    data?: string;
   };
   integrityHash: string;
   blockscoutExplorerUrl: string;
@@ -70,4 +86,6 @@ export interface KnownCounterparty {
   category: 'VENDOR' | 'EXCHANGE' | 'TREASURY' | 'CONTRACT';
   verifiedSince: string;
   totalTransfers: number;
+  source?: 'CONFIGURED' | 'BLOCKSCOUT_HISTORY';
+  evidenceTxHash?: string; // observed outbound transaction, never the proposed payment
 }
