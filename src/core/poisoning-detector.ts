@@ -11,7 +11,7 @@ export interface PoisoningCheckResult {
 
 export class PoisoningDetector {
   /**
-   * Compares a candidate recipient address against a list of known approved counterparties
+   * Compares a candidate recipient address against a list of configured or observed counterparties
    * to detect vanity look-alike address collisions (the core mechanism of address poisoning).
    */
   public detectVanityCollision(
@@ -19,76 +19,39 @@ export class PoisoningDetector {
     knownCounterparties: KnownCounterparty[]
   ): PoisoningCheckResult {
     const cleanCandidate = candidateAddress.toLowerCase();
-
-    for (const vendor of knownCounterparties) {
-      const cleanVendor = vendor.address.toLowerCase();
-
-      // If it's an exact match, it is the legitimate vendor!
-      if (cleanCandidate === cleanVendor) {
-        return {
-          isPoisoningCandidate: false,
-          severity: 'CLEAN',
-          matchedVendor: vendor,
-          prefixMatchLength: 40,
-          suffixMatchLength: 40,
-          explanation: `Exact match with ${vendor.source === 'BLOCKSCOUT_HISTORY' ? 'sender-history' : 'registered'} counterparty: ${vendor.name}`
-        };
-      }
-
-      // Strip '0x' for hex comparison
-      const candHex = cleanCandidate.startsWith('0x') ? cleanCandidate.slice(2) : cleanCandidate;
-      const vendHex = cleanVendor.startsWith('0x') ? cleanVendor.slice(2) : cleanVendor;
-
-      // Calculate prefix match
-      let prefixMatch = 0;
-      for (let i = 0; i < candHex.length; i++) {
-        if (candHex[i] === vendHex[i]) {
-          prefixMatch++;
-        } else {
-          break;
-        }
-      }
-
-      // Calculate suffix match
-      let suffixMatch = 0;
-      for (let i = 0; i < candHex.length; i++) {
-        if (candHex[candHex.length - 1 - i] === vendHex[vendHex.length - 1 - i]) {
-          suffixMatch++;
-        } else {
-          break;
-        }
-      }
-
-      // High-confidence look-alike threshold:
-      // Most wallets display 4 to 6 chars at start and 4 chars at end (e.g. 0x1234...abcd)
-      if (prefixMatch >= 4 && suffixMatch >= 4) {
-        return {
-          isPoisoningCandidate: true,
-          severity: 'CRITICAL',
-          matchedVendor: vendor,
-          prefixMatchLength: prefixMatch,
-          suffixMatchLength: suffixMatch,
-          explanation: `CRITICAL LOOK-ALIKE: Candidate matches ${prefixMatch} leading and ${suffixMatch} trailing hex chars of '${vendor.name}' (${vendor.address.slice(0, 6)}...${vendor.address.slice(-4)}) but is a DIFFERENT address!`
-        };
-      } else if (prefixMatch >= 4 || suffixMatch >= 5) {
-        return {
-          isPoisoningCandidate: true,
-          severity: 'SUSPICIOUS',
-          matchedVendor: vendor,
-          prefixMatchLength: prefixMatch,
-          suffixMatchLength: suffixMatch,
-          explanation: `SUSPICIOUS SIMILARITY: Partial collision (${prefixMatch} prefix, ${suffixMatch} suffix) with '${vendor.name}'.`
-        };
-      }
+    if (!/^0x[0-9a-f]{40}$/.test(cleanCandidate)) throw new Error('Invalid candidate address');
+    const unique = new Map<string, KnownCounterparty>();
+    for (const peer of knownCounterparties) {
+      const key = peer.address.toLowerCase();
+      if (!/^0x[0-9a-f]{40}$/.test(key)) throw new Error('Invalid comparison address');
+      const previous = unique.get(key);
+      // Prefer explicitly configured references when duplicate sources exist.
+      if (!previous || (previous.source === 'BLOCKSCOUT_HISTORY' && peer.source !== 'BLOCKSCOUT_HISTORY')) unique.set(key, peer);
     }
-
-    return {
-      isPoisoningCandidate: false,
-      severity: 'CLEAN',
-      prefixMatchLength: 0,
-      suffixMatchLength: 0,
-      explanation: `No look-alike collisions detected against ${knownCounterparties.length} sender-history and configured counterparties.`
-    };
+    const findings: PoisoningCheckResult[] = [];
+    for (const [address, peer] of unique) {
+      const candidate = cleanCandidate.slice(2), reference = address.slice(2);
+      let prefix = 0, suffix = 0;
+      while (prefix < 40 && candidate[prefix] === reference[prefix]) prefix++;
+      while (suffix < 40 && candidate[39 - suffix] === reference[39 - suffix]) suffix++;
+      const exact = address === cleanCandidate;
+      const severity = !exact && prefix >= 4 && suffix >= 4 ? 'CRITICAL'
+        : !exact && (prefix >= 4 || suffix >= 5) ? 'SUSPICIOUS' : 'CLEAN';
+      if (!exact && severity === 'CLEAN') continue;
+      findings.push({ isPoisoningCandidate: !exact, severity, matchedVendor: peer,
+        prefixMatchLength: prefix, suffixMatchLength: suffix,
+        explanation: exact
+          ? `Exact match with ${peer.source === 'BLOCKSCOUT_HISTORY' ? 'observed outbound' : 'operator-configured'} counterparty ${peer.address}; this does not prove safety.`
+          : `${severity} LOOK-ALIKE: ${prefix} leading and ${suffix} trailing hex characters match ${peer.address}, but the candidate is a different address.` });
+    }
+    // Scan everything before selecting. An exact historical match cannot conceal a collision.
+    const rank = { CRITICAL: 3, SUSPICIOUS: 2, CLEAN: 1 };
+    findings.sort((a, b) => rank[b.severity] - rank[a.severity]
+      || (b.prefixMatchLength + b.suffixMatchLength) - (a.prefixMatchLength + a.suffixMatchLength)
+      || b.prefixMatchLength - a.prefixMatchLength
+      || a.matchedVendor!.address.toLowerCase().localeCompare(b.matchedVendor!.address.toLowerCase()));
+    return findings[0] || { isPoisoningCandidate: false, severity: 'CLEAN', prefixMatchLength: 0,
+      suffixMatchLength: 0, explanation: `No resemblance detected in ${unique.size} inspected references; this is not proof of address safety.` };
   }
 
   /**
@@ -135,13 +98,14 @@ export class PoisoningDetector {
         evidenceUrl: explorerUrl,
         metadata: {
           matchedVendor: vanityResult.matchedVendor?.name,
+          vendorAddress: vanityResult.matchedVendor?.address,
           prefixMatch: vanityResult.prefixMatchLength,
           suffixMatch: vanityResult.suffixMatchLength
         }
       };
     }
 
-    // If it is an exact match for a known verified vendor, it passes cleanly!
+    // Exact observations describe a relationship, not verified trust.
     if (vanityResult.matchedVendor) {
       return {
         id: 'SEC-POISON-OK',
@@ -152,6 +116,7 @@ export class PoisoningDetector {
         evidenceUrl: explorerUrl,
         metadata: {
           matchedVendor: vanityResult.matchedVendor.name,
+          vendorAddress: vanityResult.matchedVendor.address,
           category: vanityResult.matchedVendor.category,
           source: vanityResult.matchedVendor.source || 'CONFIGURED'
         }
@@ -172,10 +137,10 @@ export class PoisoningDetector {
 
     return {
       id: 'SEC-POISON-OK',
-      name: 'Counterparty Authenticity',
+      name: 'Inspected Counterparty Similarity',
       status: 'PASS',
       scoreImpact: 0,
-      detail: `Normal recipient with ${counterData.transactionsCount} recorded transactions on Blockscout; no look-alike collision was found in the sender's outbound history.`,
+      detail: `No resemblance detected among the inspected sender-history and configured references. Recipient has ${counterData.transactionsCount} recorded transactions; neither fact proves address safety.`,
       evidenceUrl: explorerUrl
     };
   }

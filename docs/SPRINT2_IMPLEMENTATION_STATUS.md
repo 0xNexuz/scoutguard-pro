@@ -1,26 +1,21 @@
-# Sprint 2 implementation status — 2026-10-23
+# Sprint 2 implementation status — 2026-10-24
 
-The user-provided Sprint 2 implementation prompt is a target specification. This record separates implemented behavior from work still open. The judge's five feedback items are addressed in code or draft copy, but the prompt's 95% target has **not** been demonstrated.
+The original Sprint 2 application was released at `aa490c5`, with production verification recorded on October 23 and release record `2559de7`. The additional backend hardening on `feat/scoutguard-sprint2-hardening` is local, not pushed or deployed. The requested 95% overall completion and 100% critical end-to-end verification have **not** been demonstrated: fresh live/production verification and distributed quotas remain limited.
 
-| Area | Verified implementation | Limit |
+| Area | Current implementation and verification | Remaining limit |
 |---|---|---|
-| Direct USDC | Unsigned `transfer(address,uint256)` calldata is decoded; canonical Ethereum and Base USDC contracts are allowlisted; actual recipient and exact `bigint` amount are evaluated; unsupported selectors, `transferFrom`, mismatched contracts, and nonzero native value fail closed. | Base PRO requests may need a paid Blockscout plan. No general ERC-20 registry or allowance support. |
-| Policy and receipt | Separate native and USDC limits compare exact units. Receipt digest includes chain, sender, transaction destination, effective recipient, raw amount, original value, and calldata. | Digest is unkeyed SHA-256, not an authenticated signature. Hourly limits are not implemented. A signing agent must compare the returned fields to the exact transaction before signing. |
-| Poisoning detection | Recent outbound positive-value native and ERC-20 sender history builds comparison references. Incoming and zero-value events are excluded. Address similarity can block a look-alike; a published case is replayed separately with cited source and Explorer link. | Only the first page of each history endpoint is scanned. The historical reference for the published case was not recovered by that live scan. Observed history is not a trusted contact list. No claim of detecting that case live. |
-| Public evaluation | Anonymous Ethereum ETH and USDC checks use the Blockscout-backed engine and show checks, receipt, provenance, and Explorer links. | The five-per-minute limiter is process-local. A shared deployment-wide quota and cost monitoring are open. |
-| Evidence and submission | Local live ETH/USDC/cap checks and historical transfer event were recorded; expanded Craftora project-page copy is drafted; dashboard identifies live checks versus simulations and recorded replay. | No payment was sent by ScoutGuard. No video was recorded. Craftora page has not been published; user retained submission and video. |
+| Direct USDC | Existing direct calldata decoder retained; effective beneficiary, exact uint256 amount, canonical Ethereum/Base contracts and asset-specific limits checked. Adversarial unit boundaries, false assertions, selectors, zero values, malformed calldata and metadata failures tested. | Base access remains historically plan-gated; no new live Base claim, general token registry, transferFrom or allowance support. |
+| Historical retrieval | Cursor pagination with page/row/call/time/age bounds, event deduplication, direction/amount/token/hash/block/time evidence, explicit coverage and sanitized errors. Older references recovered across fixture pages. | Live recovery of the Poison-Hunter reference is blocked by cloud networking. Internal transfers, other chains and index completeness are outside the comparison coverage. |
+| Trust and poisoning | Observations remain distinct from configured references; incoming/zero-value activity cannot establish an outbound reference. All references are ranked deterministically; strong collisions block and partial collisions require review. | Heuristic thresholds have no measured efficacy/false-positive calibration. No resemblance is not proof of safety. |
+| Partial data | Required first-page failure blocks. Valid but incomplete scans require review even when an exact configured reference exists; no truncated-history PASS. Coverage is machine-readable and included in receipts. | High-activity sender presets can now FLAG rather than reproduce an old PASS. No lifetime-history guarantee. |
+| Policy and receipts | Exact native/USDC units and effective-recipient allowlist enforced. Returned versioned receipt includes full checks and coverage; deterministic verification detects eighteen field mutations relative to the digest. | SHA-256 is unkeyed, not authenticated. A signing agent must independently bind transaction fields and freshness. Hourly volume and approval workflow remain unimplemented. |
+| Public API | Strict input types, 16 KB body cap/no compression, provider-call/time/response bounds, local client/aggregate/concurrency limits, cooldown, JSON error redaction and no-store. Protected service-key route retained and now denies absent configuration in development too. HTTP fixture tests pass. | Shared deployment-wide quota not provisioned. Free-budget proposal is documented. Cold starts and multiple instances remain a limitation. |
+| Dependencies | body-parser 1.20.8 high-severity advisory patched to 1.20.9; final npm audit reports zero known vulnerabilities. | Audit is a registry advisory check, not a comprehensive security assessment. |
+| Evidence and frontend | Original live evidence/research case preserved. Chromium checked the unchanged form with fixture data, incomplete-history warnings, ETH/USDC, cap block, invalid input and injected 503/429. Existing provenance labels preserved. | External icons were blocked and small mobile overflow was observed. Fresh anonymous production and Explorer destination checks are blocked by cloud proxy; fixtures are not live proof. No PC graph/replay work was recovered or duplicated. |
+| Submission | Consolidated judge checklist and expanded Craftora draft reconciled with the released baseline and pending hardening branch. | No Craftora publication, video, X post, push, merge or deployment performed. |
 
-## Reproduction
+## Reproduction and evidence
 
-1. Run `npm ci`, `npm run build`, and `npm test`.
-2. Set `BLOCKSCOUT_API_KEY` and `SCOUTGUARD_SERVICE_KEY` server-side; start with `npm start`.
-3. Use the public dashboard's ETH, USDC, and cap presets. Inspect the `LIVE · BLOCKSCOUT_PRO` response and the sender, recipient, historical transfer, and USDC contract Explorer links.
-4. Use the recorded poisoning replay separately. Its source and limitation are in [the case record](evidence/2026-10-23-recorded-poisoning-replay.md).
+Run `npm ci`, `npm run build`, `npm test`, `npx tsc --noEmit`, `npm audit` and `git diff --check`. The suite passed 106 tests after hardening; baseline was 24, despite older documents reporting 21. See [security and integration notes](SPRINT2_HARDENING.md), [judge checklist](SPRINT2_JUDGE_CHECKLIST.md), [original production evidence](evidence/2026-10-23-sprint2-production.md) and the unchanged [recorded research case](evidence/2026-10-23-recorded-poisoning-replay.md).
 
-## Still open from the broader prompt
-
-- Paginated, bounded sender history with explicit completeness metadata and older-reference recovery.
-- A shared rate limiter, budget controls, and sustained load testing for public traffic.
-- Authenticated receipts or verifier integration with a real signing agent.
-- Hourly spending volume enforcement and broader adverse-case evaluation on a labeled dataset.
-- Craftora publication and demo video, both reserved for the user.
+With existing credentials and a permitted network, `npx tsx scripts/verify-research-history.ts` makes at most six read-only requests. It reports recovery only if the reference is present in actual provider history. Do not retry without another budget or purchase a plan. No successful improved-scanner live reconstruction is claimed here.

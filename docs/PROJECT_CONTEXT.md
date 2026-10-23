@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** SPRINT 2 FIXES VERIFIED LOCALLY — all five judge requests addressed in local code or submission draft; push, deployment, and Craftora editing pending authorization
-- **Last updated date:** 2026-10-23
+- **Current workflow stage:** REVIEW (Sprint 2 backend hardening branch)
+- **Overall status:** Original Sprint 2 release PRODUCTION VERIFIED on 2026-10-23. Additional backend hardening VERIFIED LOCALLY; not pushed or deployed. Fresh production/live reconstruction BLOCKED by cloud egress policy; no 95% completeness claim.
+- **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** main
-- **Last verified application commit:** `d02856d` on `main`
-- **Working tree:** uncommitted Sprint 2 implementation and evidence updates
+- **Branch:** `feat/scoutguard-sprint2-hardening` (created from fetched `origin/main`)
+- **Starting HEAD / fetched main:** `2559de7a4815986eeb496bf217780b428a4eb890`; application release `aa490c5`
+- **Working tree:** dedicated local hardening changes; see `git status`. No PC-local changes were present or recovered.
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
-- **Last verified milestone:** Local public ETH and USDC evaluations with automatic Blockscout sender-history comparison and live dashboard evidence (2026-10-23)
+- **Last verified milestone:** bounded-history/security regression suite and local fixture HTTP/browser checks (2026-10-24); original public release evidence remains dated 2026-10-23
 
 ## Hackathon Context
 
@@ -44,7 +44,7 @@ Keep this file concise and evidence-based. Update current state in place, append
   - `PoisoningDetector`: Hex prefix/suffix similarity matching against historical address graphs.
   - `ContractVerificationGate`: Checks bytecode verification status and compiler metadata.
   - `PolicyFirewall`: Deterministic spending limits and rate limiter with human-in-the-loop quarantine.
-  - `ReceiptSigner`: Generates immutable audit receipts with Blockscout explorer links.
+  - `ReceiptSigner`: Generates versioned unkeyed integrity receipts with Blockscout explorer links; no authenticity claim.
   - `Interactive Dashboard`: High-conversion UI showing live simulations and real address audits.
 - **Required integrations:** Blockscout PRO API (`/v2/api` and REST endpoints, multi-chain address counters, contract verification).
 - **Security assumptions:** Blockscout failure returns `BLOCK`; caller must enforce the returned decision and bind it to the exact transaction. The server does not sign or broadcast.
@@ -64,22 +64,22 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] M3: Contract source verification and address tag checks; broad threat-feed coverage unverified
   - [x] M4: Per-transaction hard cap, `FLAG` decision, and local SHA-256 digest; no human approval workflow or signed receipt
   - [x] M5: Local full-stack fixture simulation dashboard; live Ethereum auditor verified through local HTTP
-  - [x] M6: 17 passing local tests after hardening; no deployed end-to-end proof
+  - [x] M6: 106 passing local tests in the hardening branch; original deployed checks preserved in October 23 evidence
 - **Sprint 2 judge improvements:**
   - [x] Canonical USDC support with asset-specific policy limits and token contract verification
-  - [x] Blockscout-derived recent sender history for poisoning detection
-  - [x] Public Ethereum evaluation endpoint with a small rate limit
+  - [x] Bounded paginated Blockscout sender history, typed evidence and explicit incomplete-coverage review policy
+  - [x] Public Ethereum evaluator with local per-client/aggregate/concurrency controls, provider budgets and cooldown
   - [x] Live dashboard evidence with exact Explorer links and explicit live/simulated provenance
   - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
 - **Implemented but unverified:** Docker container execution and a real signing-agent integration.
 - **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Push and promote the verified Sprint 2 revision after user authorization, then update the Craftora project page with the prepared draft if authorized.
-- **P1 priorities:** Production integration contract, transaction binding, and a shared rate limiter for horizontally scaled deployments.
+- **P0 priorities:** Review this hardening branch, unblock read-only network verification, and obtain approval before any push/deployment. Craftora publication and video remain with the user.
+- **P1 priorities:** Shared deployment-wide quota, real signing-agent enforcement/freshness, and hourly accounting. Exact payment fields and full checks are now bound to a verifiable unkeyed receipt.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Five judge requests addressed locally, including live candidate presets, logo/favicon, and Craftora copy; public production still serves the Sprint 1 revision.
+- **Current milestone:** Original direct-USDC/public-evaluator Sprint 2 release is production-recorded. New backend hardening is local only; see `SPRINT2_HARDENING.md` and the consolidated `SPRINT2_JUDGE_CHECKLIST.md`.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
-- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
+- **Known blockers:** This cloud has no configured provider credentials and proxy CONNECT 403 prevents Blockscout/production access. Recorded Base PRO access returned HTTP 402; no paid access will be purchased. Docker/signing-agent execution remains unverified. User retained demo recording and Craftora submission.
 
 ## Verification
 
@@ -117,7 +117,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ### Integration and Evidence Status
 
-- **Real integrations:** Authenticated PRO gateway and deployed protected evaluation verified on Ethereum chain 1. The new public ETH/USDC evaluation and sender-history derivation are verified locally against live Blockscout data. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
+- **Real integrations:** Original authenticated PRO, public ETH/USDC and dashboard release recorded as production verified on Ethereum on 2026-10-23. New hardening is locally fixture-verified; fresh live verification is blocked. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
 - **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
 - **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`, deployment evidence in `docs/evidence/2026-10-21-vercel-production.md`, and Sprint 2 evidence in `docs/evidence/2026-10-23-sprint-2-feedback.md`. Explorer URLs identify the address and token pages used as supporting evidence; they are not transaction proofs.
 - **Historical transaction proof:** Blockscout PRO returned an `ok` transaction with a token transfer event from the sample sender to recipient. The live result can link that transaction; it does not claim the proposed payment happened or that the sender initiated the top-level transaction.
@@ -144,10 +144,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially paginated history and a shared public quota. The user owns Craftora submission and the video.
-- **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
-- **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
-- **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
+- **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially fresh live verification and a shared public quota. The user owns Craftora submission and the video.
+- **Next authorized action:** Complete local hardening, tests and documentation. The current user instruction supersedes earlier release authorization: do not push, merge or deploy without new approval.
+- **Next approved milestone:** Deliver reviewable feature-branch changes and the security/submission report; preserve the separate PC graph/replay task.
+- **Approval boundary:** Push, merge, deployment and publication require approval. Craftora submission and demo recording remain with the user.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -208,3 +208,11 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Decision:** Push the direct-transfer and judge-feedback revision to `main`; use the Git-linked Vercel deployment for production.
 - **Evidence:** Commit `aa490c5` pushed; Vercel deployment `ALxkjdBvRyQ11SR4ot3BeGgDF75X` showed Ready / Production. Public health, dashboard, USDC PASS, cap BLOCK, and recorded replay were verified; see `docs/evidence/2026-10-23-sprint2-production.md`.
 - **Status:** PRODUCTION VERIFIED for the listed checks. The full pasted Sprint 2 prompt is partially implemented; see `docs/SPRINT2_IMPLEMENTATION_STATUS.md` for open items.
+
+
+### 2026-10-24 — Cloud backend hardening on an isolated feature branch
+
+- **Decision:** Extend the existing Sprint 2 release with bounded pagination, explicit coverage/relationships, strongest-match poisoning rules, strict payment/API validation, deterministic receipt verification, provider budgets and local abuse controls. Preserve all frontend/visual files and recorded research evidence.
+- **Evidence:** Baseline 24 tests; hardening suite 106 tests passed. Local Chromium exercised fixture ETH/USDC review, cap block and injected provider/rate errors. body-parser 1.20.8 advisory fixed at 1.20.9; npm audit reports zero known vulnerabilities. See `SPRINT2_HARDENING.md` and `SPRINT2_JUDGE_CHECKLIST.md` for verification scope.
+- **Limits:** Cloud proxy CONNECT 403 blocks fresh production and Blockscout checks. No genuine new reference recovery, historical prevention or 95% readiness is claimed. Shared quotas and real signing-agent enforcement remain open. Under external-resource blocking the existing browser showed a Lucide error and small mobile overflow; no frontend edits were made.
+- **Status:** VERIFIED locally; external release actions not authorized.

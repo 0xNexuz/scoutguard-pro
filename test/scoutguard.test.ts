@@ -8,6 +8,7 @@ import { ScoutGuard } from '../src/core/scoutguard.js';
 import { BlockscoutClient } from '../src/core/blockscout-client.js';
 import { KnownCounterparty, TransactionCandidate } from '../src/types/index.js';
 import { Interface, parseUnits } from 'ethers';
+import { completeHistory, tokenRow } from './fixtures/blockscout.js';
 import { normalizePayment } from '../src/core/payment-normalizer.js';
 
 const usdc = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
@@ -28,11 +29,10 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) => {
       const token = String(input).includes('token-transfers');
-      return new Response(JSON.stringify({ items: token ? [
+      return new Response(JSON.stringify({ next_page_params: null, items: token ? [
         { from: { hash: recipient }, to: { hash: sender }, total: { value: '100' } },
         { from: { hash: sender }, to: { hash: recipient }, total: { value: '0' } },
-        { from: { hash: sender }, to: { hash: recipient }, total: { value: '250000000' },
-          transaction_hash: `0x${'a'.repeat(64)}` }
+        tokenRow({ from: { hash: sender }, to: { hash: recipient }, transaction_hash: `0x${'a'.repeat(64)}` })
       ] : [
         { from: { hash: sender }, to: { hash: '0x1111111111111111111111111111111111111111' }, value: '0' }
       ] }), { status: 200 });
@@ -211,7 +211,7 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
     const fixtureClient = Object.assign(new BlockscoutClient(), {
       getAddressCounters: async () => ({ transactionsCount: 142, tokenTransfersCount: 25, gasUsageCount: 0, isContract: false }),
       getAddressDetails: async () => ({ isContract: false, isScamOrPhishing: false, tags: [], reputationScore: 60 }),
-      getSenderCounterparties: async () => [],
+      getSenderHistory: async () => completeHistory(),
       getContractSecurity: async () => ({ isContract: true, isVerified: true, contractName: 'USD Coin' })
     });
     const guard = new ScoutGuard({ blockscoutClient: fixtureClient, customCounterparties: [knownVendor] });
@@ -253,7 +253,7 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
       const unavailable = Object.assign(new BlockscoutClient(), {
         getAddressCounters: async () => { throw new Error('upstream unavailable'); },
         getAddressDetails: async () => ({ isContract: false, isScamOrPhishing: false, tags: [], reputationScore: 60 }),
-        getSenderCounterparties: async () => []
+        getSenderHistory: async () => completeHistory()
       });
       const result = await new ScoutGuard({ blockscoutClient: unavailable }).evaluateTransaction({
         from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',
@@ -332,8 +332,8 @@ describe('ScoutGuard PRO — Automated Security Test Suite', () => {
       const historyClient = Object.assign(new BlockscoutClient(), {
         getAddressCounters: async () => ({ transactionsCount: 0, tokenTransfersCount: 0, gasUsageCount: 0, isContract: false }),
         getAddressDetails: async () => ({ isContract: false, isScamOrPhishing: false, tags: [], reputationScore: 60 }),
-        getSenderCounterparties: async () => [{ ...knownVendor, source: 'BLOCKSCOUT_HISTORY' as const,
-          evidenceTxHash: '0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f' }]
+        getSenderHistory: async () => ({ ...completeHistory(), counterparties: [{ ...knownVendor, source: 'BLOCKSCOUT_HISTORY' as const,
+          evidenceTxHash: '0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f' }] })
       });
       const result = await new ScoutGuard({ blockscoutClient: historyClient }).evaluateTransaction({
         from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be',

@@ -7,10 +7,12 @@ const TRANSFER = /^0xa9059cbb([a-fA-F0-9]{64})([a-fA-F0-9]{64})$/;
 
 /** Normalize the unsigned transaction that will be signed. No arbitrary contract call is a payment. */
 export function normalizePayment(tx: TransactionCandidate): TransactionCandidate {
+  if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction');
   if (!isAddress(tx.from) || !isAddress(tx.to) || !Number.isSafeInteger(tx.chainId) || !SUPPORTED_CHAINS[tx.chainId]) {
     throw new Error('Invalid sender, destination, or chain');
   }
-  if (typeof tx.value !== 'string' || !DECIMAL.test(tx.value)) throw new Error('Invalid native transaction value');
+  if (typeof tx.value !== 'string' || tx.value.length > 100 || !DECIMAL.test(tx.value)) throw new Error('Invalid native transaction value');
+  if (tx.data !== undefined && (typeof tx.data !== 'string' || !tx.data || tx.data.length > 138)) throw new Error('Invalid calldata');
   const transactionTo = getAddress(tx.to);
   const transactionValue = tx.value;
 
@@ -24,6 +26,10 @@ export function normalizePayment(tx: TransactionCandidate): TransactionCandidate
     if (!/^0{24}$/i.test(encoded[1].slice(0, 24))) throw new Error('Noncanonical recipient encoding');
     const recipient = getAddress(`0x${encoded[1].slice(24)}`);
     const rawAmount = BigInt(`0x${encoded[2]}`);
+    if (recipient === '0x0000000000000000000000000000000000000000' || rawAmount === 0n) throw new Error('Zero recipient or amount is not a payment');
+    if (tx.rawAmount !== undefined && tx.rawAmount !== rawAmount.toString()) throw new Error('Raw amount mismatch');
+    if (tx.transactionTo !== undefined && getAddress(tx.transactionTo) !== transactionTo) throw new Error('Transaction destination mismatch');
+    if (tx.transactionValue !== undefined && tx.transactionValue !== transactionValue) throw new Error('Transaction value mismatch');
     return {
       ...tx,
       to: recipient,
@@ -37,6 +43,10 @@ export function normalizePayment(tx: TransactionCandidate): TransactionCandidate
   }
   if (tx.tokenAddress) throw new Error('Token payment requires direct transfer calldata');
   const rawAmount = parseUnits(transactionValue, 18);
+  if (transactionTo === '0x0000000000000000000000000000000000000000' || rawAmount <= 0n || rawAmount >= 2n ** 256n) throw new Error('Zero recipient or invalid payment amount');
+  if (tx.rawAmount !== undefined && tx.rawAmount !== rawAmount.toString()) throw new Error('Raw amount mismatch');
+  if (tx.transactionTo !== undefined && getAddress(tx.transactionTo) !== transactionTo) throw new Error('Transaction destination mismatch');
+  if (tx.transactionValue !== undefined && tx.transactionValue !== transactionValue) throw new Error('Transaction value mismatch');
   return {
     ...tx,
     to: transactionTo,

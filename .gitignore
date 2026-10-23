@@ -11,3 +11,6 @@ dist/
 *.log
 
 .vercel
+
+# Local hardening analysis, logs and browser fixtures
+/work/

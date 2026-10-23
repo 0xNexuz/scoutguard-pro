@@ -74,7 +74,12 @@ export class PolicyEngine {
     const policy = this.getPolicy(tx.agentId);
     const decimals = token?.decimals ?? 18;
     const rawAmount = parseUnits(tx.value, decimals);
-    if (rawAmount < 0n) throw new Error('Invalid transaction amount');
+    if (rawAmount <= 0n || rawAmount >= 2n ** 256n) throw new Error('Invalid transaction amount');
+    if (tx.rawAmount !== undefined && tx.rawAmount !== rawAmount.toString()) throw new Error('Raw amount mismatch');
+    if (policy.enforceWhitelist && !policy.whitelistedAddresses.some(address => address.toLowerCase() === tx.to.toLowerCase())) {
+      return { id: 'SEC-POLICY-WHITELIST', name: 'Recipient Allowlist', status: 'FAIL', scoreImpact: 100,
+        detail: 'Effective payment recipient is not on the operator allowlist.' };
+    }
 
     // 1. Allowed chain check
     if (!policy.allowedChains.includes(tx.chainId)) {
