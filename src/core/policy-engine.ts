@@ -5,6 +5,7 @@ export interface AgentPolicyConfig {
   agentId: string;
   name: string;
   maxSingleTxValueEth: number;
+  /** Legacy configuration only: NOT ENFORCED. No authoritative execution ledger is available. */
   maxHourlyVolumeEth: number;
   allowedChains: number[];
   requireHumanApprovalAboveEth: number;
@@ -58,7 +59,7 @@ export class PolicyEngine {
   }
 
   public getPolicy(agentId?: string): AgentPolicyConfig {
-    const policy = this.policies.get(agentId || 'procurement-bot-01');
+    const policy = this.policies.get(agentId ?? 'procurement-bot-01');
     if (!policy) throw new Error(`Unknown agent policy: ${agentId}`);
     return policy;
   }
@@ -74,7 +75,12 @@ export class PolicyEngine {
     const policy = this.getPolicy(tx.agentId);
     const decimals = token?.decimals ?? 18;
     const rawAmount = parseUnits(tx.value, decimals);
-    if (rawAmount < 0n) throw new Error('Invalid transaction amount');
+    if (rawAmount <= 0n || rawAmount >= 2n ** 256n) throw new Error('Invalid transaction amount');
+    if (tx.rawAmount !== undefined && tx.rawAmount !== rawAmount.toString()) throw new Error('Raw amount mismatch');
+    if (policy.enforceWhitelist && !policy.whitelistedAddresses.some(address => address.toLowerCase() === tx.to.toLowerCase())) {
+      return { id: 'SEC-POLICY-WHITELIST', name: 'Recipient Allowlist', status: 'FAIL', scoreImpact: 100,
+        detail: 'Effective payment recipient is not on the operator allowlist.' };
+    }
 
     // 1. Allowed chain check
     if (!policy.allowedChains.includes(tx.chainId)) {
@@ -146,6 +152,9 @@ export class PolicyEngine {
     suggestedAction: 'SIGN_AND_BROADCAST' | 'QUARANTINE_FOR_APPROVAL' | 'ABORT_TRANSACTION';
     executionAllowed: boolean;
   } {
+    if (!Array.isArray(checks) || checks.length === 0 || checks.some(check => !check
+      || !['PASS', 'WARN', 'FAIL'].includes(check.status) || !Number.isFinite(check.scoreImpact)
+      || check.scoreImpact < 0 || check.scoreImpact > 100)) throw new Error('Missing or invalid security checks');
     let riskScore = 0;
     const reasons: string[] = [];
     let hasFail = false;

@@ -1,0 +1,32 @@
+/* Small layout/resilience fixes; retain the existing paper palette, type and artwork. */
+html { scroll-padding-top: 110px; }
+body { margin: 0; }
+.site-header, .brand, .brand > div, main, main > *, section, form, pre { min-width: 0; }
+.site-header { gap: 1rem; }
+.brand { flex: 1 1 auto; }
+.brand > img { flex: 0 0 36px; }
+.brand-line { flex-wrap: wrap; row-gap: .3rem; }
+.repository-control { min-height: 44px; flex-shrink: 0; }
+.repository-control svg { min-width: 14px; }
+.section-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: .3rem 1.1rem; padding: .5rem 1rem; border-bottom: 1px solid #e8e5df; background: #faf8f5; }
+.section-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: .75rem; color: #57534e; text-decoration: underline; text-underline-offset: 3px; }
+pre { max-width: 100%; tab-size: 2; }
+.live-payment, .live-coverage { padding: .8rem; border: 1px solid #e8e5df; border-radius: .75rem; background: #faf8f5; font-size: .75rem; line-height: 1.6; overflow-wrap: anywhere; }
+.live-coverage { color: #57534e; }
+.live-coverage[data-complete="false"] { border-color: #d6b88b; background: #fef9ef; }
+#live-result-badge { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+@media (max-width: 1023px) { .brand-badge { display: none; } }
+@media (max-width: 480px) {
+  .site-header { padding: .85rem 1rem; gap: .5rem; }
+  .brand { gap: .55rem; }
+  .brand > img { width: 30px; height: 30px; flex-basis: 30px; }
+  .brand > div > p { max-width: 210px; font-size: .6rem; }
+  .repository-control { width: 44px; min-width: 44px; justify-content: center; padding: .5rem; }
+  .repository-control > span { display: none; }
+  main { padding-inline: 1rem !important; }
+  #live-result, #replay-stage { min-width: 0; padding: 1rem; }
+}
+.simulation-digest { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-width: 0; max-width: 100%; }
+#receipt-hash { min-width: 0; max-width: 100%; white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+/* Security explanations can contain full hexadecimal addresses and must wrap as evidence. */
+#research-explanation, #research-addresses, #live-checks, #live-result-summary, #specimen-checks, .replay-copy, .replay-check p { overflow-wrap: anywhere; }

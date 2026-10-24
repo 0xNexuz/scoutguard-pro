@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** Recorded investigation replay was merged into `main` in PR #1 at `6db0017` and its static dashboard assets were verified on the production URL. The protected live API was unchanged.
-- **Last updated date:** 2026-10-24
+- **Current workflow stage:** APPROVED RELEASE IN PROGRESS — external verification limits disclosed
+- **Overall status:** Main/replay `f424779` and hardening `dc179f9` consolidated locally on `feat/scoutguard-final-integration`. Agent enforcement, evidence graph/UX, combined verification and submission materials completed locally. User approved publication/release after reviewing the completion report. Application commit `0704e80` is pushed; preview, CI and merge/release checks are in progress. Fresh anonymous/provider access remains limited; no 95% proven-readiness claim.
+- **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** Remote `main` contains the replay merge; this local checkout remains on `replay-no-deploy` because this machine's Git HTTPS certificate chain is unavailable.
-- **Last verified application commit:** `6db0017` on remote `main` (PR #1 merge)
-- **Working tree:** The local replay branch is behind remote `main`; use the GitHub repository as the release source of truth until Git HTTPS certificate trust is repaired on this machine.
-- **Relevant remote or PR:** `https://github.com/0xNexuz/scoutguard-pro/pull/1` (merged)
-- **Last verified milestone:** Merge-commit CI passed; production returned health HTTP 200 and served matching replay script, case archive, and dashboard HTML on 2026-10-24. These public content checks used this machine's insecure Node TLS setting and do not independently authenticate the remote certificate.
+- **Branch:** `feat/scoutguard-final-integration` (created from latest main `f424779`; integrating hardening `dc179f9` locally)
+- **Integration source heads:** latest main `f4247792d1fb7b747784c2e125c1b0dd4342b8cd`, hardening `dc179f92691b101174487f50d0727c04a41d7394`. Original hardening started from `2559de7`; original application release `aa490c5`.
+- **Working tree:** final local integration source/evidence; use `git status` for current state. One cloud worktree; desktop-local state is inaccessible and was not recovered.
+- **Relevant remote or PR:** PR #1 replay merged at `6db0017`; published hardening branch at `dc179f9`; integration branch is published at `0704e80`; release pull request is being prepared under the new user approval.
+- **Last verified milestone:** combined local tests/browser checks, mock-agent enforcement, Docker build/non-root smoke, 100-second captioned local recording; exact final counts in `FINAL_COMPLETION_REPORT.md` and verification JSON.
 
 ## Hackathon Context
 
@@ -31,7 +31,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Strategic Decisions
 
 - **Selected idea:** ScoutGuard PRO
-- **Why it was selected:** Directly addresses the urgent risk of autonomous agent payments (address poisoning, vanity spoofing, unverified bytecode, honeypots) across 120+ EVM chains. Maximizes user leverage from KudiFlow/AgentFinOps assets. Makes Blockscout PRO API 100% load-bearing.
+- **Why it was selected:** Directly addresses the urgent risk of autonomous agent payments (address poisoning, vanity spoofing, unverified bytecode, honeypots) with seven configured EVM networks and recorded live Ethereum verification. Broader Explorer network reach was a planning motivation, not a verified support claim. Blockscout evidence is required for live decisions.
 - **Rejected alternatives:** CleanProof (excessive ZK proof friction for sprint demo), ByteRadar (narrower judge appeal), RelayScout (lower differentiation).
 - **Competitive advantages:** Intercepts attacks before signing; tri-state decision matrix (`PASS`, `FLAG`, `BLOCK`); cryptographic audit receipts with direct Blockscout Explorer links.
 - **Intended target users:** AI agent developers, DAO treasuries, DeFi automation bots.
@@ -44,8 +44,8 @@ Keep this file concise and evidence-based. Update current state in place, append
   - `PoisoningDetector`: Hex prefix/suffix similarity matching against historical address graphs.
   - `ContractVerificationGate`: Checks bytecode verification status and compiler metadata.
   - `PolicyFirewall`: Deterministic spending limits and rate limiter with human-in-the-loop quarantine.
-  - `ReceiptSigner`: Generates immutable audit receipts with Blockscout explorer links.
-  - `Interactive Dashboard`: High-conversion UI showing live simulations and real address audits.
+  - `ReceiptSigner`: Generates versioned unkeyed integrity receipts with Blockscout explorer links; exact binding is checked by the mock-agent adapter, with no authenticity claim.
+  - `Interactive Dashboard`: Existing visual identity with live form, labeled simulations and evidence-backed recorded replay; no conversion metric is claimed.
 - **Required integrations:** Blockscout PRO API (`/v2/api` and REST endpoints, multi-chain address counters, contract verification).
 - **Security assumptions:** Blockscout failure returns `BLOCK`; caller must enforce the returned decision and bind it to the exact transaction. The server does not sign or broadcast.
 
@@ -64,22 +64,22 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] M3: Contract source verification and address tag checks; broad threat-feed coverage unverified
   - [x] M4: Per-transaction hard cap, `FLAG` decision, and local SHA-256 digest; no human approval workflow or signed receipt
   - [x] M5: Local full-stack fixture simulation dashboard; live Ethereum auditor verified through local HTTP
-  - [x] M6: 17 passing local tests after hardening; no deployed end-to-end proof
+  - [x] M6: combined application/unit/HTTP/agent/replay tests and 25 browser checks pass locally; exact final counts are in the completion report
 - **Sprint 2 judge improvements:**
   - [x] Canonical USDC support with asset-specific policy limits and token contract verification
-  - [x] Blockscout-derived recent sender history for poisoning detection
-  - [x] Public Ethereum evaluation endpoint with a small rate limit
+  - [x] Bounded paginated Blockscout sender history, typed evidence and explicit incomplete-coverage review policy
+  - [x] Public Ethereum evaluator with local per-client/aggregate/concurrency controls, provider budgets and cooldown
   - [x] Live dashboard evidence with exact Explorer links and explicit live/simulated provenance
   - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
-- **Implemented but unverified:** Docker container execution and a real signing-agent integration.
+- **Implemented but unverified:** real-wallet integration is not provided or verified. Docker execution and isolated mock-agent enforcement are now locally verified.
 - **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Craftora publication remains with the user.
-- **P1 priorities:** Production integration contract, transaction binding, and a shared rate limiter for horizontally scaled deployments.
+- **P0 priorities:** Review the local integration and resolve genuine provider/anonymous production/shared-quota release gates before requesting approval for external release.
+- **P1 priorities:** Shared deployment-wide quota, independent real-wallet/nonce/gas/idempotency authorization, optional authenticated receipts and authoritative executed-payment accounting. Mock binding/freshness/authorization is verified; hourly evaluated candidates are never treated as spending.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Recorded replay is merged, CI-verified, and serving on the public production dashboard. No new Blockscout evaluation was run for this release.
+- **Current milestone:** final local consolidation, responsive SVG replay, hardened public form, mock-agent boundary, reproducible verification and ready-to-review demo/submission assets. See `FINAL_COMPLETION_REPORT.md` and `FINAL_ACCEPTANCE_MATRIX.md`.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
-- **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
+- **Known blockers:** no cloud provider credentials; enforced proxy CONNECT 403 prevents Blockscout/production/Explorer content checks. No available shared-store integration. Recorded Base access was plan-gated; real wallets/hourly ledger/authenticated signatures remain unsupported. Docker is now verified locally with TLS enabled.
 
 ## Verification
 
@@ -117,13 +117,15 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ### Integration and Evidence Status
 
-- **Real integrations:** Authenticated PRO gateway and deployed protected evaluation verified on Ethereum chain 1. The new public ETH/USDC evaluation and sender-history derivation are verified locally against live Blockscout data. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
+- **Real integrations:** Original authenticated PRO, public ETH/USDC and dashboard release recorded as production verified on Ethereum on 2026-10-23. New hardening is locally fixture-verified; fresh live verification is blocked. Other configured chains are not fully verified; Base returned HTTP 402 under the supplied plan.
 - **Simulated functionality:** Five fixture scenarios use the real local policy engine, explicitly labeled `SIMULATED`.
 - **Verified evidence links:** Sanitized local evidence in `docs/evidence/2026-10-20-pro-ethereum.md`, deployment evidence in `docs/evidence/2026-10-21-vercel-production.md`, and Sprint 2 evidence in `docs/evidence/2026-10-23-sprint-2-feedback.md`. Explorer URLs identify the address and token pages used as supporting evidence; they are not transaction proofs.
 - **Historical transaction proof:** Blockscout PRO returned an `ok` transaction with a token transfer event from the sample sender to recipient. The live result can link that transaction; it does not claim the proposed payment happened or that the sender initiated the top-level transaction.
 - **Unverified claims:** Docker image, receipt authenticity beyond a local hash, previously claimed 120+ chains, SDK distribution, real signing-agent integration.
 
 ## Decision Log
+
+Early planning estimates below are historical internal judgments, not official competition scores or evidence of measured security effectiveness.
 
 ### 2026-10-20 — ScoutGuard PRO Selected and Approved
 
@@ -144,26 +146,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially paginated history and a shared public quota. The user owns Craftora submission and the video.
-- **Next authorized action:** PR #1 was merged on 2026-10-24 at the user's request. Craftora submission and demo recording remain with the user.
-- **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
-- **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
-
-### 2026-10-24 — Recorded investigation replay
-
-- **Authorization:** Implement an interactive replay without spending Blockscout credits. User later authorized commit and push. Deployment remains unapproved.
-- **Implemented:** Three distinct dashboard paths for fresh live evaluation, static recorded-live replay, and simulated attacks; five-stage replay with playback controls; relationship graph, check contributions, genuine Explorer links, evidence provenance, and sanitized downloadable excerpt. Protected agent API and fail-closed engine are unchanged.
-- **Evidence limits:** Saved production records are partial transcriptions from 2026-10-23, with only date precision. Original receipt IDs, exact API times, and full inbound/trust lists were not retained. The separate Poison-Hunter example remains a conditional research replay, not a recorded live catch. See `docs/evidence/2026-10-24-recorded-replay.md`.
-- **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
-- **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
-- **CI follow-up:** The first branch check failed solely on the high-severity `body-parser` 1.20.8 advisory. The lockfile now resolves 1.20.9; local `npm audit --audit-level=high`, build, and 28 tests pass. GitHub Actions [run 40098188270](https://github.com/0xNexuz/scoutguard-pro/actions/runs/40098188270) completed successfully for `54252b8`.
-
-### 2026-10-24 — Replay merged and publicly served
-
-- **Authorization:** User requested a mergeability check and to proceed if mergeable.
-- **Decision:** Merge PR #1 into `main` after GitHub reported `MERGEABLE` / `CLEAN` and the build, test, and GitGuardian checks passed.
-- **Evidence:** Merge commit `6db0017` and its GitHub Actions Verify check passed. The production root, replay script, case archive, and health endpoint returned HTTP 200; after line-ending normalization, the dashboard HTML and both replay assets matched the local release files. This machine could not validate the public TLS certificate, so those HTTP observations are limited to content checks.
-- **Status:** MERGED and PUBLIC CONTENT VERIFIED. No Blockscout credits spent, demo recorded, or Craftora submission made.
+- **Next recommended action:** review the comprehensive report, matrix, migration notes and local recording. Resolve external/operational release gates. The user retains submission and publication.
+- **Next authorized action:** User approved the reviewed release. Publish the branch, verify CI/mergeability and deployment status, and proceed with the approved merge/release when available checks pass. Preserve disclosed external verification limits; no purchases, production-secret changes, wallet actions, Craftora or social publication.
+- **Next approved milestone:** local integration review only; do not advertise the final branch as production deployed.
+- **Approval boundary:** Reviewed integration push/PR/merge/release now approved. Purchases, production-secret changes, blockchain actions, Craftora and social publication remain outside this release.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -224,3 +210,67 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Decision:** Push the direct-transfer and judge-feedback revision to `main`; use the Git-linked Vercel deployment for production.
 - **Evidence:** Commit `aa490c5` pushed; Vercel deployment `ALxkjdBvRyQ11SR4ot3BeGgDF75X` showed Ready / Production. Public health, dashboard, USDC PASS, cap BLOCK, and recorded replay were verified; see `docs/evidence/2026-10-23-sprint2-production.md`.
 - **Status:** PRODUCTION VERIFIED for the listed checks. The full pasted Sprint 2 prompt is partially implemented; see `docs/SPRINT2_IMPLEMENTATION_STATUS.md` for open items.
+
+
+### 2026-10-24 — Cloud backend hardening on an isolated feature branch
+
+- **Decision:** Extend the existing Sprint 2 release with bounded pagination, explicit coverage/relationships, strongest-match poisoning rules, strict payment/API validation, deterministic receipt verification, provider budgets and local abuse controls. Preserve all frontend/visual files and recorded research evidence.
+- **Evidence:** Baseline 24 tests; hardening suite 106 tests passed. Local Chromium exercised fixture ETH/USDC review, cap block and injected provider/rate errors. body-parser 1.20.8 advisory fixed at 1.20.9; npm audit reports zero known vulnerabilities. See `SPRINT2_HARDENING.md` and `SPRINT2_JUDGE_CHECKLIST.md` for verification scope.
+- **Limits:** Cloud proxy CONNECT 403 blocks fresh production and Blockscout checks. No genuine new reference recovery, historical prevention or 95% readiness is claimed. Shared quotas and real signing-agent enforcement remain open. Under external-resource blocking the existing browser showed a Lucide error and small mobile overflow; no frontend edits were made.
+- **Status:** VERIFIED locally; external release actions not authorized.
+
+
+### 2026-10-24 — Approved feature-branch publication
+
+- **Decision:** Interpret the user's “approval to push, or publish” as authorization to publish the reviewed hardening branch, preserving main and the PC task's unknown local changes.
+- **Evidence:** `git push --set-upstream origin HEAD:refs/heads/feat/scoutguard-sprint2-hardening` succeeded. `git ls-remote` independently confirmed application commit `2a4b17075a67bc9355d40956ad300e52c6e5d71b` on that branch; main remained `2559de7a4815986eeb496bf217780b428a4eb890`.
+- **Scope:** Publish status corrections in this branch. No source changes since the 106-test verification, no force push, main update, explicit deployment, Craftora submission or PC-local access. A Git-linked host may independently create a preview; none was requested or verified here.
+- **Status:** Feature-branch push VERIFIED. Production verification and historical-recovery network limitations remain unchanged.
+
+
+### 2026-10-24 — Recorded investigation replay
+
+- **Authorization:** Implement an interactive replay without spending Blockscout credits. User later authorized commit and push. Deployment remains unapproved.
+- **Implemented:** Three distinct dashboard paths for fresh live evaluation, static recorded-live replay, and simulated attacks; five-stage replay with playback controls; relationship graph, check contributions, genuine Explorer links, evidence provenance, and sanitized downloadable excerpt. Protected agent API and fail-closed engine are unchanged.
+- **Evidence limits:** Saved production records are partial transcriptions from 2026-10-23, with only date precision. Original receipt IDs, exact API times, and full inbound/trust lists were not retained. The separate Poison-Hunter example remains a conditional research replay, not a recorded live catch. See `docs/evidence/2026-10-24-recorded-replay.md`.
+- **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
+- **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
+- **CI follow-up:** The first branch check failed solely on the high-severity `body-parser` 1.20.8 advisory. The lockfile now resolves 1.20.9; local `npm audit --audit-level=high`, build, and 28 tests pass. GitHub Actions [run 40098188270](https://github.com/0xNexuz/scoutguard-pro/actions/runs/40098188270) completed successfully for `54252b8`.
+
+
+### 2026-10-24 — Replay merged and publicly served
+
+- **Authorization:** User requested a mergeability check and to proceed if mergeable.
+- **Decision:** Merge PR #1 into `main` after GitHub reported `MERGEABLE` / `CLEAN` and the build, test, and GitGuardian checks passed.
+- **Evidence:** Merge commit `6db0017` and its GitHub Actions Verify check passed. The production root, replay script, case archive, and health endpoint returned HTTP 200; after line-ending normalization, the dashboard HTML and both replay assets matched the local release files. This machine could not validate the public TLS certificate, so those HTTP observations are limited to content checks.
+- **Status:** MERGED and PUBLIC CONTENT VERIFIED. No Blockscout credits spent, demo recorded, or Craftora submission made.
+
+
+### 2026-10-24 — Final consolidation started
+
+- **Scope:** Integrate latest main and hardening on a fresh local branch; preserve three archived cases, finish mock-agent enforcement, evidence graph, accessible playback, offline icons, mobile layout and submission materials.
+- **Inspection:** One clean cloud worktree; no access to desktop-local files. PR #1 merged; main and hardening heads reconfirmed. Vercel metadata reports READY production main f424779, not independent anonymous access verification.
+- **Approval boundary:** Local integration/implementation/testing only. Prior feature-branch push approval does not authorize this new task to push, merge main, deploy, provision or publish.
+
+
+### 2026-10-24 — Final local consolidation complete
+
+- **Implementation:** preserved main PR #1 replay and hardening history; added exact immutable response-bound mock-agent enforcement, cancellation on client disconnect, invalid-check rejection, responsive SVG relationships, progress/speed, local icons, mobile wrapping and receipt-schema migration checks.
+- **Evidence:** 110 tests passed immediately after integration; expanded final suite and 25 browser groups pass, with exact final counts in the completion report/JSON. Docker builds with temporary CA trust, runs as UID 1000 with no provider network, and refuses missing production keys. A 100-second captioned local archived-case/simulation recording was created without provider requests or real signatures.
+- **Honesty:** original three cases and evidence are byte-preserved. No current live reference recovery or anonymous production verification; the two scoped connectivity probes were denied by the proxy before reaching destinations. No new store, payment, secret update or external publication.
+- **Status:** LOCAL REVIEW READY; external release gates remain open. Main and remote hardening refs are unchanged.
+
+
+### 2026-10-24 — Integration release approved
+
+- **Authorization:** User replied “You have approval” after the final integration report and deliverables. Proceed with publishing the reviewed integration and release checks; Craftora/social publication remain with the user.
+- **Publication:** Application `0704e8047cc24817ca40cba36de2553fb47681e6` pushed to `feat/scoutguard-final-integration` and confirmed by `git ls-remote`. No force push or main mutation at this checkpoint.
+- **Preview:** Enable automatic deployment for this explicitly approved integration branch; no environment secret is read or changed.
+- **Limits:** Shared quota remains process-local; no store was provisioned. This cloud's enforced network/credential restrictions still prevent direct fresh Blockscout and anonymous deployment verification. Authenticated Vercel inspection must not be mislabeled as anonymous access proof.
+
+
+### 2026-10-24 — Preview bootstrap regression fixed
+
+- **Finding:** Approved preview `dpl_3pETJmXw8fzpPpja3yQ1N2kTBDRE` was READY but root and health returned HTTP 500/FUNCTION_INVOCATION_FAILED. Runtime logs identified missing SCOUTGUARD_SERVICE_KEY; no secret value was read.
+- **Fix:** Confirmed Vercel previews can serve read-only routes without credentials. Protected evaluation still requires a configured key on every request; production/unconfirmed environments still reject missing service/provider keys at startup. TLS guard unchanged; no environment secret modified.
+- **Verification:** 139/139 tests, 25 browser groups, build/strict types and zero-advisory audit passed locally. PR #2 is mergeable; updated remote checks and preview inspection remain required before merge.

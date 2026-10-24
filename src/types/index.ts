@@ -50,11 +50,16 @@ export interface AuditReceipt {
     rawAmount?: string;
     data?: string;
   };
+  policyVersion: string;
+  checks: SecurityCheckResult[];
+  historyCoverage?: HistoryCoverage;
+  integrityAlgorithm: 'SHA-256-UNKEYED';
   integrityHash: string;
   blockscoutExplorerUrl: string;
 }
 
 export interface EvaluationResult {
+  history?: SenderHistory;
   decision: GuardDecision;
   riskScore: number; // 0 to 100 (0 = clean, 100 = critical threat)
   reasons: string[];
@@ -87,5 +92,60 @@ export interface KnownCounterparty {
   verifiedSince: string;
   totalTransfers: number;
   source?: 'CONFIGURED' | 'BLOCKSCOUT_HISTORY';
+  chainId?: number; // configured entries without a chain apply to all configured chains
+  relationship?: 'OUTBOUND_NATIVE' | 'OUTBOUND_ERC20';
   evidenceTxHash?: string; // observed outbound transaction, never the proposed payment
+}
+
+export interface HistoryLimits {
+  maxPages: number; // per endpoint
+  maxRecords: number; // combined inspected rows, including duplicates
+  maxProviderCalls: number; // history only; evaluation also has an overall budget
+  maxDurationMs: number;
+  maxAgeDays?: number;
+}
+
+export interface HistoryCoverage {
+  chainId: number;
+  sender: string;
+  pagesScanned: { transactions: number; tokenTransfers: number };
+  recordsInspected: number;
+  uniqueCounterparties: number;
+  outgoingNativeTransfers: number;
+  outgoingTokenTransfers: number;
+  duplicatesSkipped: number;
+  incomingOnlyAddresses: number;
+  zeroValueInteractions: number;
+  paginationComplete: boolean;
+  truncated: boolean;
+  stopReasons: string[];
+  timeBudgetExhausted: boolean;
+  requestBudgetExhausted: boolean;
+  providerCalls: number;
+  providerErrors: { endpoint: string; code: string }[];
+  fetchedAt: string;
+  oldestEvidenceAt?: string;
+  newestEvidenceAt?: string;
+  limits: HistoryLimits;
+}
+
+export interface CounterpartyEvidence {
+  chainId: number;
+  address: string;
+  relationship: 'OUTBOUND_NATIVE' | 'OUTBOUND_ERC20' | 'INCOMING_ONLY' | 'INCOMING' | 'ZERO_VALUE' | 'INCOMPLETE';
+  direction: 'OUTGOING' | 'INCOMING' | 'SELF';
+  transactionHash: string;
+  timestamp?: string;
+  blockNumber?: number;
+  rawAmount: string;
+  tokenAddress?: string;
+  logIndex?: number;
+  // Token event sender is not necessarily the transaction initiator.
+  initiatorVerified: boolean;
+}
+
+export interface SenderHistory {
+  counterparties: KnownCounterparty[];
+  evidence: CounterpartyEvidence[];
+  coverage: HistoryCoverage;
 }

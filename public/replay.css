@@ -73,3 +73,47 @@
   .replay-stage.replay-enter { animation: none; }
   .replay-meter-fill, .replay-control, .replay-steps button { transition: none; }
 }
+/* Responsive SVG evidence, with the same controls available as full-size HTML buttons. */
+.evidence-network { min-width: 0; margin-top: 1rem; padding: .6rem; border: 1px solid #e8e5df; border-radius: 1rem; background: radial-gradient(#d6d3d166 1px, transparent 1px) 0 0 / 16px 16px #faf8f5; }
+.evidence-network-svg { display: block; width: 100%; height: auto; max-height: 520px; overflow: visible; }
+.graph-address { cursor: pointer; }
+.graph-address circle { fill: #fff; stroke: #a8a29e; stroke-width: 2; transition: stroke 180ms, fill 180ms; }
+.graph-address.sender circle { stroke: #215b9e; }
+.graph-address[aria-pressed="true"] circle, .graph-address:focus-visible circle { fill: #f1eee7; stroke: #1c1917; stroke-width: 4; }
+.graph-address-label { font: 600 14px 'Plus Jakarta Sans', sans-serif; fill: #44403c; }
+.graph-address-short { font: 600 16px 'JetBrains Mono', monospace; fill: #1c1917; }
+.graph-edge { cursor: pointer; outline: none; }
+.graph-edge-line { stroke-width: 2.5; stroke: #267365; }
+.graph-edge-hit { stroke: transparent; stroke-width: 22; }
+.graph-edge[aria-pressed="true"] .graph-edge-line, .graph-edge:focus-visible .graph-edge-line { stroke-width: 5; }
+.graph-edge.proposed .graph-edge-line { stroke: #78716c; stroke-dasharray: 8 6; }
+.graph-edge.incoming .graph-edge-line { stroke: #996228; }
+.graph-edge.configured .graph-edge-line { stroke: #6a567d; }
+.graph-edge.similarity .graph-edge-line { stroke: #b45309; stroke-dasharray: 3 5; }
+.graph-arrow.observed { fill: #267365; }
+.graph-arrow.proposed { fill: #78716c; }
+.graph-arrow.incoming { fill: #996228; }
+.graph-arrow.configured { fill: #6a567d; }
+.graph-arrow.similarity { fill: #b45309; }
+.graph-node-controls, .graph-edge-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+.graph-node-controls .replay-control, .graph-edge-controls .replay-control { white-space: normal; text-align: left; }
+.graph-node-controls [aria-pressed="true"], .graph-edge-controls [aria-pressed="true"] { border-color: #1c1917; background: #f1eee7; }
+.graph-key::before { content: ''; display: inline-block; width: 18px; margin-right: 5px; border-top: 2px solid #267365; vertical-align: middle; }
+.graph-key.proposed::before { border-top: 2px dashed #78716c; }
+.graph-key.incoming::before { border-color: #996228; }
+.graph-key.configured::before { border-color: #6a567d; }
+.graph-key.similarity::before { border-top: 2px dotted #b45309; }
+.replay-progress-row { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; font-size: .72rem; color: #57534e; }
+.replay-progress-row progress { flex: 1 1 140px; min-width: 80px; height: 6px; accent-color: #8a4a24; }
+.replay-progress-row label:first-child { flex: 1 1 190px; }
+@media (max-width: 640px) {
+  .evidence-network { padding: .4rem; }
+  .evidence-network-svg { max-height: 500px; }
+  .graph-address-label { font-size: 15px; }
+  .graph-node-controls, .graph-edge-controls { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .replay-progress-row label:first-child { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .graph-edge-line { animation: edge-reveal 420ms ease-out both; }
+  @keyframes edge-reveal { from { opacity: 0; } to { opacity: 1; } }
+}

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ScoutGuard } from './core/scoutguard.js';
@@ -13,12 +13,15 @@ import { TransactionCandidate } from './types/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export function createApp(options: { guard?: ScoutGuard; publicLimit?: number; aggregateLimit?: number; maxConcurrent?: number; cooldownMs?: number } = {}) {
 const app = express();
-const PORT = process.env.PORT || 3030;
-if (process.env.NODE_ENV === 'production' && !process.env.SCOUTGUARD_SERVICE_KEY) {
+// Vercel previews may have no production credentials. Keep the UI/read-only routes available;
+// the protected endpoint still denies every request unless a service key is configured.
+const isVercelPreview = process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview';
+if (process.env.NODE_ENV === 'production' && !isVercelPreview && !process.env.SCOUTGUARD_SERVICE_KEY) {
   throw new Error('SCOUTGUARD_SERVICE_KEY is required in production');
 }
-if (process.env.NODE_ENV === 'production' && !process.env.BLOCKSCOUT_API_KEY) {
+if (process.env.NODE_ENV === 'production' && !isVercelPreview && !process.env.BLOCKSCOUT_API_KEY) {
   throw new Error('BLOCKSCOUT_API_KEY is required in production');
 }
 if (process.env.NODE_ENV === 'production' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
@@ -26,12 +29,18 @@ if (process.env.NODE_ENV === 'production' && process.env.NODE_TLS_REJECT_UNAUTHO
 }
 
 app.disable('x-powered-by');
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '16kb' }));
-app.use('/api', rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false }));
+// Direct Node deployments ignore forwarded IPs. Vercel's edge overwrites its client-IP header.
+app.set('trust proxy', process.env.VERCEL === '1' ? 1 : false);
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
+app.use(express.json({ limit: '16kb', strict: true, inflate: false }));
+app.use('/api', rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'API request limit reached. Try again later.' } }));
 const publicEvaluationLimit = rateLimit({
   windowMs: 60_000,
-  limit: 5,
+  limit: options.publicLimit ?? 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { error: 'Public live-check limit reached. Wait one minute and try again.' }
@@ -39,20 +48,27 @@ const publicEvaluationLimit = rateLimit({
 // Serve static UI assets from public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-const guard = new ScoutGuard();
+const guard = options.guard || new ScoutGuard();
+const aggregateLimit = rateLimit({ windowMs: 60_000, limit: options.aggregateLimit ?? 20,
+  keyGenerator: () => 'public-instance', standardHeaders: 'draft-7', legacyHeaders: false,
+  message: { error: 'Public provider budget reached. Try again later.' } });
+let activePublicRequests = 0;
+let providerCooldownUntil = 0;
 
 function parseCandidate(body: unknown, publicMode = false): TransactionCandidate | undefined {
-  if (!body || typeof body !== 'object') return undefined;
-  const input = body as Partial<TransactionCandidate>;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return undefined;
+  const input = body as Record<string, unknown>;
+  const fields = ['from', 'to', 'value', 'chainId', 'data', 'tokenAddress', 'agentId', 'memo', 'rawAmount', 'transactionTo', 'transactionValue'];
+  if (Object.keys(input).some(key => !fields.includes(key))) return undefined;
+  if (typeof input.from !== 'string' || typeof input.to !== 'string' || typeof input.value !== 'string'
+    || typeof input.chainId !== 'number') return undefined;
+  for (const field of fields.filter(field => field !== 'chainId')) {
+    if (input[field] !== undefined && (typeof input[field] !== 'string' || (input[field] as string).length > (field === 'memo' ? 256 : 138))) return undefined;
+  }
   const candidate: TransactionCandidate = {
-    from: String(input.from || ''),
-    to: String(input.to || ''),
-    value: String(input.value || ''),
-    chainId: Number(input.chainId),
-    agentId: publicMode ? 'procurement-bot-01' : input.agentId,
-    memo: publicMode ? 'Public judge live evaluation' : input.memo,
-    tokenAddress: input.tokenAddress ? String(input.tokenAddress) : undefined,
-    data: input.data ? String(input.data) : undefined
+    ...(input as unknown as TransactionCandidate),
+    agentId: publicMode ? 'procurement-bot-01' : input.agentId as string | undefined,
+    memo: publicMode ? 'Public judge live evaluation' : input.memo as string | undefined
   };
   if (publicMode && candidate.chainId !== 1) return undefined;
   try {
@@ -72,10 +88,19 @@ async function evaluateRequest(req: Request, res: Response, publicMode = false) 
         : 'Provide a valid native transfer or direct allowlisted ERC-20 transfer(address,uint256) transaction.'
     });
   }
-  const evaluation = await guard.evaluateTransaction(candidate);
+  const controller = new AbortController();
+  const disconnect = () => { if (!res.writableEnded) controller.abort(); };
+  req.once('aborted', disconnect); res.once('close', disconnect);
+  let evaluation;
+  try { evaluation = await guard.evaluateTransaction(candidate, { signal: controller.signal }); }
+  finally { req.off('aborted', disconnect); res.off('close', disconnect); }
+  if (res.destroyed) return;
+  if (publicMode && (evaluation.checks.some(check => check.id === 'SEC-FAIL-CLOSED') || evaluation.history?.coverage.providerErrors.length)) {
+    providerCooldownUntil = Date.now() + (options.cooldownMs ?? 30_000);
+  }
   res.setHeader('Cache-Control', 'no-store');
   return publicMode
-    ? res.json({ mode: 'LIVE', source: 'BLOCKSCOUT_PRO', evaluation })
+    ? res.json({ mode: 'LIVE', source: process.env.BLOCKSCOUT_API_KEY ? 'BLOCKSCOUT_PRO' : 'BLOCKSCOUT_PUBLIC_API', evaluation })
     : res.json(evaluation);
 }
 
@@ -172,6 +197,7 @@ app.get('/api/health', (req, res) => {
     service: 'ScoutGuard PRO AgentFinOps Engine',
     version: '1.0.0',
     blockscoutIntegration: 'REQUEST_SCOPED',
+    capabilities: { hourlyExecutionAccounting: false, distributedQuota: false, authenticatedReceipts: false, signingOrBroadcasting: false },
     uptime: process.uptime()
   });
 });
@@ -209,22 +235,31 @@ app.get('/api/research-case/poisoning', (req, res) => {
     source: 'Poison-Hunter (ACM CCS 2024) sample dataset',
     sourceUrl: 'https://github.com/DS2L/Poison-Hunter/blob/main/phishing_transfers_sample.csv',
     blockscoutTxUrl: 'https://eth.blockscout.com/tx/0xd599a08dc631fbae475bf9ba90f93d5ed075a896336a23027fc321f589d9de1b',
-    limitation: 'The public live evaluator scans recent history pages and did not recover this older reference for the victim. This replay shows the decision if that reference is supplied; it is not a live detection or evidence that a later theft occurred.'
+    limitation: 'The recorded 2026-10-23 live scan did not recover this older reference. Bounded pagination now reports coverage, but recovery of this research reference has not been verified with the new scanner. This replay shows the decision if that reference is supplied; it is not a live detection or evidence that a later theft occurred.'
   });
 });
 
 // Small, judge-friendly public path. It is limited to Ethereum and five checks per minute per client.
-app.post('/api/evaluate/public', publicEvaluationLimit, async (req, res) => {
+app.post('/api/evaluate/public', publicEvaluationLimit, aggregateLimit, async (req, res) => {
+  if (Date.now() < providerCooldownUntil) {
+    res.setHeader('Retry-After', String(Math.max(1, Math.ceil((providerCooldownUntil - Date.now()) / 1000))));
+    return res.status(503).json({ error: 'Provider temporarily unavailable. Evaluation is unavailable; do not execute.' });
+  }
+  if (activePublicRequests >= (options.maxConcurrent ?? 2)) {
+    res.setHeader('Retry-After', '5');
+    return res.status(429).json({ error: 'Public evaluator busy. Try again shortly.' });
+  }
+  activePublicRequests++;
   try {
     await evaluateRequest(req, res, true);
   } catch (err) {
-    res.status(500).json({ error: String(err) });
-  }
+    res.status(500).json({ error: 'Evaluation unavailable. Do not execute.' });
+  } finally { activePublicRequests--; }
 });
 
 app.post('/api/evaluate', (req, res, next) => {
   const expected = process.env.SCOUTGUARD_SERVICE_KEY;
-  if (!expected) return next();
+  if (!expected) return res.status(401).json({ error: 'Unauthorized' });
   const supplied = req.get('x-scoutguard-key') || '';
   const a = Buffer.from(supplied);
   const b = Buffer.from(expected);
@@ -234,7 +269,7 @@ app.post('/api/evaluate', (req, res, next) => {
   try {
     await evaluateRequest(req, res);
   } catch (err) {
-    res.status(500).json({ error: String(err) });
+    res.status(500).json({ error: 'Evaluation unavailable. Do not execute.' });
   }
 });
 
@@ -253,7 +288,14 @@ app.post('/api/simulate/:scenarioId', async (req, res) => {
     const demoClient = Object.assign(new BlockscoutClient(), {
       getAddressCounters: async () => demoCounters,
       getAddressDetails: async () => demoDetails,
-      getSenderCounterparties: async () => [],
+      getSenderHistory: async () => ({ counterparties: [], evidence: [], coverage: {
+        chainId: scenario.tx.chainId, sender: scenario.tx.from.toLowerCase(),
+        pagesScanned: { transactions: 0, tokenTransfers: 0 }, recordsInspected: 0, uniqueCounterparties: 0,
+        outgoingNativeTransfers: 0, outgoingTokenTransfers: 0, duplicatesSkipped: 0, incomingOnlyAddresses: 0,
+        zeroValueInteractions: 0, paginationComplete: true, truncated: false, stopReasons: [],
+        timeBudgetExhausted: false, requestBudgetExhausted: false, providerCalls: 0, providerErrors: [],
+        fetchedAt: new Date().toISOString(), limits: { maxPages: 3, maxRecords: 300, maxProviderCalls: 8, maxDurationMs: 10000 }
+      } }),
       getContractSecurity: async () => ({ isContract: true, isVerified: false })
     });
     const demoGuard = new ScoutGuard({ blockscoutClient: demoClient, customCounterparties: [{
@@ -269,17 +311,20 @@ app.post('/api/simulate/:scenarioId', async (req, res) => {
       evaluation: result
     });
   } catch (err) {
-    res.status(500).json({ error: String(err) });
+    res.status(500).json({ error: 'Evaluation unavailable. Do not execute.' });
   }
 });
 
-// Start Express Server
-app.listen(PORT, () => {
-  console.log(`=======================================================`);
-  console.log(`🛡️  ScoutGuard PRO Server is running on port ${PORT}`);
-  console.log(`   Local Dashboard: http://localhost:${PORT}`);
-  console.log(`   Blockscout integration: checked per request`);
-  console.log(`=======================================================`);
+// JSON parser failures must not return Express HTML stacks or body excerpts.
+app.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = error?.type === 'entity.too.large' ? 413 : error?.type === 'entity.parse.failed' ? 400 : error?.type === 'encoding.unsupported' ? 415 : 500;
+  res.status(status).json({ error: status === 413 ? 'Request body too large' : status === 400 ? 'Invalid JSON body' : status === 415 ? 'Compressed request bodies are unsupported' : 'Request failed' });
 });
+return app;
+}
 
+const app = createApp();
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  app.listen(process.env.PORT || 3030, () => console.log('ScoutGuard PRO listening; Blockscout checked per request'));
+}
 export default app;

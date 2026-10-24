@@ -5,7 +5,8 @@
   "outputDirectory": null,
   "git": {
     "deploymentEnabled": {
-      "replay-no-deploy": false
+      "replay-no-deploy": false,
+      "feat/scoutguard-final-integration": true
     }
   }
 }

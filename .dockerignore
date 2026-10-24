@@ -5,3 +5,5 @@ docs
 test
 *.log
 .env*
+work
+.vercel

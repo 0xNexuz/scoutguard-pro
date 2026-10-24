@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "rootDir": ".", "noEmit": true, "allowJs": true, "checkJs": false },
+  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "scripts/**/*.ts", "public/replay-data.js"],
+  "exclude": ["node_modules", "dist", "work"]
+}
