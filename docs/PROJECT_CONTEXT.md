@@ -8,16 +8,16 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** SPRINT 2 FIXES VERIFIED LOCALLY — all five judge requests addressed in local code or submission draft; push, deployment, and Craftora editing pending authorization
-- **Last updated date:** 2026-10-23
+- **Overall status:** Sprint 2 release is production-verified at `aa490c5`. Recorded investigation replay is implemented, locally verified, and published on `replay-no-deploy`; deployment is not authorized.
+- **Last updated date:** 2026-10-24
 
 ## Git State
 
-- **Branch:** main
-- **Last verified application commit:** `d02856d` on `main`
-- **Working tree:** uncommitted Sprint 2 implementation and evidence updates
-- **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
-- **Last verified milestone:** Local public ETH and USDC evaluations with automatic Blockscout sender-history comparison and live dashboard evidence (2026-10-23)
+- **Branch:** `replay-no-deploy` during this replay milestone (created from `main`)
+- **Last verified application commit:** `54252b8` on `replay-no-deploy`
+- **Working tree:** clean after the dependency patch; this context update is documentation only
+- **Relevant remote or PR:** `origin/replay-no-deploy` → `https://github.com/0xNexuz/scoutguard-pro/tree/replay-no-deploy`; no PR
+- **Last verified milestone:** Production ETH and USDC checks, including a spending-cap BLOCK, at `aa490c5`; local recorded replay verified on 2026-10-24
 
 ## Hackathon Context
 
@@ -73,11 +73,11 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
 - **Implemented but unverified:** Docker container execution and a real signing-agent integration.
 - **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Push and promote the verified Sprint 2 revision after user authorization, then update the Craftora project page with the prepared draft if authorized.
+- **P0 priorities:** Obtain deployment authorization before shipping the recorded replay; Craftora publication remains with the user.
 - **P1 priorities:** Production integration contract, transaction binding, and a shared rate limiter for horizontally scaled deployments.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Five judge requests addressed locally, including live candidate presets, logo/favicon, and Craftora copy; public production still serves the Sprint 1 revision.
+- **Current milestone:** Sprint 2 release is production-verified. The recorded replay branch is published and CI-verified; public production continues to serve the earlier Sprint 2 release.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
 - **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
 
@@ -148,6 +148,15 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
 - **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
 - **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
+
+### 2026-10-24 — Recorded investigation replay
+
+- **Authorization:** Implement an interactive replay without spending Blockscout credits. User later authorized commit and push. Deployment remains unapproved.
+- **Implemented:** Three distinct dashboard paths for fresh live evaluation, static recorded-live replay, and simulated attacks; five-stage replay with playback controls; relationship graph, check contributions, genuine Explorer links, evidence provenance, and sanitized downloadable excerpt. Protected agent API and fail-closed engine are unchanged.
+- **Evidence limits:** Saved production records are partial transcriptions from 2026-10-23, with only date precision. Original receipt IDs, exact API times, and full inbound/trust lists were not retained. The separate Poison-Hunter example remains a conditional research replay, not a recorded live catch. See `docs/evidence/2026-10-24-recorded-replay.md`.
+- **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
+- **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
+- **CI follow-up:** The first branch check failed solely on the high-severity `body-parser` 1.20.8 advisory. The lockfile now resolves 1.20.9; local `npm audit --audit-level=high`, build, and 28 tests pass. GitHub Actions [run 40098188270](https://github.com/0xNexuz/scoutguard-pro/actions/runs/40098188270) completed successfully for `54252b8`.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
