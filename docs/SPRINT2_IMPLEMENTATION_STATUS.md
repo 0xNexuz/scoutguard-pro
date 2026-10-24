@@ -1,6 +1,6 @@
 # Sprint 2 implementation status — 2026-10-24
 
-The original Sprint 2 application was released at `aa490c5`, with production verification recorded on October 23 and release record `2559de7`. The additional backend hardening on `feat/scoutguard-sprint2-hardening` is local, not pushed or deployed. The requested 95% overall completion and 100% critical end-to-end verification have **not** been demonstrated: fresh live/production verification and distributed quotas remain limited.
+The original Sprint 2 application was released at `aa490c5`, with production verification recorded on October 23 and release record `2559de7`. The additional backend hardening application commit `2a4b170` was pushed with user approval to `feat/scoutguard-sprint2-hardening` on October 24. It has not been merged or production-deployed by this task. The requested 95% overall completion and 100% critical end-to-end verification have **not** been demonstrated: fresh live/production verification and distributed quotas remain limited.
 
 | Area | Current implementation and verification | Remaining limit |
 |---|---|---|
@@ -12,7 +12,7 @@ The original Sprint 2 application was released at `aa490c5`, with production ver
 | Public API | Strict input types, 16 KB body cap/no compression, provider-call/time/response bounds, local client/aggregate/concurrency limits, cooldown, JSON error redaction and no-store. Protected service-key route retained and now denies absent configuration in development too. HTTP fixture tests pass. | Shared deployment-wide quota not provisioned. Free-budget proposal is documented. Cold starts and multiple instances remain a limitation. |
 | Dependencies | body-parser 1.20.8 high-severity advisory patched to 1.20.9; final npm audit reports zero known vulnerabilities. | Audit is a registry advisory check, not a comprehensive security assessment. |
 | Evidence and frontend | Original live evidence/research case preserved. Chromium checked the unchanged form with fixture data, incomplete-history warnings, ETH/USDC, cap block, invalid input and injected 503/429. Existing provenance labels preserved. | External icons were blocked and small mobile overflow was observed. Fresh anonymous production and Explorer destination checks are blocked by cloud proxy; fixtures are not live proof. No PC graph/replay work was recovered or duplicated. |
-| Submission | Consolidated judge checklist and expanded Craftora draft reconciled with the released baseline and pending hardening branch. | No Craftora publication, video, X post, push, merge or deployment performed. |
+| Submission | Consolidated judge checklist and expanded Craftora draft reconciled with the released baseline and pending hardening branch. | Feature-branch push approved and verified October 24. No Craftora publication, video, X post, merge or explicit deployment performed. |
 
 ## Reproduction and evidence
 

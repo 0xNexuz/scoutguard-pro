@@ -61,7 +61,7 @@ The authenticated Ethereum PRO evaluation and public Explorer API comparison wer
 
 ## Hardening branch and verification
 
-The October 23 Sprint 2 production release remains recorded at `aa490c5` (release record `2559de7`). The new backend hardening on `feat/scoutguard-sprint2-hardening` is local and has not been pushed or deployed. It preserves `public/index.html`, `public/app.js`, visual assets and the recorded research case.
+The October 23 Sprint 2 production release remains recorded at `aa490c5` (release record `2559de7`). The backend hardening application commit `2a4b170` was pushed with user approval on October 24 to [`feat/scoutguard-sprint2-hardening`](https://github.com/0xNexuz/scoutguard-pro/tree/feat/scoutguard-sprint2-hardening). It has not been merged or deployed to production by this task. It preserves `public/index.html`, `public/app.js`, visual assets and the recorded research case.
 
 See the [security and integration notes](docs/SPRINT2_HARDENING.md), [judge-feedback checklist](docs/SPRINT2_JUDGE_CHECKLIST.md) and [current status](docs/SPRINT2_IMPLEMENTATION_STATUS.md). Defaults scan up to three pages per endpoint and 300 combined records, with ten-second/twelve-call evaluation bounds. Configure history through the engine constructor; public requests cannot raise limits. Full receipts expose a versioned unkeyed SHA-256 envelope and `ReceiptSigner.verifyReceipt`; this verifies digest consistency, not service authenticity. Tests cover tampering and exact transaction binding.
 

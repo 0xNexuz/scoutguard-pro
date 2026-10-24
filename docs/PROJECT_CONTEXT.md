@@ -8,15 +8,15 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** REVIEW (Sprint 2 backend hardening branch)
-- **Overall status:** Original Sprint 2 release PRODUCTION VERIFIED on 2026-10-23. Additional backend hardening VERIFIED LOCALLY; not pushed or deployed. Fresh production/live reconstruction BLOCKED by cloud egress policy; no 95% completeness claim.
+- **Overall status:** Original Sprint 2 release PRODUCTION VERIFIED on 2026-10-23. Additional backend hardening VERIFIED LOCALLY and PUSHED to its dedicated GitHub branch with user approval on 2026-10-24; not merged or deployed to production. Fresh production/live reconstruction BLOCKED by cloud egress policy; no 95% completeness claim.
 - **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
 
 - **Branch:** `feat/scoutguard-sprint2-hardening` (created from fetched `origin/main`)
 - **Starting HEAD / fetched main:** `2559de7a4815986eeb496bf217780b428a4eb890`; application release `aa490c5`
-- **Working tree:** dedicated local hardening changes; see `git status`. No PC-local changes were present or recovered.
-- **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
+- **Working tree:** committed hardening and publication-status documentation; see `git status`. No PC-local changes were present or recovered.
+- **Relevant remote or PR:** `origin/feat/scoutguard-sprint2-hardening` → `https://github.com/0xNexuz/scoutguard-pro/tree/feat/scoutguard-sprint2-hardening`; application commit `2a4b170`; no PR
 - **Last verified milestone:** bounded-history/security regression suite and local fixture HTTP/browser checks (2026-10-24); original public release evidence remains dated 2026-10-23
 
 ## Hackathon Context
@@ -73,11 +73,11 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
 - **Implemented but unverified:** Docker container execution and a real signing-agent integration.
 - **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Review this hardening branch, unblock read-only network verification, and obtain approval before any push/deployment. Craftora publication and video remain with the user.
+- **P0 priorities:** Review the published hardening branch, unblock read-only network verification, and resolve production release gates before merging or deploying. Craftora publication and video remain with the user.
 - **P1 priorities:** Shared deployment-wide quota, real signing-agent enforcement/freshness, and hourly accounting. Exact payment fields and full checks are now bound to a verifiable unkeyed receipt.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Original direct-USDC/public-evaluator Sprint 2 release is production-recorded. New backend hardening is local only; see `SPRINT2_HARDENING.md` and the consolidated `SPRINT2_JUDGE_CHECKLIST.md`.
+- **Current milestone:** Original direct-USDC/public-evaluator Sprint 2 release is production-recorded. New backend hardening is published on the dedicated GitHub branch and is not production-deployed; see `SPRINT2_HARDENING.md` and the consolidated `SPRINT2_JUDGE_CHECKLIST.md`.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
 - **Known blockers:** This cloud has no configured provider credentials and proxy CONNECT 403 prevents Blockscout/production access. Recorded Base PRO access returned HTTP 402; no paid access will be purchased. Docker/signing-agent execution remains unverified. User retained demo recording and Craftora submission.
 
@@ -145,9 +145,9 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Next Action
 
 - **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially fresh live verification and a shared public quota. The user owns Craftora submission and the video.
-- **Next authorized action:** Complete local hardening, tests and documentation. The current user instruction supersedes earlier release authorization: do not push, merge or deploy without new approval.
+- **Next authorized action:** User approved push or publication on 2026-10-24. The reviewed application commit has been pushed to its feature branch; update and publish the corresponding status record. No merge or production deployment was requested in this step.
 - **Next approved milestone:** Deliver reviewable feature-branch changes and the security/submission report; preserve the separate PC graph/replay task.
-- **Approval boundary:** Push, merge, deployment and publication require approval. Craftora submission and demo recording remain with the user.
+- **Approval boundary:** Feature-branch push is approved and completed. Merge, production deployment and Craftora submission remain separate actions; demo recording remains with the user.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -216,3 +216,11 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Evidence:** Baseline 24 tests; hardening suite 106 tests passed. Local Chromium exercised fixture ETH/USDC review, cap block and injected provider/rate errors. body-parser 1.20.8 advisory fixed at 1.20.9; npm audit reports zero known vulnerabilities. See `SPRINT2_HARDENING.md` and `SPRINT2_JUDGE_CHECKLIST.md` for verification scope.
 - **Limits:** Cloud proxy CONNECT 403 blocks fresh production and Blockscout checks. No genuine new reference recovery, historical prevention or 95% readiness is claimed. Shared quotas and real signing-agent enforcement remain open. Under external-resource blocking the existing browser showed a Lucide error and small mobile overflow; no frontend edits were made.
 - **Status:** VERIFIED locally; external release actions not authorized.
+
+
+### 2026-10-24 — Approved feature-branch publication
+
+- **Decision:** Interpret the user's “approval to push, or publish” as authorization to publish the reviewed hardening branch, preserving main and the PC task's unknown local changes.
+- **Evidence:** `git push --set-upstream origin HEAD:refs/heads/feat/scoutguard-sprint2-hardening` succeeded. `git ls-remote` independently confirmed application commit `2a4b17075a67bc9355d40956ad300e52c6e5d71b` on that branch; main remained `2559de7a4815986eeb496bf217780b428a4eb890`.
+- **Scope:** Publish status corrections in this branch. No source changes since the 106-test verification, no force push, main update, explicit deployment, Craftora submission or PC-local access. A Git-linked host may independently create a preview; none was requested or verified here.
+- **Status:** Feature-branch push VERIFIED. Production verification and historical-recovery network limitations remain unchanged.
