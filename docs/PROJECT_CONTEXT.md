@@ -8,16 +8,16 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** Sprint 2 release is production-verified at `aa490c5`. Recorded investigation replay is implemented, locally verified, and published on `replay-no-deploy`; deployment is not authorized.
+- **Overall status:** Recorded investigation replay was merged into `main` in PR #1 at `6db0017` and its static dashboard assets were verified on the production URL. The protected live API was unchanged.
 - **Last updated date:** 2026-10-24
 
 ## Git State
 
-- **Branch:** `replay-no-deploy` during this replay milestone (created from `main`)
-- **Last verified application commit:** `54252b8` on `replay-no-deploy`
-- **Working tree:** clean after the dependency patch; this context update is documentation only
-- **Relevant remote or PR:** `origin/replay-no-deploy` → `https://github.com/0xNexuz/scoutguard-pro/tree/replay-no-deploy`; no PR
-- **Last verified milestone:** Production ETH and USDC checks, including a spending-cap BLOCK, at `aa490c5`; local recorded replay verified on 2026-10-24
+- **Branch:** Remote `main` contains the replay merge; this local checkout remains on `replay-no-deploy` because this machine's Git HTTPS certificate chain is unavailable.
+- **Last verified application commit:** `6db0017` on remote `main` (PR #1 merge)
+- **Working tree:** The local replay branch is behind remote `main`; use the GitHub repository as the release source of truth until Git HTTPS certificate trust is repaired on this machine.
+- **Relevant remote or PR:** `https://github.com/0xNexuz/scoutguard-pro/pull/1` (merged)
+- **Last verified milestone:** Merge-commit CI passed; production returned health HTTP 200 and served matching replay script, case archive, and dashboard HTML on 2026-10-24. These public content checks used this machine's insecure Node TLS setting and do not independently authenticate the remote certificate.
 
 ## Hackathon Context
 
@@ -73,11 +73,11 @@ Keep this file concise and evidence-based. Update current state in place, append
   - [x] Expanded Craftora project page draft in `docs/CRAFTORA_SPRINT2_PROJECT_PAGE.md`; not published
 - **Implemented but unverified:** Docker container execution and a real signing-agent integration.
 - **Pending features:** Publish the expanded project page after user authorization; hourly volume enforcement and human approval workflow remain unimplemented.
-- **P0 priorities:** Obtain deployment authorization before shipping the recorded replay; Craftora publication remains with the user.
+- **P0 priorities:** Craftora publication remains with the user.
 - **P1 priorities:** Production integration contract, transaction binding, and a shared rate limiter for horizontally scaled deployments.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Sprint 2 release is production-verified. The recorded replay branch is published and CI-verified; public production continues to serve the earlier Sprint 2 release.
+- **Current milestone:** Recorded replay is merged, CI-verified, and serving on the public production dashboard. No new Blockscout evaluation was run for this release.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
 - **Known blockers:** Base PRO requests return HTTP 402 under this key's plan. Docker is unavailable here. User retained demo recording and Craftora submission.
 
@@ -145,7 +145,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Next Action
 
 - **Next recommended action:** Continue the open items in `docs/SPRINT2_IMPLEMENTATION_STATUS.md`, especially paginated history and a shared public quota. The user owns Craftora submission and the video.
-- **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
+- **Next authorized action:** PR #1 was merged on 2026-10-24 at the user's request. Craftora submission and demo recording remain with the user.
 - **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
 - **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
 
@@ -157,6 +157,13 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
 - **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
 - **CI follow-up:** The first branch check failed solely on the high-severity `body-parser` 1.20.8 advisory. The lockfile now resolves 1.20.9; local `npm audit --audit-level=high`, build, and 28 tests pass. GitHub Actions [run 40098188270](https://github.com/0xNexuz/scoutguard-pro/actions/runs/40098188270) completed successfully for `54252b8`.
+
+### 2026-10-24 — Replay merged and publicly served
+
+- **Authorization:** User requested a mergeability check and to proceed if mergeable.
+- **Decision:** Merge PR #1 into `main` after GitHub reported `MERGEABLE` / `CLEAN` and the build, test, and GitGuardian checks passed.
+- **Evidence:** Merge commit `6db0017` and its GitHub Actions Verify check passed. The production root, replay script, case archive, and health endpoint returned HTTP 200; after line-ending normalization, the dashboard HTML and both replay assets matched the local release files. This machine could not validate the public TLS certificate, so those HTTP observations are limited to content checks.
+- **Status:** MERGED and PUBLIC CONTENT VERIFIED. No Blockscout credits spent, demo recorded, or Craftora submission made.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
