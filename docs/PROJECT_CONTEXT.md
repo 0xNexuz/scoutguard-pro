@@ -8,16 +8,16 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** APPROVED APPLICATION RELEASED — qualified runtime checks complete
-- **Overall status:** PR #2 application release `160fff4` remains the verified production baseline. A subsequent source audit of `main` at `eb8221a` found two access-control gaps; fixes and a rewritten README are locally verified, pending GitHub publication. Fresh anonymous/provider checks and distributed quota remain unresolved.
+- **Overall status:** PR #4 merged the access-control fixes and rewritten README to `main` at `cf0bf38`. Main CI and Vercel status passed; production Chrome returned 200 for the page/health and 401 for unauthenticated counterparties. Fresh provider evaluation and distributed quota remain unresolved.
 - **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** application released on remote main through PR #2; release documentation prepared on `docs/scoutguard-approved-release` from merged main (no direct main commit).
-- **Integration source heads:** latest main `f4247792d1fb7b747784c2e125c1b0dd4342b8cd`, hardening `dc179f92691b101174487f50d0727c04a41d7394`. Original hardening started from `2559de7`; original application release `aa490c5`.
-- **Working tree:** final local integration source/evidence; use `git status` for current state. One cloud worktree; desktop-local state is inaccessible and was not recovered.
-- **Relevant remote or PR:** PR #1 replay and PR #2 final integration are merged. Application commit `160fff45882ecb7249b762cc49e70664ce106a4f`; subsequent documentation-only commits do not change runtime code.
-- **Last verified milestone:** baseline GitHub run 40118723515 passed at `eb8221a`; audit revision passed 142 local tests, 25 local Chromium checks, build, strict types, mock-agent demo, and cached vulnerability audit. See `docs/AUDIT_2026-10-24.md`.
+- **Branch:** Application and audit hardening are released on remote `main` through PR #2 and PR #4. The audit used a source archive because this Windows Git client's HTTPS certificate chain is unavailable.
+- **Integration source heads:** audit baseline `eb8221a450c6e9d805c5699ec423b5f94807003e`, PR #4 application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`. Earlier hardening source was `dc179f92691b101174487f50d0727c04a41d7394`.
+- **Working tree:** audit source was extracted from the verified GitHub `main` archive at `eb8221a`; the older desktop Git checkout remains on `replay-no-deploy` and must not be mistaken for current `main`.
+- **Relevant remote or PR:** PR #1 replay, PR #2 final integration, and PR #4 access-control audit are merged. Audit application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`.
+- **Last verified milestone:** PR #4 main run 40134184049 passed, Vercel status succeeded, and production Chrome observed page/health 200 and counterparty route 401 without a key. Local audit revision passed 142 tests, 25 Chromium checks, build, strict types, mock-agent demo, and cached vulnerability audit. See `docs/AUDIT_2026-10-24.md`.
 
 ## Hackathon Context
 
@@ -77,7 +77,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P1 priorities:** Shared deployment-wide quota, independent real-wallet/nonce/gas/idempotency authorization, optional authenticated receipts and authoritative executed-payment accounting. Mock binding/freshness/authorization is verified; hourly evaluated candidates are never treated as spending.
 - **P2 priorities:** Standalone SDK is not published.
 - **P3 priorities:** Further visual polish after proof gates.
-- **Current milestone:** Source-wide audit of the released integration; protected policy identity and configured-counterparty disclosure fixed locally, README rewritten, and regression suite verified. See `AUDIT_2026-10-24.md`.
+- **Current milestone:** Source-wide audit published and merged; protected policy identity and configured-counterparty disclosure fixed, README rewritten, CI passed, and read-only production behavior verified. See `AUDIT_2026-10-24.md`.
 - **Recorded research case:** Poison-Hunter sample dust transfer independently matched on Blockscout; the detector replay flags its look-alike at 4+4 hex characters. Live recent history did not recover the older research reference, so live poisoning prevention for this case is not claimed.
 - **Known blockers:** Fresh provider/anonymous Explorer proof was not run in this audit; the earlier cloud environment blocked it. No shared quota is configured. Recorded Base PRO access was plan-gated; real wallets, an hourly execution ledger, and authenticated receipts remain unsupported.
 
@@ -146,9 +146,9 @@ Early planning estimates below are historical internal judgments, not official c
 
 ## Next Action
 
-- **Next recommended action:** publish the audited changes through review/CI, then separately verify anonymous production access and fresh provider behavior on a trusted network. The user retains submission and video publication.
-- **Next authorized action:** User requested a thorough GitHub audit, fixes, and README update. No purchase, secret change, wallet action, Craftora or social publication was requested.
-- **Next approved milestone:** audit hardening and README publication with truthful remaining release limits.
+- **Next recommended action:** Run a budgeted fresh provider check and independent Explorer comparison, then address shared quotas and real-wallet controls before unattended execution. The user retains Craftora submission and video publication.
+- **Next authorized action:** Audit fixes and README update requested by the user are merged. No purchase, secret change, wallet action, Craftora or social publication was requested.
+- **Next approved milestone:** Maintain the audited release and truthful evidence limits.
 - **Approval boundary:** Reviewed integration push/PR/merge/release now approved. Purchases, production-secret changes, blockchain actions, Craftora and social publication remain outside this release.
 
 ### 2026-10-20 — Evidence correction and local hardening
@@ -289,4 +289,6 @@ Early planning estimates below are historical internal judgments, not official c
 - **Finding and fix:** A service-key holder could choose a more permissive agent policy; `/api/counterparties` disclosed operator-configured entries without authentication. The protected key is now bound to `SCOUTGUARD_AGENT_ID` (default procurement), and the counterparty route requires the key. See `docs/AUDIT_2026-10-24.md`.
 - **Documentation:** README now distinguishes live, recorded, research, simulation and mock behavior, and includes a local recorded-replay screenshot. No fresh Blockscout or wallet request was made.
 - **Verification:** Local `npm run build`, strict typecheck, 142 tests, 25 Chrome browser checks, mock-agent demo, and cached npm audit passed. Browser needed explicit Windows `CHROMIUM_PATH`; no checks were skipped.
-- **Status:** VERIFIED LOCALLY; GitHub PR/merge and post-change production verification pending.
+- **Publication:** PR #4 merged at `cf0bf38`; main run 40134184049 and Vercel status succeeded.
+- **Production read-only check:** Normal headless Chrome observed `/` 200, `/api/health` 200, and unauthenticated `/api/counterparties` 401 without bypassing HTTPS errors. No fresh Blockscout evaluation was made.
+- **Status:** MERGED, CI VERIFIED, and PRODUCTION READ-ONLY CHECK VERIFIED. Protected policy selection is covered locally, not with a production service key.
