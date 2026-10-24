@@ -8,16 +8,16 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** SPRINT 2 FIXES VERIFIED LOCALLY — all five judge requests addressed in local code or submission draft; push, deployment, and Craftora editing pending authorization
-- **Last updated date:** 2026-10-23
+- **Overall status:** Sprint 2 release is production-verified at `aa490c5`. Recorded investigation replay is implemented and locally verified; feature-branch push is authorized, deployment is not.
+- **Last updated date:** 2026-10-24
 
 ## Git State
 
-- **Branch:** main
-- **Last verified application commit:** `d02856d` on `main`
-- **Working tree:** uncommitted Sprint 2 implementation and evidence updates
+- **Branch:** `replay-no-deploy` during this replay milestone (created from `main`)
+- **Last verified application commit:** `2559de7` on `main` before replay work
+- **Working tree:** replay implementation and evidence updates to commit and push on the feature branch
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
-- **Last verified milestone:** Local public ETH and USDC evaluations with automatic Blockscout sender-history comparison and live dashboard evidence (2026-10-23)
+- **Last verified milestone:** Production ETH and USDC checks, including a spending-cap BLOCK, at `aa490c5`; local recorded replay verified on 2026-10-24
 
 ## Hackathon Context
 
@@ -148,6 +148,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Next authorized action:** User explicitly authorized GitHub push and Vercel deployment on 2026-10-23. Craftora submission and demo recording remain with the user.
 - **Next approved milestone:** The judge-feedback release is shipped and production-verified; continue only work within user-approved scope.
 - **Approval boundary:** Craftora publication and demo recording remain explicitly with the user.
+
+### 2026-10-24 — Recorded investigation replay
+
+- **Authorization:** Implement an interactive replay without spending Blockscout credits. User later authorized commit and push. Deployment remains unapproved.
+- **Implemented:** Three distinct dashboard paths for fresh live evaluation, static recorded-live replay, and simulated attacks; five-stage replay with playback controls; relationship graph, check contributions, genuine Explorer links, evidence provenance, and sanitized downloadable excerpt. Protected agent API and fail-closed engine are unchanged.
+- **Evidence limits:** Saved production records are partial transcriptions from 2026-10-23, with only date precision. Original receipt IDs, exact API times, and full inbound/trust lists were not retained. The separate Poison-Hunter example remains a conditional research replay, not a recorded live catch. See `docs/evidence/2026-10-24-recorded-replay.md`.
+- **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
+- **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
 
 ### 2026-10-20 — Evidence correction and local hardening
 

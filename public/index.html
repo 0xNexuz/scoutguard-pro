@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/assets/scoutguard-mark.svg">
   
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/replay.css">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
@@ -225,13 +226,22 @@
 
 
     <!-- ======================================================== -->
+    <nav class="museum-mat rounded-2xl p-4 md:p-5" aria-label="Investigation modes">
+      <p class="font-mono text-[10px] uppercase tracking-widest text-[#78716C] mb-3">Choose the evidence mode</p>
+      <div class="grid gap-2 sm:grid-cols-3">
+        <a href="#evidence" class="rounded-xl border border-[#D6D3D1] bg-white p-3 hover:border-[#1C1917] focus-visible:outline-offset-2"><strong class="block text-xs text-[#1C1917]">01 · Live evaluation</strong><span class="text-[11px] text-[#57534E]">Fresh Blockscout request</span></a>
+        <a href="#recorded-replay" class="rounded-xl border border-[#D6D3D1] bg-white p-3 hover:border-[#1C1917] focus-visible:outline-offset-2"><strong class="block text-xs text-[#1C1917]">02 · Recorded live evaluations</strong><span class="text-[11px] text-[#57534E]">Saved real results · no API call</span></a>
+        <a href="#specimens" class="rounded-xl border border-[#D6D3D1] bg-white p-3 hover:border-[#1C1917] focus-visible:outline-offset-2"><strong class="block text-xs text-[#1C1917]">03 · Simulated attacks</strong><span class="text-[11px] text-[#57534E]">Fixture-based demonstrations</span></a>
+      </div>
+    </nav>
+
     <!-- SECTION 2: INTERACTIVE ATTACK SPECIMENS & ORACLE -->
     <!-- ======================================================== -->
     <section id="specimens" class="space-y-6 pt-6">
       
       <div class="flex flex-col md:flex-row md:items-end justify-between border-b border-[#E8E5DF] pb-4 gap-2">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Interactive Demonstration</span>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#78716C]">Simulated attacks · fixture data</span>
           <h2 class="font-serif text-2xl text-[#1C1917] italic">Attack Specimens & Pre-Flight Oracle</h2>
         </div>
         <p class="text-xs text-[#78716C] max-w-md">
@@ -476,6 +486,64 @@
       </div>
     </section>
 
+    <section id="recorded-replay" class="space-y-5 pt-6" aria-labelledby="recorded-replay-title">
+      <div class="border-b border-[#E8E5DF] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#8A4A24]">Recorded live evaluations · static case files</span>
+          <h2 id="recorded-replay-title" class="font-serif text-3xl italic text-[#1C1917]">Watch the investigation unfold.</h2>
+        </div>
+        <p class="max-w-md text-xs leading-relaxed text-[#57534E]">These saved, sanitized results came from completed Blockscout-backed checks on 23 October 2026. Playback reads a local record only. It makes no new Blockscout request.</p>
+      </div>
+
+      <div class="museum-mat rounded-2xl p-5 md:p-7 space-y-6">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-widest text-[#78716C]">Case archive · three completed checks</p>
+            <div id="replay-records" class="flex flex-wrap gap-2 mt-3" role="group" aria-label="Choose a recorded evaluation"></div>
+          </div>
+          <p id="replay-provenance" class="max-w-md text-[11px] leading-relaxed text-[#57534E]"></p>
+        </div>
+
+        <p id="replay-error" class="hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert"></p>
+        <div id="replay-player" class="hidden space-y-5">
+          <div class="rounded-xl border border-[#E8E5DF] bg-[#FAF8F5] p-4 md:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p class="font-mono text-[10px] uppercase tracking-widest text-[#8A4A24]">RECORDED_LIVE_EVALUATION · NO API REQUEST</p>
+              <h3 id="replay-title" class="font-serif text-2xl italic text-[#1C1917] mt-1"></h3>
+              <p id="replay-date" class="text-xs text-[#57534E] mt-1"></p>
+            </div>
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Replay controls">
+              <button id="replay-previous" type="button" class="replay-control" aria-label="Previous stage">← Previous</button>
+              <button id="replay-play" type="button" class="replay-control replay-control-primary">Play</button>
+              <button id="replay-pause" type="button" class="replay-control" disabled>Pause</button>
+              <button id="replay-next" type="button" class="replay-control" aria-label="Next stage">Next →</button>
+              <button id="replay-restart" type="button" class="replay-control">Restart</button>
+            </div>
+          </div>
+
+          <ol id="replay-steps" class="replay-steps" aria-label="Investigation stages">
+            <li><button type="button" data-replay-stage="0"><span>01</span> Candidate</button></li>
+            <li><button type="button" data-replay-stage="1"><span>02</span> Evidence</button></li>
+            <li><button type="button" data-replay-stage="2"><span>03</span> Relationships</button></li>
+            <li><button type="button" data-replay-stage="3"><span>04</span> Checks</button></li>
+            <li><button type="button" data-replay-stage="4"><span>05</span> Verdict</button></li>
+          </ol>
+
+          <div id="replay-stage" class="replay-stage rounded-2xl border border-[#E8E5DF] bg-white p-5 md:p-7 min-h-[340px]" role="region" aria-label="Current investigation stage" aria-live="polite"></div>
+
+          <details id="replay-evidence" class="rounded-xl border border-[#D6D3D1] bg-[#FAF8F5] p-4 md:p-5">
+            <summary class="cursor-pointer font-semibold text-sm text-[#1C1917]">Inspect saved Blockscout evidence and provenance</summary>
+            <div id="replay-evidence-content" class="mt-4 space-y-4 text-xs leading-relaxed text-[#57534E]"></div>
+          </details>
+
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[#E8E5DF] pt-4">
+            <p class="text-[11px] leading-relaxed text-[#57534E] max-w-2xl">The downloadable file is a sanitized receipt excerpt transcribed from the saved observation. The original receipt ID and exact API timestamp were not retained. Its unkeyed SHA-256 digest is not an authenticated Blockscout signature.</p>
+            <button id="replay-download" type="button" class="replay-control whitespace-nowrap">Download receipt excerpt ↓</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="research-case" class="museum-mat rounded-2xl p-5 md:p-8 space-y-4" aria-labelledby="research-case-title">
       <div class="flex flex-wrap items-center gap-3">
         <span class="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-mono font-bold text-amber-900">RECORDED RESEARCH REPLAY</span>
@@ -577,5 +645,6 @@ await agentWallet.sendTransaction({ to: candidate.to, value: 0n, data: candidate
 
   </script>
   <script src="/app.js" defer></script>
+  <script type="module" src="/replay.js"></script>
 </body>
 </html>

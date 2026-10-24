@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Sanitized transcriptions of production browser evaluations recorded on 2026-10-23. These are not complete original API responses.",
+  "records": [
+    {
+      "id": "eth-observed-pass",
+      "mode": "RECORDED_LIVE_EVALUATION",
+      "title": "Observed payee · native ETH",
+      "recordedDate": "2026-10-23",
+      "exactEvaluationTime": null,
+      "sourceCommit": "aa490c5",
+      "sourceDocument": "https://github.com/0xNexuz/scoutguard-pro/blob/aa490c5/docs/evidence/2026-10-23-sprint2-production.md",
+      "candidate": {
+        "chainId": 1,
+        "sender": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+        "transactionTo": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+        "recipient": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+        "asset": "ETH",
+        "amount": "0.1",
+        "tokenContract": null,
+        "rawAmount": "100000000000000000"
+      },
+      "result": {
+        "decision": "PASS",
+        "riskScore": 0,
+        "checks": [
+          { "id": "SEC-POISON-OK", "name": "Observed Counterparty History", "status": "PASS", "scoreImpact": 0, "detail": "Exact match with an outbound counterparty derived from Blockscout sender history." },
+          { "id": "SEC-CONTRACT-EOA", "name": "Contract Bytecode Verification", "status": "PASS", "scoreImpact": 0, "detail": "Destination is an Externally Owned Account. No unverified bytecode present." },
+          { "id": "SEC-POLICY-OK", "name": "Agent Spending Limits & Policy", "status": "PASS", "scoreImpact": 0, "detail": "Value within autonomous limit (0.1 / 2.5 native units cap)." }
+        ]
+      },
+      "evidence": {
+        "historyCounterpartiesCompared": 1,
+        "observedTransfers": [
+          { "from": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be", "to": "0x3f8702cfb1662195fcc98593789682da91dfaae3", "txHash": "0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f", "kind": "ERC-20 transfer event", "qualification": "The transaction initiator differs from this transfer event's sender; this is an observed event, not a ScoutGuard payment." }
+        ],
+        "incomingOnly": null,
+        "explicitlyTrusted": null,
+        "similarityFindings": [],
+        "sourceNote": "Recent Blockscout sender history supplied one comparison counterparty. Only the linked transfer event was retained in the evidence record. Incoming-only and configured-trust lists were not retained."
+      },
+      "receiptExcerpt": { "integrityHash": "0x662258df1ba857b83cbe307f9e451a9ce1ae9537a23c7f22c4636650af59dfb6", "receiptId": null, "originalTimestamp": null, "policyVersionFromSource": "v1.2.0-blockscout-pro" }
+    },
+    {
+      "id": "usdc-observed-pass",
+      "mode": "RECORDED_LIVE_EVALUATION",
+      "title": "Canonical USDC · observed payee",
+      "recordedDate": "2026-10-23",
+      "exactEvaluationTime": null,
+      "sourceCommit": "aa490c5",
+      "sourceDocument": "https://github.com/0xNexuz/scoutguard-pro/blob/aa490c5/docs/evidence/2026-10-23-sprint2-production.md",
+      "candidate": {
+        "chainId": 1,
+        "sender": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+        "transactionTo": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "recipient": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+        "asset": "USDC",
+        "amount": "250",
+        "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "rawAmount": "250000000"
+      },
+      "result": {
+        "decision": "PASS",
+        "riskScore": 0,
+        "checks": [
+          { "id": "SEC-POISON-OK", "name": "Observed Counterparty History", "status": "PASS", "scoreImpact": 0, "detail": "Exact match with an outbound counterparty derived from Blockscout sender history." },
+          { "id": "SEC-CONTRACT-EOA", "name": "Contract Bytecode Verification", "status": "PASS", "scoreImpact": 0, "detail": "Destination is an Externally Owned Account. No unverified bytecode present." },
+          { "id": "SEC-TOKEN-USDC", "name": "Supported Stablecoin Contract", "status": "PASS", "scoreImpact": 0, "detail": "USD Coin matched the canonical allowlisted contract and is source-verified on Blockscout." },
+          { "id": "SEC-POLICY-OK", "name": "Agent Spending Limits & Policy", "status": "PASS", "scoreImpact": 0, "detail": "Value within autonomous limit (250.0 / 2500 USDC cap)." }
+        ]
+      },
+      "evidence": {
+        "historyCounterpartiesCompared": 1,
+        "observedTransfers": [
+          { "from": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be", "to": "0x3f8702cfb1662195fcc98593789682da91dfaae3", "txHash": "0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f", "kind": "ERC-20 transfer event", "qualification": "The transaction initiator differs from this transfer event's sender; this is an observed event, not a ScoutGuard payment." }
+        ],
+        "incomingOnly": null,
+        "explicitlyTrusted": null,
+        "similarityFindings": [],
+        "sourceNote": "Recent Blockscout sender history supplied one comparison counterparty. Only the linked transfer event was retained in the evidence record. Incoming-only and configured-trust lists were not retained."
+      },
+      "receiptExcerpt": { "integrityHash": "0x32f8862c04b2012f42c5be950ffec15da81b975e59f43b0010706faf4f73849f", "receiptId": null, "originalTimestamp": null, "policyVersionFromSource": "v1.2.0-blockscout-pro" }
+    },
+    {
+      "id": "usdc-policy-block",
+      "mode": "RECORDED_LIVE_EVALUATION",
+      "title": "USDC spending cap · blocked",
+      "recordedDate": "2026-10-23",
+      "exactEvaluationTime": null,
+      "sourceCommit": "aa490c5",
+      "sourceDocument": "https://github.com/0xNexuz/scoutguard-pro/blob/aa490c5/docs/evidence/2026-10-23-sprint2-production.md",
+      "candidate": {
+        "chainId": 1,
+        "sender": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+        "transactionTo": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "recipient": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+        "asset": "USDC",
+        "amount": "3000",
+        "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "rawAmount": "3000000000"
+      },
+      "result": {
+        "decision": "BLOCK",
+        "riskScore": 75,
+        "checks": [
+          { "id": "SEC-POISON-OK", "name": "Observed Counterparty History", "status": "PASS", "scoreImpact": 0, "detail": "Exact match with an outbound counterparty derived from Blockscout sender history." },
+          { "id": "SEC-CONTRACT-EOA", "name": "Contract Bytecode Verification", "status": "PASS", "scoreImpact": 0, "detail": "Destination is an Externally Owned Account. No unverified bytecode present." },
+          { "id": "SEC-TOKEN-USDC", "name": "Supported Stablecoin Contract", "status": "PASS", "scoreImpact": 0, "detail": "USD Coin matched the canonical allowlisted contract and is source-verified on Blockscout." },
+          { "id": "SEC-POLICY-CAP", "name": "Single Transaction Hard Limit", "status": "FAIL", "scoreImpact": 75, "detail": "Transaction value (3000.0 USDC) exceeds agent hard limit (2500 USDC)." }
+        ]
+      },
+      "evidence": {
+        "historyCounterpartiesCompared": 1,
+        "observedTransfers": [
+          { "from": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be", "to": "0x3f8702cfb1662195fcc98593789682da91dfaae3", "txHash": "0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f", "kind": "ERC-20 transfer event", "qualification": "The transaction initiator differs from this transfer event's sender; this is an observed event, not a ScoutGuard payment." }
+        ],
+        "incomingOnly": null,
+        "explicitlyTrusted": null,
+        "similarityFindings": [],
+        "sourceNote": "Recent Blockscout sender history supplied one comparison counterparty. Only the linked transfer event was retained in the evidence record. Incoming-only and configured-trust lists were not retained."
+      },
+      "receiptExcerpt": { "integrityHash": "0x38f10a4e8f1f0732005ed722640850415a2b8bc0b7608a871f1c25e8a56a5bdc", "receiptId": null, "originalTimestamp": null, "policyVersionFromSource": "v1.2.0-blockscout-pro" }
+    }
+  ]
+}
