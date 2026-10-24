@@ -1,6 +1,6 @@
 # ScoutGuard PRO — final Craftora project-page draft
 
-**Review draft, not published.** Production main `f424779` includes the previously released evaluator and recorded replay. The final integration branch adds the consolidated hardening, agent boundary and graph/UX work locally; do not advertise those additions as deployed before the approved release checks. Current live access from this cloud is blocked. No business adoption or security-effectiveness metric is claimed.
+**Review draft, not published to Craftora.** The consolidated application was approved, merged in PR #2 and deployed at application release `160fff4`. CI passed 139 tests and 25 browser groups; authenticated Vercel-assisted root/health/graph/archive GETs returned 200. Fresh provider evaluations and direct anonymous-browser checks remain unverified from this restricted cloud. No business adoption or measured prevention metric is claimed.
 
 ## Problem and users
 
@@ -50,8 +50,8 @@ TypeScript/Express validates the candidate; a payment normalizer decodes exact n
 
 ## Evidence, limitations and roadmap
 
-The repository preserves genuine Ethereum observations, October 23 production verification, the October 24 replay release and published research source as distinct evidence. Fresh Blockscout and anonymous production verification of this integrated branch is blocked by this cloud's egress policy and absent credentials. Mocked HTTP, passing tests, Docker success and READY metadata do not resolve that limitation.
+The repository preserves genuine Ethereum observations, October 23 production verification, the October 24 replay release and published research source as distinct evidence. Fresh Blockscout and direct anonymous-browser verification of the released integration remain blocked by this cloud's egress policy and absent credentials. Mocked HTTP, passing tests, Docker success and READY metadata do not resolve that limitation.
 
 The digest is not an authenticated digital signature. Similarity has no measured efficacy/false-positive calibration. There is no real-wallet enforcement, authoritative hourly-execution ledger, authenticated receipt service or distributed quota. Unsigned candidates are never counted as completed spending. No paid infrastructure or production secret was changed.
 
-Next: review and approved release, budgeted genuine provider/Explorer/anonymous checks, free-budget shared quota before scaling, a real downstream wallet/freshness/idempotency integration, authenticated receipt design if needed, and evaluation on a labeled dataset. Publication and submission remain with the user.
+Next: budgeted genuine provider/Explorer/anonymous checks, free-budget shared quota before scaling, a real downstream wallet/freshness/idempotency integration, authenticated receipt design if needed, and evaluation on a labeled dataset. Publication and submission remain with the user.

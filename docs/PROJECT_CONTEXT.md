@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** APPROVED RELEASE IN PROGRESS — external verification limits disclosed
-- **Overall status:** Main/replay `f424779` and hardening `dc179f9` consolidated locally on `feat/scoutguard-final-integration`. Agent enforcement, evidence graph/UX, combined verification and submission materials completed locally. User approved publication/release after reviewing the completion report. Application commit `0704e80` is pushed; preview, CI and merge/release checks are in progress. Fresh anonymous/provider access remains limited; no 95% proven-readiness claim.
+- **Current workflow stage:** APPROVED APPLICATION RELEASED — qualified runtime checks complete
+- **Overall status:** PR #2 merged at application release `160fff4`; Vercel production deployment `dpl_6cmW1jiqamCuu1k3517MfbhMohVb` READY. Main CI passed 139 tests and 25 browser groups. Authenticated Vercel-assisted root/health/graph/archive GETs returned 200. Anonymous-browser/fresh-provider checks and distributed quota remain unresolved; no 95% proven-readiness claim.
 - **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** `feat/scoutguard-final-integration` (created from latest main `f424779`; integrating hardening `dc179f9` locally)
+- **Branch:** application released on remote main through PR #2; release documentation prepared on `docs/scoutguard-approved-release` from merged main (no direct main commit).
 - **Integration source heads:** latest main `f4247792d1fb7b747784c2e125c1b0dd4342b8cd`, hardening `dc179f92691b101174487f50d0727c04a41d7394`. Original hardening started from `2559de7`; original application release `aa490c5`.
 - **Working tree:** final local integration source/evidence; use `git status` for current state. One cloud worktree; desktop-local state is inaccessible and was not recovered.
-- **Relevant remote or PR:** PR #1 replay merged at `6db0017`; published hardening branch at `dc179f9`; integration branch is published at `0704e80`; release pull request is being prepared under the new user approval.
-- **Last verified milestone:** combined local tests/browser checks, mock-agent enforcement, Docker build/non-root smoke, 100-second captioned local recording; exact final counts in `FINAL_COMPLETION_REPORT.md` and verification JSON.
+- **Relevant remote or PR:** PR #1 replay and PR #2 final integration are merged. Application commit `160fff45882ecb7249b762cc49e70664ce106a4f`; subsequent documentation-only commits do not change runtime code.
+- **Last verified milestone:** release CI run 40118199496 passed; production alias maps to the approved application and qualified GET checks succeeded. See `docs/evidence/2026-10-24-approved-release.md` and matching JSON.
 
 ## Hackathon Context
 
@@ -147,8 +147,8 @@ Early planning estimates below are historical internal judgments, not official c
 ## Next Action
 
 - **Next recommended action:** review the comprehensive report, matrix, migration notes and local recording. Resolve external/operational release gates. The user retains submission and publication.
-- **Next authorized action:** User approved the reviewed release. Publish the branch, verify CI/mergeability and deployment status, and proceed with the approved merge/release when available checks pass. Preserve disclosed external verification limits; no purchases, production-secret changes, wallet actions, Craftora or social publication.
-- **Next approved milestone:** local integration review only; do not advertise the final branch as production deployed.
+- **Next authorized action:** publish release-status documentation through review/CI and close out. Application push/merge/deployment already approved and completed. No purchase, secret change, wallet action, Craftora or social publication authorized.
+- **Next approved milestone:** evidence-backed release handoff; preserve remaining anonymous/provider and operational limitations.
 - **Approval boundary:** Reviewed integration push/PR/merge/release now approved. Purchases, production-secret changes, blockchain actions, Craftora and social publication remain outside this release.
 
 ### 2026-10-20 — Evidence correction and local hardening
@@ -274,3 +274,11 @@ Early planning estimates below are historical internal judgments, not official c
 - **Finding:** Approved preview `dpl_3pETJmXw8fzpPpja3yQ1N2kTBDRE` was READY but root and health returned HTTP 500/FUNCTION_INVOCATION_FAILED. Runtime logs identified missing SCOUTGUARD_SERVICE_KEY; no secret value was read.
 - **Fix:** Confirmed Vercel previews can serve read-only routes without credentials. Protected evaluation still requires a configured key on every request; production/unconfirmed environments still reject missing service/provider keys at startup. TLS guard unchanged; no environment secret modified.
 - **Verification:** 139/139 tests, 25 browser groups, build/strict types and zero-advisory audit passed locally. PR #2 is mergeable; updated remote checks and preview inspection remain required before merge.
+
+
+### 2026-10-24 — PR #2 merged and approved application deployed
+
+- **Merge:** PR #2 merged normally (no squash/rebase/force push) with expected head `970e4b7`, producing `160fff45882ecb7249b762cc49e70664ce106a4f`. Both original streams and evidence are preserved.
+- **CI:** PR run 40117989436 and main run 40118199496 succeeded. Main logs explicitly show 139 tests/pass, 0 fail/cancel/skip, successful browser layouts and zero vulnerabilities.
+- **Deployment:** Git-linked Vercel produced READY production `dpl_6cmW1jiqamCuu1k3517MfbhMohVb` for application main `160fff4`, aliased to scoutguard.vercel.app. Vercel-assisted health, root, graph module and unchanged three-case archive returned HTTP 200.
+- **Boundary:** These requests use authenticated deployment access, not anonymous browser proof. No fresh live provider evaluation, research-reference recovery, new shared store, production-secret change, transaction, Craftora submission or social post is claimed. Documentation follow-up is runtime-neutral.

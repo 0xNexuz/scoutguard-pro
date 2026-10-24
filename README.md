@@ -4,11 +4,11 @@ ScoutGuard checks a proposed EVM payment **before signing**. Autonomous payment 
 
 ## Current release and integration state
 
-Production [scoutguard.vercel.app](https://scoutguard.vercel.app) is associated with main `f424779`, including the three-case recorded investigation replay merged in [PR #1](https://github.com/0xNexuz/scoutguard-pro/pull/1). The hardening stream is published separately at `dc179f9`.
+Production [scoutguard.vercel.app](https://scoutguard.vercel.app) now serves the approved integrated application release `160fff4`, merged through [PR #2](https://github.com/0xNexuz/scoutguard-pro/pull/2). This preserves the earlier replay from PR #1 and consolidates hardening `dc179f9` with agent enforcement, the responsive evidence graph, mobile/offline fixes and release materials.
 
-This **local** `feat/scoutguard-final-integration` branch consolidates both streams and adds the enforcement adapter, responsive SVG evidence graph, offline icons, mobile fixes and complete verification/submission materials. Application commit `0704e80` has been pushed with user approval. Preview deployment is enabled for the approved release checks; main merge and production status are tracked in `docs/PROJECT_CONTEXT.md`. READY deployment metadata is not proof of anonymous accessibility. Current cloud egress and absent credentials block fresh Blockscout and production verification; fixtures are labeled separately.
+Release CI passed with **139 automated tests, 25 browser checks and zero audit findings**. Production health, homepage, graph module and all three archived cases returned HTTP 200 through authenticated Vercel-assisted inspection. This does not establish anonymous-browser access or fresh Blockscout evaluation. Direct anonymous/provider checks remain limited by this cloud's enforced network/credential setup, and deployment-wide quotas remain an operational limit.
 
-Approved release progress and the preview-bootstrap correction are recorded in [release verification](docs/evidence/2026-10-24-approved-release.md).
+The preview-bootstrap correction, merge, deployment and qualified runtime evidence are recorded in [approved release verification](docs/evidence/2026-10-24-approved-release.md). No production secret was read, copied or changed; no wallet transaction or external submission was performed.
 
 See the [comprehensive completion report](docs/FINAL_COMPLETION_REPORT.md), [judge verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md), [release/migration review](docs/RELEASE_MIGRATION.md) and preserved [evidence records](docs/evidence/).
 
