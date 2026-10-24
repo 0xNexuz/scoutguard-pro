@@ -8,6 +8,8 @@ Production [scoutguard.vercel.app](https://scoutguard.vercel.app) is associated 
 
 This **local** `feat/scoutguard-final-integration` branch consolidates both streams and adds the enforcement adapter, responsive SVG evidence graph, offline icons, mobile fixes and complete verification/submission materials. Application commit `0704e80` has been pushed with user approval. Preview deployment is enabled for the approved release checks; main merge and production status are tracked in `docs/PROJECT_CONTEXT.md`. READY deployment metadata is not proof of anonymous accessibility. Current cloud egress and absent credentials block fresh Blockscout and production verification; fixtures are labeled separately.
 
+Approved release progress and the preview-bootstrap correction are recorded in [release verification](docs/evidence/2026-10-24-approved-release.md).
+
 See the [comprehensive completion report](docs/FINAL_COMPLETION_REPORT.md), [judge verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md), [release/migration review](docs/RELEASE_MIGRATION.md) and preserved [evidence records](docs/evidence/).
 
 ## How it works
@@ -42,7 +44,7 @@ npm test
 npm start
 ```
 
-Open `http://localhost:3030`. The archive and simulations work without provider access. For real checks, copy `.env.example` to `.env` and supply `BLOCKSCOUT_API_KEY` server-side. The server loads dotenv. Set your own long random `SCOUTGUARD_SERVICE_KEY` for protected agent access; production startup requires both keys. Neither belongs in browser code, screenshots, Git or chat. No private key is required.
+Open `http://localhost:3030`. The archive and simulations work without provider access. For real checks, copy `.env.example` to `.env` and supply `BLOCKSCOUT_API_KEY` server-side. The server loads dotenv. Set your own long random `SCOUTGUARD_SERVICE_KEY` for protected agent access; production startup requires both keys. A confirmed Vercel preview may omit them to serve the read-only UI; its protected endpoint still returns 401 without a service key. Neither belongs in browser code, screenshots, Git or chat. No private key is required.
 
 The no-key path uses public Explorer APIs, which can deny or time out; those failures BLOCK. The UI distinguishes `BLOCKSCOUT_PRO` and `BLOCKSCOUT_PUBLIC_API`. LIVE means an attempted live evaluation, including a fail-closed outcome; it does not mean a payment occurred.
 

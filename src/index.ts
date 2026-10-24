@@ -15,10 +15,13 @@ const __dirname = path.dirname(__filename);
 
 export function createApp(options: { guard?: ScoutGuard; publicLimit?: number; aggregateLimit?: number; maxConcurrent?: number; cooldownMs?: number } = {}) {
 const app = express();
-if (process.env.NODE_ENV === 'production' && !process.env.SCOUTGUARD_SERVICE_KEY) {
+// Vercel previews may have no production credentials. Keep the UI/read-only routes available;
+// the protected endpoint still denies every request unless a service key is configured.
+const isVercelPreview = process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview';
+if (process.env.NODE_ENV === 'production' && !isVercelPreview && !process.env.SCOUTGUARD_SERVICE_KEY) {
   throw new Error('SCOUTGUARD_SERVICE_KEY is required in production');
 }
-if (process.env.NODE_ENV === 'production' && !process.env.BLOCKSCOUT_API_KEY) {
+if (process.env.NODE_ENV === 'production' && !isVercelPreview && !process.env.BLOCKSCOUT_API_KEY) {
   throw new Error('BLOCKSCOUT_API_KEY is required in production');
 }
 if (process.env.NODE_ENV === 'production' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {

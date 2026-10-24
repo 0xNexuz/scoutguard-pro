@@ -267,3 +267,10 @@ Early planning estimates below are historical internal judgments, not official c
 - **Publication:** Application `0704e8047cc24817ca40cba36de2553fb47681e6` pushed to `feat/scoutguard-final-integration` and confirmed by `git ls-remote`. No force push or main mutation at this checkpoint.
 - **Preview:** Enable automatic deployment for this explicitly approved integration branch; no environment secret is read or changed.
 - **Limits:** Shared quota remains process-local; no store was provisioned. This cloud's enforced network/credential restrictions still prevent direct fresh Blockscout and anonymous deployment verification. Authenticated Vercel inspection must not be mislabeled as anonymous access proof.
+
+
+### 2026-10-24 — Preview bootstrap regression fixed
+
+- **Finding:** Approved preview `dpl_3pETJmXw8fzpPpja3yQ1N2kTBDRE` was READY but root and health returned HTTP 500/FUNCTION_INVOCATION_FAILED. Runtime logs identified missing SCOUTGUARD_SERVICE_KEY; no secret value was read.
+- **Fix:** Confirmed Vercel previews can serve read-only routes without credentials. Protected evaluation still requires a configured key on every request; production/unconfirmed environments still reject missing service/provider keys at startup. TLS guard unchanged; no environment secret modified.
+- **Verification:** 139/139 tests, 25 browser groups, build/strict types and zero-advisory audit passed locally. PR #2 is mergeable; updated remote checks and preview inspection remain required before merge.

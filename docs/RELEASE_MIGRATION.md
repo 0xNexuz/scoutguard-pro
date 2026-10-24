@@ -1,6 +1,8 @@
 # Integrated release and receipt migration review
 
-This integration is local on `feat/scoutguard-final-integration`, from main `f424779` plus hardening `dc179f9`. It is not a main merge or deployment. Preserve the three-case archive and all original evidence. Do not force-push or overwrite desktop work.
+Original pre-approval migration review; current release progress is recorded in [approved-release evidence](evidence/2026-10-24-approved-release.md).
+
+This integration was prepared locally on `feat/scoutguard-final-integration`, from main `f424779` plus hardening `dc179f9`. It is not a main merge or deployment. Preserve the three-case archive and all original evidence. Do not force-push or overwrite desktop work.
 
 ## Compatibility review
 
@@ -30,3 +32,8 @@ This integration is local on `feat/scoutguard-final-integration`, from main `f42
 ## Security limits remaining
 
 Unkeyed receipts are editable by an attacker who can recompute a hash. Similarity is a heuristic with no calibrated efficacy study. Indexed transaction/event scans exclude internal transfers and are not block-pinned snapshots. Configured seven-chain support is not seven-chain live verification. Only direct canonical USDC is supported. Source verification is not an audit. Shared quotas, executed-volume accounting, authenticated receipts and real-wallet enforcement are not claimed.
+
+
+## Approved-preview bootstrap correction
+
+The first approved preview built successfully but root/health returned FUNCTION_INVOCATION_FAILED because its environment had no service key. Confirmed Vercel previews (`VERCEL=1`, `VERCEL_ENV=preview`) now serve read-only UI/health without credentials; the protected endpoint still returns 401 without its configured service key. Production and all unconfirmed environments keep the existing mandatory-key startup guards. TLS verification remains mandatory. No production secret was read, copied or changed. Four process-isolated startup regressions cover the preview exception, production/unconfirmed rejection, missing provider key and configured production request authentication.
