@@ -7,8 +7,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** LOCAL RELEASE REVIEW — external verification gates open
-- **Overall status:** Main/replay `f424779` and hardening `dc179f9` consolidated locally on `feat/scoutguard-final-integration`. Agent enforcement, evidence graph/UX, combined verification and submission materials completed locally. No current-task push, main merge or deployment. Fresh external access remains blocked; no 95% proven-readiness claim.
+- **Current workflow stage:** APPROVED RELEASE IN PROGRESS — external verification limits disclosed
+- **Overall status:** Main/replay `f424779` and hardening `dc179f9` consolidated locally on `feat/scoutguard-final-integration`. Agent enforcement, evidence graph/UX, combined verification and submission materials completed locally. User approved publication/release after reviewing the completion report. Application commit `0704e80` is pushed; preview, CI and merge/release checks are in progress. Fresh anonymous/provider access remains limited; no 95% proven-readiness claim.
 - **Last updated date:** 2026-10-24 (Africa/Lagos)
 
 ## Git State
@@ -16,7 +16,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Branch:** `feat/scoutguard-final-integration` (created from latest main `f424779`; integrating hardening `dc179f9` locally)
 - **Integration source heads:** latest main `f4247792d1fb7b747784c2e125c1b0dd4342b8cd`, hardening `dc179f92691b101174487f50d0727c04a41d7394`. Original hardening started from `2559de7`; original application release `aa490c5`.
 - **Working tree:** final local integration source/evidence; use `git status` for current state. One cloud worktree; desktop-local state is inaccessible and was not recovered.
-- **Relevant remote or PR:** PR #1 replay merged at `6db0017`; published hardening branch at `dc179f9`; integration branch has no remote/PR and must not be pushed without approval.
+- **Relevant remote or PR:** PR #1 replay merged at `6db0017`; published hardening branch at `dc179f9`; integration branch is published at `0704e80`; release pull request is being prepared under the new user approval.
 - **Last verified milestone:** combined local tests/browser checks, mock-agent enforcement, Docker build/non-root smoke, 100-second captioned local recording; exact final counts in `FINAL_COMPLETION_REPORT.md` and verification JSON.
 
 ## Hackathon Context
@@ -147,9 +147,9 @@ Early planning estimates below are historical internal judgments, not official c
 ## Next Action
 
 - **Next recommended action:** review the comprehensive report, matrix, migration notes and local recording. Resolve external/operational release gates. The user retains submission and publication.
-- **Next authorized action:** deliver the completed local branch/report/assets. The current master task supersedes earlier push approval: no push, merge main, deployment, purchase, secret change or external publication without new explicit approval.
+- **Next authorized action:** User approved the reviewed release. Publish the branch, verify CI/mergeability and deployment status, and proceed with the approved merge/release when available checks pass. Preserve disclosed external verification limits; no purchases, production-secret changes, wallet actions, Craftora or social publication.
 - **Next approved milestone:** local integration review only; do not advertise the final branch as production deployed.
-- **Approval boundary:** all new pushes, main merges, deployments and external submissions/publication remain unapproved in this task.
+- **Approval boundary:** Reviewed integration push/PR/merge/release now approved. Purchases, production-secret changes, blockchain actions, Craftora and social publication remain outside this release.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
@@ -259,3 +259,11 @@ Early planning estimates below are historical internal judgments, not official c
 - **Evidence:** 110 tests passed immediately after integration; expanded final suite and 25 browser groups pass, with exact final counts in the completion report/JSON. Docker builds with temporary CA trust, runs as UID 1000 with no provider network, and refuses missing production keys. A 100-second captioned local archived-case/simulation recording was created without provider requests or real signatures.
 - **Honesty:** original three cases and evidence are byte-preserved. No current live reference recovery or anonymous production verification; the two scoped connectivity probes were denied by the proxy before reaching destinations. No new store, payment, secret update or external publication.
 - **Status:** LOCAL REVIEW READY; external release gates remain open. Main and remote hardening refs are unchanged.
+
+
+### 2026-10-24 — Integration release approved
+
+- **Authorization:** User replied “You have approval” after the final integration report and deliverables. Proceed with publishing the reviewed integration and release checks; Craftora/social publication remain with the user.
+- **Publication:** Application `0704e8047cc24817ca40cba36de2553fb47681e6` pushed to `feat/scoutguard-final-integration` and confirmed by `git ls-remote`. No force push or main mutation at this checkpoint.
+- **Preview:** Enable automatic deployment for this explicitly approved integration branch; no environment secret is read or changed.
+- **Limits:** Shared quota remains process-local; no store was provisioned. This cloud's enforced network/credential restrictions still prevent direct fresh Blockscout and anonymous deployment verification. Authenticated Vercel inspection must not be mislabeled as anonymous access proof.

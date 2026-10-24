@@ -6,7 +6,7 @@
   "git": {
     "deploymentEnabled": {
       "replay-no-deploy": false,
-      "feat/scoutguard-final-integration": false
+      "feat/scoutguard-final-integration": true
     }
   }
 }

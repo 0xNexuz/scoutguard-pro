@@ -6,7 +6,7 @@ ScoutGuard checks a proposed EVM payment **before signing**. Autonomous payment 
 
 Production [scoutguard.vercel.app](https://scoutguard.vercel.app) is associated with main `f424779`, including the three-case recorded investigation replay merged in [PR #1](https://github.com/0xNexuz/scoutguard-pro/pull/1). The hardening stream is published separately at `dc179f9`.
 
-This **local** `feat/scoutguard-final-integration` branch consolidates both streams and adds the enforcement adapter, responsive SVG evidence graph, offline icons, mobile fixes and complete verification/submission materials. It has not been pushed, merged into main or deployed. Branch auto-deployment is disabled in `vercel.json`. READY deployment metadata is not proof of anonymous accessibility. Current cloud egress and absent credentials block fresh Blockscout and production verification; fixtures are labeled separately.
+This **local** `feat/scoutguard-final-integration` branch consolidates both streams and adds the enforcement adapter, responsive SVG evidence graph, offline icons, mobile fixes and complete verification/submission materials. Application commit `0704e80` has been pushed with user approval. Preview deployment is enabled for the approved release checks; main merge and production status are tracked in `docs/PROJECT_CONTEXT.md`. READY deployment metadata is not proof of anonymous accessibility. Current cloud egress and absent credentials block fresh Blockscout and production verification; fixtures are labeled separately.
 
 See the [comprehensive completion report](docs/FINAL_COMPLETION_REPORT.md), [judge verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md), [release/migration review](docs/RELEASE_MIGRATION.md) and preserved [evidence records](docs/evidence/).
 
