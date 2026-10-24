@@ -1,0 +1,141 @@
+{
+  "applicationMerge": "160fff45882ecb7249b762cc49e70664ce106a4f",
+  "pr": 2,
+  "ci": {
+    "job": 120943854843,
+    "run": 40118199496,
+    "lines": [
+      "2026-10-24T17:53:48.6985039Z found 0 vulnerabilities",
+      "2026-10-24T17:53:58.0384064Z # tests 139",
+      "2026-10-24T17:53:58.0384296Z # pass 139",
+      "2026-10-24T17:53:58.0384416Z # fail 0",
+      "2026-10-24T17:53:58.0384527Z # cancelled 0",
+      "2026-10-24T17:53:58.0384861Z # skipped 0",
+      "2026-10-24T17:54:12.8707838Z PASS no browser runtime exceptions and no external API/provider calls",
+      "2026-10-24T17:54:13.3407389Z found 0 vulnerabilities"
+    ]
+  },
+  "preview": {
+    "deployment": "dpl_7pacCnZpVBJvtkc2QV14N6qUrY8T",
+    "checks": [
+      {
+        "name": "health",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 282,
+        "health": {
+          "status": "ONLINE",
+          "capabilities": {
+            "hourlyExecutionAccounting": false,
+            "distributedQuota": false,
+            "authenticatedReceipts": false,
+            "signingOrBroadcasting": false
+          }
+        }
+      },
+      {
+        "name": "root",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 39670,
+        "hasReplay": true,
+        "hasPlaybackSpeed": true,
+        "iconCdnRemoved": true,
+        "hasEnforcementExample": true
+      },
+      {
+        "name": "records",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 8142,
+        "records": [
+          {
+            "id": "eth-observed-pass",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "PASS"
+          },
+          {
+            "id": "usdc-observed-pass",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "PASS"
+          },
+          {
+            "id": "usdc-policy-block",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "BLOCK"
+          }
+        ]
+      },
+      {
+        "name": "graph",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 9548,
+        "hasSvgGraph": true
+      }
+    ]
+  },
+  "production": {
+    "deployment": "dpl_6cmW1jiqamCuu1k3517MfbhMohVb",
+    "checks": [
+      {
+        "name": "health",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 282,
+        "health": {
+          "status": "ONLINE",
+          "capabilities": {
+            "hourlyExecutionAccounting": false,
+            "distributedQuota": false,
+            "authenticatedReceipts": false,
+            "signingOrBroadcasting": false
+          }
+        }
+      },
+      {
+        "name": "root",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 39507,
+        "hasReplay": true,
+        "hasPlaybackSpeed": true,
+        "iconCdnRemoved": true,
+        "hasEnforcementExample": true
+      },
+      {
+        "name": "records",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 8142,
+        "records": [
+          {
+            "id": "eth-observed-pass",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "PASS"
+          },
+          {
+            "id": "usdc-observed-pass",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "PASS"
+          },
+          {
+            "id": "usdc-policy-block",
+            "mode": "RECORDED_LIVE_EVALUATION",
+            "decision": "BLOCK"
+          }
+        ]
+      },
+      {
+        "name": "graph",
+        "httpStatus": 200,
+        "authenticatedInspection": true,
+        "bodyLength": 9548,
+        "hasSvgGraph": true
+      }
+    ]
+  },
+  "anonymousBrowserVerified": false,
+  "freshBlockscoutEvaluations": 0,
+  "productionSecretsModified": false
+}
