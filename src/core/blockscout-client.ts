@@ -1,4 +1,6 @@
-import { AddressCounterData, ContractSecurityData, KnownCounterparty, TokenConfig } from '../types/index.js';
+import { AddressCounterData, ContractSecurityData, KnownCounterparty, TokenConfig, SenderHistory, HistoryLimits, CounterpartyEvidence } from '../types/index.js';
+
+import { ProviderBudget, ProviderError, createProviderBudget, requestJson } from './provider-budget.js';
 
 export interface ChainConfig {
   chainId: number;
@@ -80,23 +82,9 @@ export const SUPPORTED_TOKENS: Record<number, Record<string, TokenConfig>> = {
   }
 };
 
-type BlockscoutAddress = {
-  hash?: string;
-  name?: string;
-  ens_domain_name?: string;
-  is_contract?: boolean;
-};
-
-type BlockscoutHistoryItem = {
-  from?: BlockscoutAddress | string;
-  to?: BlockscoutAddress | string;
-  timestamp?: string;
-  hash?: string;
-  transaction_hash?: string;
-  value?: string;
-  total?: { value?: string };
-  status?: string;
-};
+export class HistoryUnavailableError extends ProviderError {
+  constructor(public readonly history: SenderHistory) { super('CRITICAL_HISTORY_UNAVAILABLE'); }
+}
 
 export class BlockscoutClient {
   private apiKey: string;
@@ -135,174 +123,193 @@ export class BlockscoutClient {
     return `${chain.baseUrl}/tx/${txHash}`;
   }
 
-  private addressHash(value?: BlockscoutAddress | string): string | undefined {
-    if (typeof value === 'string') return value;
-    return value?.hash;
-  }
-
-  /**
-   * Builds a counterparty registry from the sender's recent outbound Blockscout history.
-   * Incoming transfers are deliberately excluded so an attacker cannot seed trust by
-   * sending a dust transfer to the sender.
-   */
+  /** Compatibility accessor; new integrations should consume getSenderHistory coverage. */
   public async getSenderCounterparties(chainId: number, sender: string): Promise<KnownCounterparty[]> {
+    return (await this.getSenderHistory(chainId, sender)).counterparties;
+  }
+
+  public async getSenderHistory(chainId: number, sender: string, options: Partial<HistoryLimits> = {},
+    budget: ProviderBudget = createProviderBudget()): Promise<SenderHistory> {
+    this.getChainConfig(chainId);
+    if (!/^0x[0-9a-f]{40}$/i.test(sender)) throw new ProviderError('INVALID_SENDER');
+    const limits: HistoryLimits = { maxPages: 3, maxRecords: 300, maxProviderCalls: 8, maxDurationMs: 10_000, ...options };
+    for (const [key, max] of Object.entries({ maxPages: 20, maxRecords: 2000, maxProviderCalls: 40, maxDurationMs: 20_000 })) {
+      const value = limits[key as keyof HistoryLimits];
+      if (!Number.isSafeInteger(value) || value! < 1 || value! > max) throw new Error(`Invalid history limit: ${key}`);
+    }
+    if (limits.maxAgeDays !== undefined && (!Number.isFinite(limits.maxAgeDays) || limits.maxAgeDays <= 0)) {
+      throw new Error('Invalid history age');
+    }
     const cleanSender = sender.toLowerCase();
-    const endpoints = [
-      this.v2Url(chainId, `addresses/${sender}/transactions`),
-      this.v2Url(chainId, `addresses/${sender}/token-transfers?type=ERC-20`)
+    const start = Date.now();
+    const cutoff = limits.maxAgeDays === undefined ? 0 : start - limits.maxAgeDays * 86400000;
+    budget.deadline = Math.min(budget.deadline, start + limits.maxDurationMs);
+    const coverage: SenderHistory['coverage'] = {
+      chainId, sender: cleanSender, pagesScanned: { transactions: 0, tokenTransfers: 0 }, recordsInspected: 0,
+      uniqueCounterparties: 0, outgoingNativeTransfers: 0, outgoingTokenTransfers: 0,
+      duplicatesSkipped: 0, incomingOnlyAddresses: 0, zeroValueInteractions: 0,
+      paginationComplete: false, truncated: false, stopReasons: [], timeBudgetExhausted: false,
+      requestBudgetExhausted: false, providerCalls: 0, providerErrors: [], fetchedAt: new Date(start).toISOString(), limits
+    };
+    const stop = (reason: string) => { if (!coverage.stopReasons.includes(reason)) coverage.stopReasons.push(reason); };
+    const states = [
+      { key: 'transactions' as const, route: `addresses/${cleanSender}/transactions`, cursor: {} as Record<string, string>, done: false, seen: new Set<string>() },
+      { key: 'tokenTransfers' as const, route: `addresses/${cleanSender}/token-transfers?type=ERC-20`, cursor: {} as Record<string, string>, done: false, seen: new Set<string>() }
     ];
-
-    try {
-      const responses = await Promise.all(endpoints.map(endpoint => fetch(endpoint, {
-        signal: AbortSignal.timeout(12000)
-      })));
-      for (const response of responses) {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      }
-      const payloads = await Promise.all(responses.map(response => response.json())) as Array<{ items?: BlockscoutHistoryItem[] }>;
-      const aggregate = new Map<string, KnownCounterparty>();
-
-      for (const [sourceIndex, payload] of payloads.entries()) {
-        if (!Array.isArray(payload.items)) throw new Error('Malformed sender history response');
-        for (const item of payload.items) {
-          // A zero-value call or dust-sized ERC-20 event must not become a trusted payee.
-          // Only actual outbound value is eligible as a comparison reference.
-          const value = sourceIndex === 0 ? item.value : item.total?.value;
-          if (!value || !/^\d+$/.test(value) || BigInt(value) === 0n || item.status === 'error') continue;
-          const from = this.addressHash(item.from)?.toLowerCase();
-          const to = this.addressHash(item.to)?.toLowerCase();
-          if (!from || !to || from !== cleanSender || to === cleanSender) continue;
-          const toDetails = typeof item.to === 'object' ? item.to : undefined;
-          const possibleHash = item.transaction_hash || item.hash;
-          const evidenceTxHash = possibleHash && /^0x[a-fA-F0-9]{64}$/.test(possibleHash) ? possibleHash : undefined;
-          const existing = aggregate.get(to);
-          if (existing) {
-            existing.totalTransfers += 1;
-            if (!existing.evidenceTxHash && evidenceTxHash) existing.evidenceTxHash = evidenceTxHash;
-            continue;
+    const aggregate = new Map<string, KnownCounterparty>();
+    const evidence: CounterpartyEvidence[] = [];
+    const seenEvents = new Set<string>();
+    const incoming = new Set<string>();
+    const address = (v: any): string | undefined => {
+      const hash = typeof v === 'string' ? v : v?.hash;
+      return typeof hash === 'string' && /^0x[0-9a-f]{40}$/i.test(hash) ? hash.toLowerCase() : undefined;
+    };
+    // Round robin avoids spending the entire record/call budget on only one source.
+    while (states.some(state => !state.done)) {
+      for (const state of states) {
+        if (state.done) continue;
+        if (coverage.pagesScanned[state.key] >= limits.maxPages) { stop('PAGE_LIMIT'); state.done = true; continue; }
+        if (coverage.recordsInspected >= limits.maxRecords) { stop('RECORD_LIMIT'); state.done = true; continue; }
+        if (coverage.providerCalls >= limits.maxProviderCalls || budget.calls >= budget.maxCalls) {
+          coverage.requestBudgetExhausted = true; stop('REQUEST_BUDGET'); state.done = true; continue;
+        }
+        if (Date.now() >= budget.deadline) { coverage.timeBudgetExhausted = true; stop('TIME_BUDGET'); state.done = true; continue; }
+        const url = new URL(this.v2Url(chainId, state.route));
+        for (const [key, value] of Object.entries(state.cursor)) url.searchParams.set(key, value);
+        coverage.providerCalls++;
+        try {
+          const payload = await requestJson(url.toString(), budget);
+          if (!Array.isArray(payload.items)) throw new ProviderError('MALFORMED_HISTORY');
+          coverage.pagesScanned[state.key]++;
+          for (const item of payload.items) {
+            if (coverage.recordsInspected >= limits.maxRecords) { stop('RECORD_LIMIT'); break; }
+            coverage.recordsInspected++;
+            if (!item || typeof item !== 'object') { stop('MALFORMED_RECORD'); continue; }
+            const isToken = state.key === 'tokenTransfers';
+            const from = address(item.from), to = address(item.to);
+            const rawAmount = isToken ? item.total?.value : item.value;
+            const hash = isToken ? item.transaction_hash : item.hash;
+            const tokenAddress = isToken ? address(item.token?.address_hash) : undefined;
+            if (!from || (!to && item.to !== null) || typeof rawAmount !== 'string' || !/^\d{1,78}$/.test(rawAmount)
+              || typeof hash !== 'string' || !/^0x[0-9a-f]{64}$/i.test(hash)
+              || (isToken && (!tokenAddress || item.token?.type !== 'ERC-20'))) {
+              stop('MALFORMED_RECORD'); continue;
+            }
+            // Reverted logs cannot support a relationship if a provider supplies explicit failure status.
+            if (isToken && item.status != null && item.status !== 'ok') {
+              if (item.status !== 'error') stop('INCOMPLETE_STATUS');
+              continue;
+            }
+            // Failed/pending native transactions are not observed payments.
+            if (!isToken && item.status !== 'ok') {
+              if (!['error', null].includes(item.status)) stop('INCOMPLETE_STATUS');
+              continue;
+            }
+            if (!to) continue; // contract creation has no recipient relationship
+            const timestamp = typeof item.timestamp === 'string' && Number.isFinite(Date.parse(item.timestamp)) ? item.timestamp : undefined;
+            const blockNumber = Number.isSafeInteger(item.block_number) && item.block_number >= 0 ? item.block_number : undefined;
+            const logIndex = Number.isSafeInteger(item.log_index) && item.log_index >= 0 ? item.log_index : undefined;
+            if (!timestamp || blockNumber === undefined || (isToken && logIndex === undefined)) stop('INCOMPLETE_EVIDENCE');
+            const eventKey = isToken
+              ? `${chainId}:token:${hash.toLowerCase()}:${tokenAddress}:${logIndex ?? `${from}:${to}:${rawAmount}`}`
+              : `${chainId}:native:${hash.toLowerCase()}`;
+            if (seenEvents.has(eventKey)) { coverage.duplicatesSkipped++; continue; }
+            seenEvents.add(eventKey);
+            if (cutoff && (!timestamp || Date.parse(timestamp) < cutoff)) { stop('AGE_WINDOW'); continue; }
+            if (from !== cleanSender && to !== cleanSender) { stop('UNRELATED_RECORD'); continue; }
+            const direction = from === to ? 'SELF' : from === cleanSender ? 'OUTGOING' : 'INCOMING';
+            const zero = BigInt(rawAmount) === 0n;
+            const peer = direction === 'INCOMING' ? from : to;
+            if (zero) coverage.zeroValueInteractions++;
+            const relationship = zero ? 'ZERO_VALUE' : direction !== 'OUTGOING' ? 'INCOMING_ONLY'
+              : (!timestamp || blockNumber === undefined || (isToken && logIndex === undefined)) ? 'INCOMPLETE'
+              : isToken ? 'OUTBOUND_ERC20' : 'OUTBOUND_NATIVE';
+            evidence.push({ chainId, address: peer, relationship, direction, transactionHash: hash.toLowerCase(),
+              timestamp, blockNumber, rawAmount, tokenAddress, logIndex, initiatorVerified: !isToken });
+            if (timestamp) {
+              if (!coverage.oldestEvidenceAt || Date.parse(timestamp) < Date.parse(coverage.oldestEvidenceAt)) coverage.oldestEvidenceAt = timestamp;
+              if (!coverage.newestEvidenceAt || Date.parse(timestamp) > Date.parse(coverage.newestEvidenceAt)) coverage.newestEvidenceAt = timestamp;
+            }
+            if (direction === 'INCOMING') incoming.add(peer);
+            if (zero || direction !== 'OUTGOING') continue;
+            if (isToken) coverage.outgoingTokenTransfers++; else coverage.outgoingNativeTransfers++;
+            const existing = aggregate.get(to);
+            if (existing) { existing.totalTransfers++; continue; }
+            aggregate.set(to, { address: to, name: `Observed ${to.slice(0, 6)}…${to.slice(-4)}`,
+              category: item.to?.is_contract ? 'CONTRACT' : 'VENDOR', verifiedSince: timestamp || 'Unknown observation date',
+              totalTransfers: 1, source: 'BLOCKSCOUT_HISTORY', chainId,
+              relationship: isToken ? 'OUTBOUND_ERC20' : 'OUTBOUND_NATIVE', evidenceTxHash: hash.toLowerCase() });
           }
-          aggregate.set(to, {
-            address: to,
-            name: toDetails?.name || toDetails?.ens_domain_name || `History ${to.slice(0, 6)}…${to.slice(-4)}`,
-            category: toDetails?.is_contract ? 'CONTRACT' : 'VENDOR',
-            verifiedSince: item.timestamp || 'Blockscout recent history',
-            totalTransfers: 1,
-            source: 'BLOCKSCOUT_HISTORY',
-            evidenceTxHash
-          });
+          const next = payload.next_page_params;
+          if (next === null) { state.done = true; continue; }
+          if (!next || typeof next !== 'object' || Array.isArray(next) || !Object.keys(next).length || Object.keys(next).length > 20) {
+            throw new ProviderError('MALFORMED_CURSOR');
+          }
+          const entries = Object.entries(next).sort(([a], [b]) => a.localeCompare(b));
+          // Only query parameters are accepted. Provider cursors cannot change host, route, key or token filter.
+          if (entries.some(([key, value]) => !/^[a-z_]{1,64}$/.test(key) || ['apikey', 'filter'].includes(key) || (key === 'type' && value !== 'ERC-20')
+            || !['string', 'number', 'boolean'].includes(typeof value) || String(value).length > 256)) throw new ProviderError('MALFORMED_CURSOR');
+          const cursor = Object.fromEntries(entries.map(([key, value]) => [key, String(value)]));
+          const signature = JSON.stringify(cursor);
+          if (state.seen.has(signature)) throw new ProviderError('REPEATED_CURSOR');
+          state.seen.add(signature); state.cursor = cursor;
+        } catch (error) {
+          const code = error instanceof ProviderError ? error.code : 'INVALID_OR_UNAVAILABLE_RESPONSE';
+          coverage.providerErrors.push({ endpoint: state.key, code }); stop(code); state.done = true;
+          if (/TIME/.test(code)) coverage.timeBudgetExhausted = true;
+          if (code === 'REQUEST_BUDGET') coverage.requestBudgetExhausted = true;
         }
       }
-
-      return [...aggregate.values()];
-    } catch (error) {
-      throw new Error(`Blockscout sender history unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
+    const criticalMissing = !coverage.pagesScanned.transactions || !coverage.pagesScanned.tokenTransfers;
+    if (criticalMissing) stop('CRITICAL_HISTORY_UNAVAILABLE');
+    coverage.uniqueCounterparties = aggregate.size;
+    coverage.incomingOnlyAddresses = [...incoming].filter(peer => !aggregate.has(peer)).length;
+    for (const event of evidence) if (event.relationship === 'INCOMING_ONLY' && aggregate.has(event.address)) event.relationship = 'INCOMING';
+    coverage.paginationComplete = coverage.stopReasons.length === 0;
+    coverage.truncated = !coverage.paginationComplete;
+    const result = { counterparties: [...aggregate.values()].sort((a, b) => a.address.localeCompare(b.address)), evidence, coverage };
+    // Retain machine-readable coverage even when the decision must fail closed.
+    if (criticalMissing) throw new HistoryUnavailableError(result);
+    return result;
   }
 
-  /**
-   * Fetches address transaction counters from Blockscout
-   */
-  public async getAddressCounters(chainId: number, address: string): Promise<AddressCounterData> {
-    const endpoint = this.v2Url(chainId, `addresses/${address}/counters`);
-
-    try {
-      const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(12000)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.transactions_count === undefined || data.token_transfers_count === undefined) {
-          throw new Error('Malformed counters response');
-        }
-        const transactionsCount = Number(data.transactions_count);
-        const tokenTransfersCount = Number(data.token_transfers_count);
-        if (!Number.isSafeInteger(transactionsCount) || !Number.isSafeInteger(tokenTransfersCount)) {
-          throw new Error('Invalid counters values');
-        }
-        return {
-          transactionsCount,
-          tokenTransfersCount,
-          gasUsageCount: parseInt(data.gas_usage_count || '0', 10),
-          isContract: false // Address details endpoint clarifies this
-        };
-      }
-      throw new Error(`HTTP ${response.status}`);
-    } catch (error) {
-      throw new Error(`Blockscout counters unavailable: ${error instanceof Error ? error.message : String(error)}`);
-    }
+  public async getAddressCounters(chainId: number, address: string, budget = createProviderBudget()): Promise<AddressCounterData> {
+    const data = await requestJson(this.v2Url(chainId, `addresses/${address}/counters`), budget);
+    const count = (value: unknown) => {
+      if ((typeof value !== 'string' && typeof value !== 'number') || !/^\d+$/.test(String(value))
+        || !Number.isSafeInteger(Number(value))) throw new ProviderError('MALFORMED_COUNTERS');
+      return Number(value);
+    };
+    return { transactionsCount: count(data.transactions_count), tokenTransfersCount: count(data.token_transfers_count),
+      gasUsageCount: count(data.gas_usage_count ?? '0'), isContract: false };
   }
 
-  /**
-   * Fetches address metadata, reputation tags, and contract status
-   */
-  public async getAddressDetails(chainId: number, address: string): Promise<{
-    isContract: boolean;
-    isScamOrPhishing: boolean;
-    name?: string;
-    tags: string[];
-    reputationScore: number;
+  public async getAddressDetails(chainId: number, address: string, budget = createProviderBudget()): Promise<{
+    isContract: boolean; isScamOrPhishing: boolean; name?: string; tags: string[]; reputationScore: number;
   }> {
-    const endpoint = this.v2Url(chainId, `addresses/${address}`);
-
-    try {
-      const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(12000)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (typeof data.is_contract !== 'boolean') throw new Error('Malformed address details response');
-        const tags: string[] = [];
-        if (data.public_tags) {
-          tags.push(...data.public_tags.map((t: { label?: string; tag?: string }) => t.label || t.tag || ''));
-        }
-
-        const isScam = Boolean(
-          data.is_scam || 
-          tags.some(t => /scam|phishing|drainer|hack|exploit/i.test(t))
-        );
-
-        return {
-          isContract: Boolean(data.is_contract),
-          isScamOrPhishing: isScam,
-          name: data.name || data.ens_domain_name || undefined,
-          tags,
-          reputationScore: isScam ? 0 : (data.is_verified ? 95 : 60)
-        };
-      }
-      throw new Error(`HTTP ${response.status}`);
-    } catch (error) {
-      throw new Error(`Blockscout address details unavailable: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const data = await requestJson(this.v2Url(chainId, `addresses/${address}`), budget);
+    if (typeof data.is_contract !== 'boolean' || (data.is_scam !== undefined && typeof data.is_scam !== 'boolean')
+      || (data.public_tags != null && (!Array.isArray(data.public_tags) || data.public_tags.some((tag: any) =>
+        !tag || (typeof tag.label !== 'string' && typeof tag.tag !== 'string'))))) throw new ProviderError('MALFORMED_ADDRESS');
+    const tags: string[] = (data.public_tags || []).map((tag: any) => tag.label || tag.tag);
+    const isScam = data.is_scam === true || tags.some(tag => /scam|phishing|drainer|hack|exploit/i.test(tag));
+    return { isContract: data.is_contract, isScamOrPhishing: isScam,
+      name: typeof data.name === 'string' ? data.name : undefined, tags, reputationScore: isScam ? 0 : 60 };
   }
 
-  /**
-   * Inspects smart contract verification and source code status
-   */
-  public async getContractSecurity(chainId: number, address: string): Promise<ContractSecurityData> {
-    const endpoint = this.v2Url(chainId, `smart-contracts/${address}`);
-
+  public async getContractSecurity(chainId: number, address: string, budget = createProviderBudget()): Promise<ContractSecurityData> {
     try {
-      const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(12000)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          isContract: true,
-          isVerified: Boolean(data.is_verified || data.source_code),
-          contractName: data.name || undefined,
-          hasProxyPattern: Boolean(data.is_proxy || data.implementations?.length),
-          isScamOrPhishing: false
-        };
-      }
-      if (response.status === 404) return { isContract: true, isVerified: false };
-      throw new Error(`HTTP ${response.status} or invalid contract response`);
+      const data = await requestJson(this.v2Url(chainId, `smart-contracts/${address}`), budget);
+      if ((data.is_verified !== undefined && typeof data.is_verified !== 'boolean')
+        || (data.source_code !== undefined && data.source_code !== null && typeof data.source_code !== 'string')) throw new ProviderError('MALFORMED_CONTRACT');
+      // Source verification is not a code audit. Reject truthy strings or arbitrary objects.
+      const isVerified = data.is_verified === true || (data.is_verified === undefined && typeof data.source_code === 'string' && data.source_code.trim().length > 0);
+      return { isContract: true, isVerified, contractName: typeof data.name === 'string' ? data.name : undefined,
+        hasProxyPattern: data.is_proxy === true || (Array.isArray(data.implementations) && data.implementations.length > 0), isScamOrPhishing: false };
     } catch (error) {
-      throw new Error(`Blockscout contract data unavailable: ${error instanceof Error ? error.message : String(error)}`);
+      if (error instanceof ProviderError && error.code === 'HTTP_404') return { isContract: true, isVerified: false };
+      throw error;
     }
   }
-
 }

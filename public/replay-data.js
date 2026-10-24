@@ -32,7 +32,7 @@ export function validateReplayRecord(record) {
   assert(typeof record.id === 'string' && /^[a-z0-9-]+$/.test(record.id), 'Invalid record ID');
   assert(record.mode === 'RECORDED_LIVE_EVALUATION', 'A simulation cannot be presented as a recorded live evaluation');
   assert(typeof record.title === 'string' && record.title.length > 0, 'Missing title');
-  assert(DATE.test(record.recordedDate), 'Missing recorded date');
+  assert(DATE.test(record.recordedDate) && Number.isFinite(Date.parse(record.recordedDate)) && new Date(record.recordedDate).toISOString().slice(0, 10) === record.recordedDate, 'Missing recorded date');
   assert(record.exactEvaluationTime === null || (!Number.isNaN(Date.parse(record.exactEvaluationTime)) && typeof record.exactEvaluationTime === 'string'), 'Invalid evaluation time');
   assert(typeof record.sourceCommit === 'string' && /^[a-f0-9]{7,40}$/.test(record.sourceCommit), 'Invalid source commit');
   assert(/^https:\/\/github\.com\/0xNexuz\/scoutguard-pro\/blob\/[a-f0-9]{7,40}\/docs\/evidence\/[a-zA-Z0-9-]+\.md$/.test(record.sourceDocument), 'Invalid source document');
@@ -45,7 +45,7 @@ export function validateReplayRecord(record) {
   } else {
     assert(candidate.tokenContract === null && candidate.transactionTo.toLowerCase() === candidate.recipient.toLowerCase(), 'Native destination mismatch');
   }
-  assert(candidate.rawAmount === exactUnits(candidate.amount, candidate.asset === 'USDC' ? 6 : 18), 'Recorded raw amount mismatch');
+  assert(candidate.rawAmount === exactUnits(candidate.amount, candidate.asset === 'USDC' ? 6 : 18) && BigInt(candidate.rawAmount) > 0n && BigInt(candidate.rawAmount) < 2n ** 256n, 'Recorded raw amount mismatch');
 
   const result = record.result;
   assert(result && DECISIONS.has(result.decision) && Number.isInteger(result.riskScore) && result.riskScore >= 0 && result.riskScore <= 100, 'Invalid recorded verdict');
@@ -109,14 +109,19 @@ export function buildRelationshipGraph(record) {
   if (sender === recipient) nodes.get(sender).roles.push('Proposed recipient');
   else nodes.set(recipient, { address: record.candidate.recipient, roles: ['Proposed recipient'], txHashes: [] });
   const edges = [{ from: sender, to: recipient, type: 'PROPOSED_UNSENT', txHash: null }];
+  const seenTransfers = new Set();
+  const outboundPeers = new Set(record.evidence.observedTransfers.filter(transfer => transfer.from.toLowerCase() === sender).map(transfer => transfer.to.toLowerCase()));
   for (const transfer of record.evidence.observedTransfers) {
+    const eventId = `${transfer.from.toLowerCase()}:${transfer.to.toLowerCase()}:${transfer.txHash.toLowerCase()}:${transfer.kind}`;
+    if (seenTransfers.has(eventId)) continue;
+    seenTransfers.add(eventId);
     const from = transfer.from.toLowerCase();
     const to = transfer.to.toLowerCase();
     for (const address of [transfer.from, transfer.to]) {
       const key = address.toLowerCase();
       if (!nodes.has(key)) nodes.set(key, { address, roles: [], txHashes: [] });
     }
-    const role = from === sender ? 'Observed outbound recipient' : to === sender ? 'Incoming-only address' : 'Observed transfer address';
+    const role = from === sender ? 'Observed outbound recipient' : to === sender ? (outboundPeers.has(from) ? 'Observed incoming address' : 'Incoming-only address') : 'Observed transfer address';
     const roleNode = nodes.get(from === sender ? to : from);
     if (!roleNode.roles.includes(role)) roleNode.roles.push(role);
     for (const key of [from, to]) {
@@ -126,7 +131,7 @@ export function buildRelationshipGraph(record) {
   }
   for (const [items, role, type] of [
     [record.evidence.incomingOnly, 'Incoming-only address', 'INCOMING_ONLY'],
-    [record.evidence.explicitlyTrusted, 'Explicitly trusted counterparty', 'EXPLICITLY_TRUSTED']
+    [record.evidence.explicitlyTrusted, 'Operator-configured reference', 'EXPLICITLY_TRUSTED']
   ]) {
     for (const item of items || []) {
       const key = item.address.toLowerCase();
@@ -142,7 +147,7 @@ export function buildRelationshipGraph(record) {
       const key = address.toLowerCase();
       if (!nodes.has(key)) nodes.set(key, { address, roles: [], txHashes: [] });
       const node = nodes.get(key);
-      if (!node.roles.includes('Verified similarity finding')) node.roles.push('Verified similarity finding');
+      if (!node.roles.includes('Recorded similarity finding')) node.roles.push('Recorded similarity finding');
       if (!node.txHashes.includes(finding.txHash)) node.txHashes.push(finding.txHash);
     }
     edges.push({ from: finding.reference.toLowerCase(), to: finding.candidate.toLowerCase(), type: 'VERIFIED_SIMILARITY', txHash: finding.txHash });

@@ -1,9 +1,10 @@
-import { buildRelationshipGraph, explorerAddress, explorerTransaction, sanitizedReceiptExcerpt, validateReplayBundle } from './replay-data.js';
+import { renderRelationshipGraph } from './replay-graph.js';
+import { explorerAddress, explorerTransaction, sanitizedReceiptExcerpt, validateReplayBundle } from './replay-data.js';
 
 const $ = (id) => document.getElementById(id);
 const steps = [...document.querySelectorAll('[data-replay-stage]')];
 const labels = ['Payment candidate', 'Blockscout evidence', 'Counterparty relationships', 'Security and policy checks', 'Final verdict'];
-const state = { records: [], record: null, stage: 0, timer: null };
+const state = { records: [], record: null, stage: 0, timer: null, speed: 1 };
 
 function element(tag, className, value) {
   const node = document.createElement(tag);
@@ -72,50 +73,9 @@ function renderEvidence(root, record) {
   root.append(list);
 }
 
-function nodeDetails(detail, node) {
-  detail.replaceChildren();
-  append(detail, element('strong', '', node.roles.join(' · ') || 'Observed address'), paragraph(node.address, 'replay-address'), addressLink(node.address));
-  if (node.txHashes.length) {
-    detail.append(paragraph('Supporting transaction records:', 'replay-copy'));
-    for (const hash of node.txHashes) detail.append(element('br'), txLink(hash));
-  } else detail.append(paragraph('No supporting transaction was retained for this proposed-only relationship.', 'replay-copy'));
-}
-
 function renderGraph(root, record) {
-  heading(root, '03', 'Trace observed relationships.', 'Solid evidence is limited to recorded transfer events. A proposed payment is shown separately because it was never sent.');
-  const graph = buildRelationshipGraph(record);
-  const layout = element('div', 'replay-graph');
-  const detail = element('div', 'replay-graph-detail');
-  const buttons = [];
-  for (const [index, node] of graph.nodes.entries()) {
-    const button = element('button', 'replay-node');
-    button.type = 'button';
-    button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
-    append(button, element('span', 'replay-node-label', node.roles.join(' · ') || 'Observed address'), element('span', 'replay-address', node.address));
-    button.addEventListener('click', () => {
-      for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
-      nodeDetails(detail, node);
-    });
-    buttons.push(button);
-    if (index === 1) append(layout, element('p', 'replay-connector', '→\n'), button);
-    else layout.append(button);
-  }
-  nodeDetails(detail, graph.nodes[0]);
-  root.append(layout, detail);
-  const observed = graph.edges.filter((edge) => edge.type === 'OBSERVED_TRANSFER_EVENT');
-  const legend = element('div', 'replay-legend');
-  append(legend, element('span', '', `${observed.length} observed transfer event${observed.length === 1 ? '' : 's'}`), element('span', '', 'Proposed recipient · unsent'));
-  root.append(legend);
-  if (observed.length) {
-    const events = element('div', 'replay-evidence-list');
-    for (const edge of observed) {
-      const row = element('p', 'replay-evidence-item');
-      append(row, element('strong', '', 'Observed transfer event'), txLink(edge.txHash));
-      events.append(row);
-    }
-    root.append(events);
-  }
-  root.append(paragraph(`Incoming-only list: ${record.evidence.incomingOnly === null ? 'not retained' : record.evidence.incomingOnly.length + ' recorded'}. Explicit trust list: ${record.evidence.explicitlyTrusted === null ? 'not retained' : record.evidence.explicitlyTrusted.length + ' recorded'}. Similarity findings: ${record.evidence.similarityFindings.length} recorded. Missing lists are not assumed empty.`));
+  heading(root, '03', 'Trace the recorded relationship.', 'Solid lines identify retained historical events. Dashed lines identify the proposed unsigned payment. Select an address or relationship for its evidence.');
+  renderRelationshipGraph(root, record, pause);
 }
 
 function renderChecks(root, record) {
@@ -177,6 +137,9 @@ function render() {
   root.classList.add('replay-enter');
   [renderCandidate, renderEvidence, renderGraph, renderChecks, renderVerdict][state.stage](root, state.record);
   root.setAttribute('aria-label', labels[state.stage]);
+  $('replay-progress').value = state.stage + 1;
+  $('replay-progress').textContent = `${state.stage + 1} / 5`;
+  $('replay-progress-label').textContent = `${state.stage + 1} / 5 · ${labels[state.stage]}`;
   steps.forEach((button, index) => {
     if (index === state.stage) button.setAttribute('aria-current', 'step');
     else button.removeAttribute('aria-current');
@@ -193,7 +156,7 @@ function play() {
     if (state.stage < 4) state.stage += 1;
     if (state.stage === 4) pause();
     render();
-  }, 3200);
+  }, 3200 / state.speed);
   render();
 }
 function selectRecord(record) {
@@ -209,6 +172,13 @@ function selectRecord(record) {
   render();
 }
 
+$('replay-speed').addEventListener('change', event => {
+  const playing = state.timer !== null; pause(); state.speed = Number(event.target.value);
+  if (![0.5, 1, 2].includes(state.speed)) state.speed = 1;
+  if (playing) play(); else render();
+});
+window.matchMedia('(max-width: 640px)').addEventListener('change', () => { if (state.record && state.stage === 2) render(); });
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => { pause(); render(); });
 $('replay-play').addEventListener('click', play);
 $('replay-pause').addEventListener('click', () => { pause(); render(); });
 $('replay-previous').addEventListener('click', () => setStage(state.stage - 1));

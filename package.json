@@ -8,7 +8,11 @@
     "build": "tsc && tailwindcss -i public/styles.src.css -o public/styles.css --minify",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts",
+    "demo:agent": "tsx examples/mock-agent.ts",
+    "test:browser": "node scripts/browser-check.mjs",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.verify.json",
+    "record:demo": "node scripts/record-demo.mjs"
   },
   "keywords": [
     "blockscout",
@@ -30,6 +34,7 @@
     "@tailwindcss/cli": "^4.3.0",
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.2",
+    "playwright-core": "1.64.1",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",

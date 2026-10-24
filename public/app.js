@@ -98,6 +98,20 @@ function evidenceLink(label, href) {
 
 function renderLiveEvaluation(payload, candidate) {
   const evaluation = payload.evaluation;
+  if (evaluation?.receipt?.policyVersion !== 'v1.3.0-sprint2-hardening' || evaluation.receipt.integrityAlgorithm !== 'SHA-256-UNKEYED') {
+    throw new Error('Unsupported API receipt version. A matching application release is required.');
+  }
+  if (evaluation.decision === 'PASS' && (!evaluation.history?.coverage.paginationComplete || evaluation.history.coverage.truncated)) {
+    throw new Error('Incomplete history cannot support automatic payment approval.');
+  }
+  const payment = evaluation.receipt.transactionSummary;
+  document.getElementById('live-payment').textContent = `Evaluated payment: ${payment.value} ${payment.asset === 'NATIVE' ? 'ETH' : payment.asset} · Recipient: ${payment.to} · Transaction destination: ${payment.transactionTo || payment.to} · Exact base units: ${payment.rawAmount || 'unavailable'}. Proposed and unsigned.`;
+  const coverage = evaluation.history?.coverage;
+  const coverageBox = document.getElementById('live-coverage');
+  coverageBox.dataset.complete = String(Boolean(coverage?.paginationComplete));
+  coverageBox.textContent = coverage
+    ? `Sender history: ${coverage.pagesScanned.transactions} native pages + ${coverage.pagesScanned.tokenTransfers} token pages; ${coverage.recordsInspected} rows inspected; ${coverage.uniqueCounterparties} outbound counterparties. ${coverage.paginationComplete ? 'Pagination completed for these indexed endpoints at lookup time; this is not a safety guarantee.' : `Incomplete coverage — ${coverage.stopReasons.join(', ')}. A partial scan cannot authorize an automatic payment.`} Fetched: ${coverage.fetchedAt}. Hourly executed-spend accounting is unsupported.`
+    : 'Required evidence was unavailable. No history completeness or address-safety claim is supported. Do not execute.';
   const decision = evaluation.decision;
   const badge = document.getElementById('live-result-badge');
   const palette = decision === 'PASS'
@@ -143,15 +157,18 @@ function renderLiveEvaluation(payload, candidate) {
 
   const links = document.getElementById('live-links');
   links.replaceChildren();
-  links.append(
-    evidenceLink('Sender history', `https://eth.blockscout.com/address/${candidate.from}`),
-    evidenceLink('Recipient', evaluation.receipt.blockscoutExplorerUrl)
-  );
+  if (coverage && coverage.pagesScanned.transactions + coverage.pagesScanned.tokenTransfers > 0) {
+    links.append(evidenceLink('Inspected sender history', `https://eth.blockscout.com/address/${coverage.sender}`));
+  }
+  if (evaluation.checks.some(check => check.id !== 'SEC-FAIL-CLOSED' && check.evidenceUrl === evaluation.receipt.blockscoutExplorerUrl)) {
+    links.append(evidenceLink('Evaluated recipient', evaluation.receipt.blockscoutExplorerUrl));
+  }
   const historicalTx = evaluation.checks.find(check => check.metadata?.observedTransactionUrl)?.metadata.observedTransactionUrl;
   if (typeof historicalTx === 'string' && /^https:\/\/eth\.blockscout\.com\/tx\/0x[a-fA-F0-9]{64}$/.test(historicalTx)) {
     links.append(evidenceLink('Past transfer event', historicalTx));
   }
-  if (candidate.tokenAddress) links.append(evidenceLink('USDC contract', `https://eth.blockscout.com/address/${candidate.tokenAddress}`));
+  const tokenCheck = evaluation.checks.find(check => check.id === 'SEC-TOKEN-USDC' || check.id === 'SEC-TOKEN-UNVERIFIED');
+  if (tokenCheck?.evidenceUrl) links.append(evidenceLink('Evaluated USDC contract', tokenCheck.evidenceUrl));
 
   document.getElementById('live-empty').classList.add('hidden');
   document.getElementById('live-result').classList.remove('hidden');
@@ -170,8 +187,10 @@ liveForm?.addEventListener('submit', async event => {
   const value = document.getElementById('live-value').value.trim();
   const asset = document.getElementById('live-asset').value;
   errorBox.classList.add('hidden');
-  if (!from || !to || !value) {
-    errorBox.textContent = 'Enter the sender, recipient, and amount before running the live check.';
+  document.getElementById('live-result').classList.add('hidden');
+  document.getElementById('live-empty').classList.remove('hidden');
+  if (!/^0x[a-fA-F0-9]{40}$/.test(from) || !/^0x[a-fA-F0-9]{40}$/.test(to) || !/^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value) || Number(value) <= 0) {
+    errorBox.textContent = 'Enter valid 0x sender and recipient addresses and a positive decimal amount.';
     errorBox.classList.remove('hidden');
     (!from ? document.getElementById('live-from') : !to ? document.getElementById('live-to') : document.getElementById('live-value')).focus();
     return;

@@ -67,3 +67,28 @@ test('malformed and mislabeled records fail closed', () => {
   bundle.records[1].id = bundle.records[0].id;
   assert.throws(() => validateReplayBundle(bundle), /Duplicate/);
 });
+
+test('repeated retained transfer events do not create duplicate graph relationships', () => {
+  const record = clone(saved.records[0]);
+  record.evidence.observedTransfers.push(clone(record.evidence.observedTransfers[0]));
+  const graph = buildRelationshipGraph(record);
+  assert.equal(graph.nodes.length, 2);
+  assert.equal(graph.edges.length, 2);
+  assert.equal(graph.nodes[0].txHashes.length, 1);
+});
+test('incoming activity alongside outbound evidence is not mislabeled incoming-only', () => {
+  const record = clone(saved.records[0]);
+  const event = record.evidence.observedTransfers[0];
+  record.evidence.observedTransfers.push({ ...event, from: event.to, to: event.from });
+  const graph = buildRelationshipGraph(record);
+  const peer = graph.nodes.find((node: any) => node.address.toLowerCase() === event.to.toLowerCase());
+  assert.ok(peer);
+  assert.ok(peer.roles.includes('Observed incoming address'));
+  assert.ok(!peer.roles.includes('Incoming-only address'));
+});
+test('zero amounts and impossible archive dates fail closed without altering the retained archive', () => {
+  const zero = clone(saved.records[0]); zero.candidate.amount = '0'; zero.candidate.rawAmount = '0';
+  assert.throws(() => validateReplayRecord(zero), /raw amount/);
+  const date = clone(saved.records[0]); date.recordedDate = '2026-02-30';
+  assert.throws(() => validateReplayRecord(date), /date/);
+});

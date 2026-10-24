@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "branch": "feat/scoutguard-final-integration",
+  "main": "f4247792d1fb7b747784c2e125c1b0dd4342b8cd",
+  "hardening": "dc179f92691b101174487f50d0727c04a41d7394",
+  "finalCommands": {
+    "executedAt": "2026-10-24T17:28:25.156592+00:00",
+    "checks": [
+      {
+        "check": "install",
+        "command": "npm ci",
+        "exitCode": 0
+      },
+      {
+        "check": "build",
+        "command": "npm run build",
+        "exitCode": 0
+      },
+      {
+        "check": "automated-tests",
+        "command": "npm test",
+        "exitCode": 0
+      },
+      {
+        "check": "typescript",
+        "command": "npx tsc --noEmit",
+        "exitCode": 0
+      },
+      {
+        "check": "strict-types",
+        "command": "npm run typecheck",
+        "exitCode": 0
+      },
+      {
+        "check": "audit",
+        "command": "npm audit --audit-level=high --json",
+        "exitCode": 0
+      },
+      {
+        "check": "mock-agent",
+        "command": "npm run demo:agent",
+        "exitCode": 0
+      },
+      {
+        "check": "browser",
+        "command": "npm run test:browser",
+        "exitCode": 0
+      },
+      {
+        "check": "app-syntax",
+        "command": "node --check public/app.js",
+        "exitCode": 0
+      },
+      {
+        "check": "replay-syntax",
+        "command": "node --check public/replay.js",
+        "exitCode": 0
+      },
+      {
+        "check": "graph-syntax",
+        "command": "node --check public/replay-graph.js",
+        "exitCode": 0
+      },
+      {
+        "check": "diff-check",
+        "command": "git diff --check",
+        "exitCode": 0
+      },
+      {
+        "check": "staged-diff-check",
+        "command": "git diff --cached --check",
+        "exitCode": 0
+      }
+    ]
+  },
+  "automatedTests": {
+    "tests": 135,
+    "pass": 135,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "mode": "LOCAL_FIXTURE_BROWSER_VERIFICATION",
+    "checks": [
+      {
+        "name": "homepage, local icons and SDK initialize with external resources blocked",
+        "status": "PASS"
+      },
+      {
+        "name": "ETH form \u2192 HTTP \u2192 engine \u2192 exact recipient, coverage and PASS (fixture)",
+        "status": "PASS"
+      },
+      {
+        "name": "USDC form \u2192 ABI recipient/amount \u2192 canonical contract check \u2192 PASS (fixture)",
+        "status": "PASS"
+      },
+      {
+        "name": "above-cap canonical USDC displays policy BLOCK (fixture)",
+        "status": "PASS"
+      },
+      {
+        "name": "partial history cannot render an automatic-payment PASS",
+        "status": "PASS"
+      },
+      {
+        "name": "invalid candidate displays a helpful error without API work",
+        "status": "PASS"
+      },
+      {
+        "name": "provider outage displays fail-closed BLOCK and no fabricated evidence links",
+        "status": "PASS"
+      },
+      {
+        "name": "HTTP 429 is visible and the submit control recovers",
+        "status": "PASS"
+      },
+      {
+        "name": "legacy or incomplete-PASS API responses cannot display a fresh approval",
+        "status": "PASS"
+      },
+      {
+        "name": "all three recorded decisions and five stages render without new evaluations",
+        "status": "PASS"
+      },
+      {
+        "name": "SVG graph has exactly two supported nodes, distinct observed/proposed edges and provenance",
+        "status": "PASS"
+      },
+      {
+        "name": "graph supports keyboard selection and arrow-key navigation",
+        "status": "PASS"
+      },
+      {
+        "name": "play/pause/restart/previous/next, speed and final progress work",
+        "status": "PASS"
+      },
+      {
+        "name": "sanitized receipt download preserves partial provenance and missing original fields",
+        "status": "PASS"
+      },
+      {
+        "name": "research replay stays conditional and distinct from live and recorded-live",
+        "status": "PASS"
+      },
+      {
+        "name": "all five simulations keep SIMULATED labels and expected decisions",
+        "status": "PASS"
+      },
+      {
+        "name": "layout at 320px has no horizontal overflow and graph remains usable",
+        "status": "PASS"
+      },
+      {
+        "name": "layout at 390px has no horizontal overflow and graph remains usable",
+        "status": "PASS"
+      },
+      {
+        "name": "layout at 768px has no horizontal overflow and graph remains usable",
+        "status": "PASS"
+      },
+      {
+        "name": "layout at 1280px has no horizontal overflow and graph remains usable",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile ETH and USDC interactions stay usable",
+        "status": "PASS"
+      },
+      {
+        "name": "reduced motion removes graph/stage animation without disabling manual controls",
+        "status": "PASS"
+      },
+      {
+        "name": "tampered archive fails closed without displaying a recorded verdict",
+        "status": "PASS"
+      },
+      {
+        "name": "unavailable archive displays a missing-evidence error, not a stale verdict",
+        "status": "PASS"
+      },
+      {
+        "name": "no browser runtime exceptions and no external API/provider calls",
+        "status": "PASS"
+      }
+    ],
+    "pass": 25,
+    "fail": 0,
+    "consoleErrors": [],
+    "externalRequests": [
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    ],
+    "actualBlockscoutChecks": 0,
+    "terminal": ""
+  },
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "container": {
+    "imageId": "sha256:ee9e3d129fd45e7c9f4c80da527489bd35f895351770b7a27c35bfb00232bf59",
+    "runtimeSmokeExitCode": 0,
+    "runtime": {
+      "uid": 1000,
+      "health": "ONLINE",
+      "protectedUnauthorized": 401,
+      "publicInvalid": 400,
+      "authorizedInvalid": 400,
+      "simulation": "SIMULATED",
+      "decision": "BLOCK",
+      "proxyCaInImage": false,
+      "providerRequests": 0
+    },
+    "missingProductionKeysRejected": true,
+    "negativeStartupExpectedExitCode": 1,
+    "network": "none",
+    "productionSecretsUsed": false
+  },
+  "video": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 900,
+        "r_frame_rate": "24/1",
+        "side_data_list": [
+          {}
+        ]
+      }
+    ],
+    "format": {
+      "duration": "100.000000",
+      "size": "2099886"
+    }
+  },
+  "archivedEvidence": [
+    {
+      "path": "public/replay/records.json",
+      "sha256": "83ec4cf3dfad9625a7bb5c769d346cc9cb75e60a5e3b2c0b39bccfa477c5fbd8",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "docs/evidence/2026-10-24-recorded-replay.md",
+      "sha256": "9ed505a668133415ac81b828a577bc2c3b54ffeeb6a739b900f22f0a8e08c08a",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "docs/evidence/2026-10-23-recorded-poisoning-replay.md",
+      "sha256": "c658f52778030be37b60a41c8fbbbd3e3e57ce1f522bf6eadda8b4fc6f536168",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "docs/evidence/2026-10-23-sprint2-production.md",
+      "sha256": "e8ef723e7d32bb04cbc0710daa0d26556756c24cfde8aca6610953e48dfc5085",
+      "unchangedFromMain": true
+    }
+  ],
+  "freshGenuineBlockscoutSuccesses": 0,
+  "networkProbes": {
+    "attempts": 2,
+    "proxyDenied": 2,
+    "providerReached": false,
+    "retries": 0
+  },
+  "githubActions": {
+    "main": {
+      "id": "40111382155",
+      "url": "https://github.com/0xNexuz/scoutguard-pro/actions/runs/40111382155",
+      "title": "Document replay merge and production content verification",
+      "state": {
+        "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+        "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS"
+      },
+      "commit": "f424779"
+    },
+    "hardening": {
+      "id": "40066087081",
+      "url": "https://github.com/0xNexuz/scoutguard-pro/actions/runs/40066087081",
+      "state": {
+        "status": "WORKFLOW_RUN_STATUS_COMPLETED",
+        "conclusion": "WORKFLOW_RUN_CONCLUSION_SUCCESS"
+      },
+      "commit": "dc179f9"
+    },
+    "newIntegrationRun": "NOT_RUN_NO_PUSH_AUTHORIZATION"
+  },
+  "productionMetadata": {
+    "id": "dpl_CDxj6G5r8aVkBpXY3VNMwHhLQuxY",
+    "commit": "f424779",
+    "state": "READY",
+    "target": "production",
+    "freshAnonymousContentVerified": false
+  },
+  "externalVerificationGroupsUnverified": [
+    "Fresh Blockscout APIs",
+    "Anonymous integrated deployment HTTP",
+    "Explorer destination content",
+    "Optional remote font delivery"
+  ],
+  "projectIntegrationConfigurationsObserved": 0,
+  "productionSecretsReadOrModified": false,
+  "pushMergeMainDeployOrPublicationPerformed": false,
+  "allExistingEvidencePreserved": [
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-20-pro-ethereum.md",
+      "sha256": "9db9152d89e94d023284018c73560283fdfdc43e1e9526f08febd5f5298cb816"
+    },
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-21-vercel-production.md",
+      "sha256": "bd3ac242a5249a61438e98b030f2a0b9ad1395dd2a74de8a21dc39f2274d7ca0"
+    },
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-23-recorded-poisoning-replay.md",
+      "sha256": "c658f52778030be37b60a41c8fbbbd3e3e57ce1f522bf6eadda8b4fc6f536168"
+    },
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-23-sprint-2-feedback.md",
+      "sha256": "d1aa965e0054bd5b0fb36edfe971fbb7170c4646b65bd4599492a17d47b04268"
+    },
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-23-sprint2-production.md",
+      "sha256": "e8ef723e7d32bb04cbc0710daa0d26556756c24cfde8aca6610953e48dfc5085"
+    },
+    {
+      "ref": "origin/main",
+      "path": "docs/evidence/2026-10-24-recorded-replay.md",
+      "sha256": "9ed505a668133415ac81b828a577bc2c3b54ffeeb6a739b900f22f0a8e08c08a"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-20-pro-ethereum.md",
+      "sha256": "9db9152d89e94d023284018c73560283fdfdc43e1e9526f08febd5f5298cb816"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-21-vercel-production.md",
+      "sha256": "bd3ac242a5249a61438e98b030f2a0b9ad1395dd2a74de8a21dc39f2274d7ca0"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-23-recorded-poisoning-replay.md",
+      "sha256": "c658f52778030be37b60a41c8fbbbd3e3e57ce1f522bf6eadda8b4fc6f536168"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-23-sprint-2-feedback.md",
+      "sha256": "d1aa965e0054bd5b0fb36edfe971fbb7170c4646b65bd4599492a17d47b04268"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-23-sprint2-production.md",
+      "sha256": "e8ef723e7d32bb04cbc0710daa0d26556756c24cfde8aca6610953e48dfc5085"
+    },
+    {
+      "ref": "feat/scoutguard-sprint2-hardening",
+      "path": "docs/evidence/2026-10-24-sprint2-hardening.md",
+      "sha256": "a3397edc96beff356fd3c11cd49a3d2712ea42639c2825ce6b7a2915ca4f9d38"
+    }
+  ]
+}
