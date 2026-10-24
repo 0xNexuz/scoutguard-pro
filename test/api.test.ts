@@ -9,9 +9,11 @@ import { fixtureClient, sender, recipient, usdc } from './fixtures/blockscout.js
 const servers: Server[] = [];
 const oldKey = process.env.SCOUTGUARD_SERVICE_KEY;
 const oldVercel = process.env.VERCEL;
+const oldAgentId = process.env.SCOUTGUARD_AGENT_ID;
 afterEach(async () => {
   if (oldKey === undefined) delete process.env.SCOUTGUARD_SERVICE_KEY; else process.env.SCOUTGUARD_SERVICE_KEY = oldKey;
   if (oldVercel === undefined) delete process.env.VERCEL; else process.env.VERCEL = oldVercel;
+  if (oldAgentId === undefined) delete process.env.SCOUTGUARD_AGENT_ID; else process.env.SCOUTGUARD_AGENT_ID = oldAgentId;
   await Promise.all(servers.splice(0).map(server => new Promise<void>(resolve => server.close(() => resolve()))));
 });
 async function setup(options: Parameters<typeof createApp>[0] = {}) {
@@ -39,6 +41,15 @@ it('guest Ethereum ETH/USDC evaluations return LIVE provenance, exact binding an
     assert.equal(body.evaluation.history.coverage.paginationComplete, true);
   }
 });
+it('public candidates cannot select the higher-cap treasury policy', async () => {
+  const { post } = await setup();
+  const response = await post({ ...native, agentId: 'treasury-sweeper-02', value: '3' });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.evaluation.receipt.agentId, 'procurement-bot-01');
+  assert.equal(body.evaluation.decision, 'BLOCK');
+  assert.ok(body.evaluation.checks.some((check: { id: string }) => check.id === 'SEC-POLICY-CAP'));
+});
 it('protected endpoint denies missing/wrong keys, works with correct key, and denies an unconfigured key', async () => {
   process.env.SCOUTGUARD_SERVICE_KEY = 'private-test-service-key';
   const { post } = await setup();
@@ -49,6 +60,38 @@ it('protected endpoint denies missing/wrong keys, works with correct key, and de
   assert.doesNotMatch(await valid.text(), /private-test-service-key|fixture-key/);
   delete process.env.SCOUTGUARD_SERVICE_KEY;
   assert.equal((await post(native, '/api/evaluate')).status, 401);
+});
+it('service key cannot select a different agent policy or expose configured counterparties anonymously', async () => {
+  process.env.SCOUTGUARD_SERVICE_KEY = 'private-test-service-key';
+  delete process.env.SCOUTGUARD_AGENT_ID;
+  let providerCalls = 0;
+  const client = fixtureClient();
+  const originalCounters = client.getAddressCounters.bind(client);
+  client.getAddressCounters = async (...args) => { providerCalls++; return originalCounters(...args); };
+  const guard = new ScoutGuard({ blockscoutClient: client, customCounterparties: [{
+    address: recipient, name: 'Private vendor', category: 'VENDOR', verifiedSince: 'operator-configured', totalTransfers: 1
+  }] });
+  const { url, post } = await setup({ guard });
+  const denied = await post({ ...native, agentId: 'treasury-sweeper-02', value: '3' }, '/api/evaluate', { 'x-scoutguard-key': 'private-test-service-key' });
+  assert.equal(denied.status, 403);
+  assert.equal(providerCalls, 0);
+  assert.equal((await fetch(url + '/api/counterparties')).status, 401);
+  assert.equal((await fetch(url + '/api/counterparties', { headers: { 'x-scoutguard-key': 'wrong' } })).status, 401);
+  const allowed = await fetch(url + '/api/counterparties', { headers: { 'x-scoutguard-key': 'private-test-service-key' } });
+  assert.equal(allowed.status, 200);
+  assert.match(await allowed.text(), /Private vendor/);
+  const procurement = await post(native, '/api/evaluate', { 'x-scoutguard-key': 'private-test-service-key' });
+  assert.equal(procurement.status, 200);
+  assert.equal((await procurement.json()).receipt.agentId, 'procurement-bot-01');
+});
+it('a deliberately configured treasury service key requires an explicit matching agent ID', async () => {
+  process.env.SCOUTGUARD_SERVICE_KEY = 'treasury-test-key';
+  process.env.SCOUTGUARD_AGENT_ID = 'treasury-sweeper-02';
+  const { post } = await setup();
+  assert.equal((await post(native, '/api/evaluate', { 'x-scoutguard-key': 'treasury-test-key' })).status, 403);
+  const response = await post({ ...native, agentId: 'treasury-sweeper-02' }, '/api/evaluate', { 'x-scoutguard-key': 'treasury-test-key' });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).receipt.agentId, 'treasury-sweeper-02');
 });
 it('invalid input/coercions/unknown fields and false raw assertions consume no provider calls', async () => {
   let calls = 0;

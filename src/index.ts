@@ -6,6 +6,7 @@ import { ScoutGuard } from './core/scoutguard.js';
 import { PoisoningDetector } from './core/poisoning-detector.js';
 import { BlockscoutClient, SUPPORTED_CHAINS } from './core/blockscout-client.js';
 import { normalizePayment } from './core/payment-normalizer.js';
+import { DEFAULT_AGENT_POLICIES } from './core/policy-engine.js';
 import { timingSafeEqual } from 'node:crypto';
 import { rateLimit } from 'express-rate-limit';
 import { TransactionCandidate } from './types/index.js';
@@ -26,6 +27,10 @@ if (process.env.NODE_ENV === 'production' && !isVercelPreview && !process.env.BL
 }
 if (process.env.NODE_ENV === 'production' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
   throw new Error('TLS certificate verification must be enabled in production');
+}
+const serviceAgentId = process.env.SCOUTGUARD_AGENT_ID || 'procurement-bot-01';
+if (!Object.hasOwn(DEFAULT_AGENT_POLICIES, serviceAgentId)) {
+  throw new Error('SCOUTGUARD_AGENT_ID must name a configured agent policy');
 }
 
 app.disable('x-powered-by');
@@ -77,6 +82,16 @@ function parseCandidate(body: unknown, publicMode = false): TransactionCandidate
   } catch {
     return undefined;
   }
+}
+
+function requireServiceKey(req: Request, res: Response, next: NextFunction) {
+  const expected = process.env.SCOUTGUARD_SERVICE_KEY;
+  if (!expected) return res.status(401).json({ error: 'Unauthorized' });
+  const supplied = req.get('x-scoutguard-key') || '';
+  const a = Buffer.from(supplied);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return res.status(401).json({ error: 'Unauthorized' });
+  next();
 }
 
 async function evaluateRequest(req: Request, res: Response, publicMode = false) {
@@ -206,7 +221,7 @@ app.get('/api/chains', (req, res) => {
   res.json(SUPPORTED_CHAINS);
 });
 
-app.get('/api/counterparties', (req, res) => {
+app.get('/api/counterparties', requireServiceKey, (req, res) => {
   res.json(guard.getKnownCounterparties());
 });
 
@@ -257,15 +272,10 @@ app.post('/api/evaluate/public', publicEvaluationLimit, aggregateLimit, async (r
   } finally { activePublicRequests--; }
 });
 
-app.post('/api/evaluate', (req, res, next) => {
-  const expected = process.env.SCOUTGUARD_SERVICE_KEY;
-  if (!expected) return res.status(401).json({ error: 'Unauthorized' });
-  const supplied = req.get('x-scoutguard-key') || '';
-  const a = Buffer.from(supplied);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return res.status(401).json({ error: 'Unauthorized' });
-  next();
-}, async (req, res) => {
+app.post('/api/evaluate', requireServiceKey, async (req, res) => {
+  // A shared key authorizes one policy identity; a caller cannot choose a higher cap.
+  const requestedAgentId = req.body?.agentId ?? 'procurement-bot-01';
+  if (requestedAgentId !== serviceAgentId) return res.status(403).json({ error: 'Agent policy not authorized for this service key' });
   try {
     await evaluateRequest(req, res);
   } catch (err) {

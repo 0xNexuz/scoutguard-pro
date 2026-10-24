@@ -1,41 +1,26 @@
 # ScoutGuard PRO
 
-ScoutGuard checks a proposed EVM payment **before signing**. Autonomous payment agents and treasury tools can confuse a look-alike address with an intended beneficiary or exceed spending policy. ScoutGuard combines the exact unsigned payment with Blockscout evidence and returns `PASS`, `FLAG` or `BLOCK`. It never holds a wallet, creates a real signature, or broadcasts a transaction.
+**A pre-signing payment check for EVM agents and treasury tools.** ScoutGuard inspects an unsigned native or canonical USDC transfer, retrieves Blockscout evidence, applies a deterministic policy, and returns `PASS`, `FLAG`, or `BLOCK`. It never holds a wallet key, signs, or broadcasts.
 
-## Current release and integration state
+[Open the dashboard](https://scoutguard.vercel.app/) · [Verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md) · [Release evidence](docs/evidence/2026-10-24-approved-release.md)
 
-Production [scoutguard.vercel.app](https://scoutguard.vercel.app) now serves the approved integrated application release `160fff4`, merged through [PR #2](https://github.com/0xNexuz/scoutguard-pro/pull/2). This preserves the earlier replay from PR #1 and consolidates hardening `dc179f9` with agent enforcement, the responsive evidence graph, mobile/offline fixes and release materials.
+![Local browser capture of ScoutGuard's recorded investigation replay](docs/images/recorded-replay.png)
 
-Release CI passed with **139 automated tests, 25 browser checks and zero audit findings**. Production health, homepage, graph module and all three archived cases returned HTTP 200 through authenticated Vercel-assisted inspection. This does not establish anonymous-browser access or fresh Blockscout evaluation. Direct anonymous/provider checks remain limited by this cloud's enforced network/credential setup, and deployment-wide quotas remain an operational limit.
+*Recorded replay captured in the local browser test. It reads the saved case archive and makes no fresh Blockscout request.*
 
-The preview-bootstrap correction, merge, deployment and qualified runtime evidence are recorded in [approved release verification](docs/evidence/2026-10-24-approved-release.md). No production secret was read, copied or changed; no wallet transaction or external submission was performed.
+## Try it
 
-See the [comprehensive completion report](docs/FINAL_COMPLETION_REPORT.md), [judge verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md), [release/migration review](docs/RELEASE_MIGRATION.md) and preserved [evidence records](docs/evidence/).
+| Experience | Where | What happens |
+| --- | --- | --- |
+| **Live evaluation** | Dashboard → Run live Blockscout check | A fresh, bounded Ethereum lookup for an unsigned ETH or canonical USDC payment. It uses provider requests and may return `FLAG` or fail-closed `BLOCK`. |
+| **Recorded live evaluations** | Dashboard → Recorded replay | Five-stage playback of three saved, partial production observations. Pause, inspect the graph and checks, follow Explorer links, and download a sanitized excerpt. No new Blockscout requests. |
+| **Simulated attacks** | Dashboard → Simulated attacks | Fixture-driven vendor, look-alike, unverified-contract, phishing-tag, and cap-breach examples. These are labeled simulations. |
 
-## How it works
+Judges can use the public live form without a service key. **None of the proposed example payments was sent.** An Explorer link supports the displayed address or historical event, not a claim that ScoutGuard prevented a loss.
 
-`proposed unsigned payment → strict normalization → bounded Blockscout history/recipient/contract evidence → similarity + contract + asset policy checks → decision and receipt → independent agent authorization → isolated signer boundary`
+## Run locally
 
-- **Native assets:** positive decimal native amounts on seven configured EVM chains. Ethereum is the historically verified live path; configured does not mean live-verified or plan-accessible.
-- **USDC:** only direct canonical `transfer(address,uint256)` on Ethereum (`0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48`) and Base (`0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`). The decoded effective recipient is checked separately from the token transaction destination. Base decoding is tested; recorded PRO access to Base returned HTTP 402.
-- **Exact amounts:** bigint native units and six-decimal USDC limits. Wrong contracts/chains, malformed calldata, unsupported selectors/transferFrom, native value attached to a token transfer, contradictory assertions, invalid amounts and zero beneficiaries fail closed.
-- **History:** API v2 native transactions and ERC-20 event cursors; native/token evidence, deterministic deduplication, hashes/direction/amount/block/time and explicit coverage. Incoming-only and zero-value interactions do not establish outbound references. An event sender need not be the top-level transaction initiator.
-- **Similarity:** inspect all distinct references before selecting the strongest. Different addresses with ≥4 matching leading **and** trailing hex characters block. Prefix ≥4 or suffix ≥5 alone requires review. An observed exact address cannot hide a stronger resemblance. Observations never establish verified trust.
-- **Policy:** chain permissions, effective-beneficiary allowlists, exact single-payment caps and human-review thresholds. Procurement defaults: ETH/native cap 2.5, review above 1; USDC cap 2,500, review above 1,000. Limits are payment policies, not exchange-rate comparisons.
-
-Missing critical history/provider data returns BLOCK. Valid incomplete history adds review and cannot PASS. Even completed pagination is a statement about these indexed endpoints at lookup time, not proof of complete lifetime activity or address safety.
-
-## Bounded public evaluation
-
-`POST /api/evaluate/public` supports anonymous Ethereum ETH and canonical USDC. The protected `POST /api/evaluate` always requires `x-scoutguard-key`, including development. Absent service-key configuration denies access.
-
-Default scan bounds: 3 pages per endpoint, 300 combined rows, 8 history attempts, 12 overall provider calls, 10-second evaluation deadline, 4-second individual request/body timeout, 2 MB provider responses, and process-wide 250 ms request spacing. Histories can be configured downward through the engine constructor; callers cannot raise HTTP budgets. HTTP clients disconnecting or failed critical checks abort pending/queued provider work.
-
-The public route has 5 requests/minute/client, 20/minute/process, two concurrent evaluations, and a provider-failure cooldown. JSON is limited to 16 KB; compressed requests, unknown fields and coercions are rejected. Results/errors are no-store; provider URLs, headers and raw errors are not exposed. Local controls are not a distributed quota: cold starts and multiple instances remain an operational release limitation. No external store or paid service was provisioned.
-
-## Install and configure
-
-Requires Node.js 22+ and npm. Keep TLS verification enabled.
+Requires Node.js 22+ and npm. Use a recent Chromium browser for optional browser tests.
 
 ```bash
 npm ci
@@ -44,73 +29,76 @@ npm test
 npm start
 ```
 
-Open `http://localhost:3030`. The archive and simulations work without provider access. For real checks, copy `.env.example` to `.env` and supply `BLOCKSCOUT_API_KEY` server-side. The server loads dotenv. Set your own long random `SCOUTGUARD_SERVICE_KEY` for protected agent access; production startup requires both keys. A confirmed Vercel preview may omit them to serve the read-only UI; its protected endpoint still returns 401 without a service key. Neither belongs in browser code, screenshots, Git or chat. No private key is required.
+Open `http://localhost:3030`. Replay and simulations work without provider credentials. For fresh Blockscout checks, copy `.env.example` to `.env` and set `BLOCKSCOUT_API_KEY`. Without it, the app attempts public Explorer endpoints; if required data is unavailable, the payment cannot pass. Keep TLS verification enabled.
 
-The no-key path uses public Explorer APIs, which can deny or time out; those failures BLOCK. The UI distinguishes `BLOCKSCOUT_PRO` and `BLOCKSCOUT_PUBLIC_API`. LIVE means an attempted live evaluation, including a fail-closed outcome; it does not mean a payment occurred.
+Set a long random `SCOUTGUARD_SERVICE_KEY` for the protected agent API. Its policy identity is `SCOUTGUARD_AGENT_ID` (default `procurement-bot-01`). A request for another policy returns 403 before provider access. Use a separate deployment and key for a different policy; the single key is not a multi-tenant identity system. Production requires both the service and Blockscout keys. Confirmed Vercel previews may start without them; protected access remains locked, while the public form can still attempt public Explorer requests.
 
-## API usage
+Keep service keys, provider keys, wallet keys, and `.env` contents out of Git, browser code, screenshots, and recordings.
 
-Native candidate (Bash example):
+## Payment and API contract
+
+`POST /api/evaluate/public` accepts strict JSON for Ethereum (`chainId: 1`). `to` is the **unsigned transaction destination**. For ETH, `value` is a positive decimal native amount and `data` is absent. For USDC, `to` is the canonical token contract, `value` is `"0"`, and `data` encodes `transfer(beneficiary, rawAmount)`.
 
 ```bash
-curl http://localhost:3030/api/evaluate/public \
+curl -X POST http://localhost:3030/api/evaluate/public \
   -H 'Content-Type: application/json' \
   -d '{"from":"0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be","to":"0x3f8702cfb1662195fcc98593789682da91dfaae3","value":"0.1","chainId":1}'
 ```
 
-For USDC, `to` is the canonical token contract, `value` is `"0"`, and `data` is ABI-encoded `transfer(beneficiary, rawAmount)`. Construct it with ethers:
+That command makes a **real provider request** if the server has network access. A valid candidate is not guaranteed to pass. Construct a direct USDC transfer with ethers:
 
 ```ts
+import { Interface, parseUnits } from 'ethers';
+
+const USDC_ETHEREUM = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 const data = new Interface(['function transfer(address,uint256)'])
   .encodeFunctionData('transfer', [beneficiary, parseUnits('250', 6)]);
-const candidate = { from: sender, to: ETHEREUM_USDC, value: '0', data, chainId: 1 };
+const candidate = { from: sender, to: USDC_ETHEREUM, value: '0', data, chainId: 1 };
 ```
 
-Public responses wrap `evaluation` with `mode` and `source`. Protected responses return the evaluation directly. Results include decision, score, checks, execution permission, receipt and `history.coverage`. The receipt distinguishes effective `to` from original `transactionTo`, records raw amount/native value/calldata, and includes policy/check/coverage fields. Inspect coverage before interpreting any absence of resemblance. The UI presents exact beneficiary, amount, scan bounds and evidence links only when retained data influenced the evaluation.
+The public route returns `{ mode: "LIVE", source, evaluation }`; `source` is `BLOCKSCOUT_PRO` or `BLOCKSCOUT_PUBLIC_API`. Protected `POST /api/evaluate` takes the same candidate plus `x-scoutguard-key` and returns the evaluation directly. Send it only from a trusted server over HTTPS. `GET /api/counterparties` requires the same key because configured counterparties can be private.
 
-## Agent enforcement integration
+The receipt records the effective beneficiary, original transaction destination, exact base-unit amount, calldata, checks, history coverage, policy version, and Explorer address link. An agent must bind the response to the transaction it will sign and independently authorize it. The [mock adapter](src/integration/payment-agent.ts) demonstrates this. `npm run demo:agent` uses no wallet or network; its `SIGNED` result is a synthetic artifact, not signed EVM bytes.
 
-`src/integration/payment-agent.ts` exports `createServiceEvaluator`, `assertEvaluationBinding` and `runPaymentAgent`. Use the protected HTTPS endpoint from a trusted server process, with a service key from its secret manager. The adapter checks receipt consistency, agent/exact transaction binding, check/decision/permission agreement, complete history and 30-second freshness (rechecked after downstream approval). BLOCK aborts, FLAG leaves the path for explicit review and fresh evaluation, and PASS requires a separate `authorize` callback.
+## How decisions work
 
-Run the isolated, network-free example:
+1. **Normalize the exact unsigned payment.** Reject malformed addresses/amounts, contradictory assertions, arbitrary calldata, zero beneficiaries, and unsupported assets. Only direct `transfer(address,uint256)` to canonical USDC is supported: Ethereum `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48` and Base `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`. Base decoding is tested; recorded PRO access to Base returned 402.
+2. **Retrieve bounded Blockscout evidence.** Inspect recipient metadata, counters, contract verification, and recent native/ERC-20 sender history. The scanner follows v2 pagination, deduplicates events, and distinguishes outgoing, incoming-only, zero-value, and incomplete records. Incoming dust does not establish a trusted payee.
+3. **Apply checks.** Compare the effective recipient with observed outbound and operator-configured references. A different address matching at least four leading **and** four trailing hex characters blocks; weaker resemblance flags. Check tags, source verification, chain permissions, recipient allowlists, and exact per-payment caps. Source verification is not a contract audit.
+4. **Return a conservative verdict.** Critical provider failure blocks; incomplete but usable history cannot `PASS` and requires review. A `PASS` means these checks passed against retrieved evidence and policy, not that a recipient or transaction is safe.
 
-```bash
-npm run demo:agent
-```
+Default procurement policy: native cap 2.5 and review above 1; USDC cap 2,500 and review above 1,000. These are asset-specific amounts, not exchange-rate comparisons. Public evaluations use this policy.
 
-Expected synthetic outcomes: 250 USDC → mock SIGNED; 1,500 → REVIEW_REQUIRED; 3,000 → BLOCKED. Only the first reaches a mock signer returning a non-transaction string. No real wallet, signed EVM bytes or broadcast is involved. Modified/stale responses and provider errors never sign. The helper is repository code, not a published SDK.
+Default provider bounds: three history pages per endpoint, 300 combined rows, eight history calls, 12 total provider calls, 10-second evaluation deadline, four-second request timeout, 2 MB response limit, and 250 ms process-local spacing. The public route also has five requests/minute/client, 20/minute/process, two concurrent evaluations, and a provider-failure cooldown. JSON is limited to 16 KB. These controls are **not** a deployment-wide quota across instances or cold starts.
 
-The SHA-256 digest is **unkeyed**, not an authenticated signature. A forged response can recompute it. Trusted transport and independent authorization are essential; the helper is not a replacement for wallet chain/sender/nonce/gas controls, idempotency, an execution ledger, or a real human-approval system. Real-wallet enforcement is unverified. Hourly executed-spend accounting is explicitly unsupported; unsigned evaluations are never counted as spending.
+## Evidence and replay provenance
 
-## Investigation replay and evidence
+The player separates **LIVE**, **RECORDED LIVE**, **RECORDED RESEARCH**, and **SIMULATED** modes. Its archived production cases are partial transcriptions: original exact API times, receipt IDs, and complete inbound/trust lists were not retained. Graph relationships use only saved supporting data. Downloads disclose the missing fields; they are not original provider responses.
 
-The five-stage player shows candidate → retained Blockscout evidence → relationships → check contributions → verdict, with play/pause/restart, previous/next, speed, progress, reduced motion and keyboard graph selection. Solid and dashed edges distinguish observed events and proposed unsigned payments. The three unchanged archived cases support two address nodes; no extra network or victim is invented. Downloads remain **partial receipt transcriptions** with missing exact times/IDs disclosed.
+The separate [Poison-Hunter research example](docs/evidence/2026-10-23-recorded-poisoning-replay.md) shows how the similarity rule responds **if** a published historical reference is supplied. A previous live scan did not recover that older reference. ScoutGuard has not been shown to have prevented that historical event.
 
-Categories are separate: LIVE evaluation, RECORDED live evaluation, RECORDED research replay and SIMULATED scenario. [The Poison-Hunter case](docs/evidence/2026-10-23-recorded-poisoning-replay.md) demonstrates conditional resemblance with a research-supplied reference. Improved live recovery of that reference has not been verified here, and no historical loss prevention is claimed.
+The receipt SHA-256 digest is **unkeyed**. It checks consistency, but anyone able to forge a response can recompute it; it is not an authenticated Blockscout signature or authorization token. The mock agent adapter relies on trusted HTTPS transport, exact transaction/policy binding, freshness, complete history for `PASS`, and a separate authorization callback. Real wallet, nonce, gas, idempotency, and executed-spend controls remain downstream work.
 
-The opt-in `npx tsx scripts/verify-research-history.ts` performs at most six read-only requests/300 rows in ten seconds on a permitted network. It does not inject the known reference into live discovery. Do not retry without another defined budget or purchase chain access.
-
-## Verification, browser checks and demo
+## Verify
 
 ```bash
 npm run build
-npm test
 npm run typecheck
-npm audit --audit-level=high
+npm test
 npm run demo:agent
 npm run test:browser
+npm audit --audit-level=high
 ```
 
-Browser verification uses `playwright-core` and an existing Chromium executable (`CHROMIUM_PATH` when needed), never a paid service. It starts a loopback fixture server, blocks external resources and labels synthetic provider data. It covers ETH/USDC, cap/partial/outage/rate errors, exact output fields, every replay stage, evidence relationships/download, simulations, keyboard controls, reduced motion, bad archives and 320/390/768/1280px layouts. It is not live Blockscout proof. No critical tests are intentionally skipped.
+`test:browser` uses an installed Chromium executable (`CHROMIUM_PATH` if needed), a loopback fixture server, and blocks external resources. Its live-form checks use **synthetic** provider data. The tests cover auth, fail-closed behavior, parsing, payment binding, history coverage, cancellation, replay provenance, responsive UI, and mock-agent enforcement. They do not prove a fresh production Blockscout evaluation or real-wallet safety. See the [verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md) for the evidence boundary.
 
-`npm run record:demo` additionally needs ffmpeg. It captures 100 seconds of the real local app's static recorded cases and labeled simulations, with captions and no live evaluation/provider calls. It writes intermediate files under `work/demo-recording/`. [Narration and storyboard](docs/demo/FINAL_DEMO.md), [judging walkthrough](docs/demo/JUDGE_WALKTHROUGH.md) and [submission checklist](docs/demo/SUBMISSION_CHECKLIST.md) are ready for review, not external submission.
+## Deployment and limits
 
-## Deployment and release limits
+The Express app exports a Vercel-compatible entry point and serves `public/`; the Dockerfile builds the same TypeScript app as a non-root image. Configure the two required production secrets in the host and verify public and protected routes after deployment. See [release migration notes](docs/RELEASE_MIGRATION.md).
 
-Vercel uses the Express default export and serves public assets; Docker builds the same TypeScript app and runs as a non-root user. Both keep the existing frontend identity and local assets; icon behavior has no CDN dependency. Remote fonts are optional with fallbacks. Docker can accept a public proxy CA via a temporary BuildKit `proxy_ca` secret; it is never copied into image layers. Never disable TLS validation.
+- Seven EVM chains are configured, not all live-verified or accessible under the current Blockscout plan. Ethereum has preserved live evidence; Base was plan-gated in the recorded check.
+- History is bounded indexed data at lookup time, not every past, internal, or future transfer. Similarity thresholds are heuristics without measured false-positive or prevention rates.
+- Shared quotas, authoritative hourly executed-spend accounting, authenticated receipts, a human-approval workflow, and real-wallet enforcement are not implemented.
+- The [approved release record](docs/evidence/2026-10-24-approved-release.md) verifies authenticated production content/health. Fresh anonymous/provider/Explorer verification of this release remains a separate open gate there.
 
-No production secrets were read or modified. Read the [migration and release checklist](docs/RELEASE_MIGRATION.md) before an approved deployment: receipt v1.3 and enforcement clients must move together; v1.2 archived records cannot authorize current execution. Current-branch GitHub Actions and production behavior require verification after an approved push/deployment. The live historical reconstruction, anonymous production flows/Explorer destinations, shared deployment quota and real wallet enforcement remain gates; local test success alone does not close them.
-
-## License
-
-No project LICENSE file is included. Confirm intended licensing before redistribution.
+Craftora text and demo materials in [`docs/`](docs/) are drafts until published. `package.json` declares MIT, but this repository has no `LICENSE` file; confirm the intended license before reuse or redistribution.
