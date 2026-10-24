@@ -8,14 +8,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
 - **Current workflow stage:** DEVELOPMENT (Sprint 2 improvements)
-- **Overall status:** Sprint 2 release is production-verified at `aa490c5`. Recorded investigation replay is implemented and locally verified; feature-branch push is authorized, deployment is not.
+- **Overall status:** Sprint 2 release is production-verified at `aa490c5`. Recorded investigation replay is implemented, locally verified, and published on `replay-no-deploy`; deployment is not authorized.
 - **Last updated date:** 2026-10-24
 
 ## Git State
 
 - **Branch:** `replay-no-deploy` during this replay milestone (created from `main`)
-- **Last verified application commit:** `2559de7` on `main` before replay work
-- **Working tree:** replay implementation and evidence updates to commit and push on the feature branch
+- **Last verified application commit:** `81db999` on the replay branch before the dependency patch
+- **Working tree:** body-parser lockfile patch pending commit; replay source already pushed
 - **Relevant remote or PR:** `origin/main` → `https://github.com/0xNexuz/scoutguard-pro.git`; no PR
 - **Last verified milestone:** Production ETH and USDC checks, including a spending-cap BLOCK, at `aa490c5`; local recorded replay verified on 2026-10-24
 
@@ -156,6 +156,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Evidence limits:** Saved production records are partial transcriptions from 2026-10-23, with only date precision. Original receipt IDs, exact API times, and full inbound/trust lists were not retained. The separate Poison-Hunter example remains a conditional research replay, not a recorded live catch. See `docs/evidence/2026-10-24-recorded-replay.md`.
 - **Verification:** Local build and 28 tests passed. Browser inspection covered case selection, all five stages, graph node details, Play/Pause/Restart/Next, score display, and narrow layout. No replay action called Blockscout.
 - **Release boundary:** Push only on `replay-no-deploy`, with `git.deploymentEnabled` disabled for that branch in `vercel.json`. Do not merge or deploy without further authorization.
+- **CI follow-up:** The first branch check failed solely on the high-severity `body-parser` 1.20.8 advisory. The lockfile now resolves 1.20.9; local `npm audit --audit-level=high`, build, and 28 tests pass. Verify the next GitHub Actions run after publishing this patch.
 
 ### 2026-10-20 — Evidence correction and local hardening
 
