@@ -4,7 +4,7 @@
 
 [Open the dashboard](https://scoutguard.vercel.app/) · [Judge quickstart](docs/submission/JUDGE_START_HERE.md) · [Sprint 2 evidence](docs/submission/JUDGING_EVIDENCE.md) · [Verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md)
 
-> **Release status:** This branch's live evidence inspector and live-first layout are locally verified but not yet merged/deployed. The hosted URL currently serves the previous release. The [Sprint 2 Craftora copy](docs/submission/CRAFTORA_FINAL.md) is ready for the user to publish after release.
+> **Release status:** This branch's live evidence inspector and live-first layout are verified in draft PR #5 but not yet merged/deployed. The hosted URL currently serves the previous release. The project owner has the Craftora, X, and recording copy in chat for publication after release.
 
 ![ScoutGuard Sprint 2 live-first homepage, captured locally without a provider request](docs/images/sprint2-home.png)
 

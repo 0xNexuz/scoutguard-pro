@@ -24,6 +24,6 @@ These intervals total roughly **73–85/100 for the branch if released as verifi
 ## Highest-impact remaining gates
 
 1. Release the branch and independently verify the new inspector on the production URL with one bounded successful PRO check. Preserve the timestamped result and screenshot. Do not call local-only proof production proof.
-2. Replace the stale Craftora description with [the copy-ready project text](CRAFTORA_FINAL.md) and add a genuine product visual. The user owns submission and social posting.
-3. Record the [110-second walkthrough](../demo/SPRINT2_RECORDING_PACKAGE.md) from the released product. Show an actual trace, its Explorer evidence and a distinct policy-cap block; use the recorded replay if live provider latency intervenes.
+2. Replace the stale Craftora description with the copy supplied to the owner in chat and add a genuine product visual. The user owns submission and social posting.
+3. Record the walkthrough from the released product using the storyboard supplied to the owner in chat. Show an actual trace, its Explorer evidence and a distinct policy-cap block; use the recorded replay if live provider latency intervenes.
 4. For a later security milestone, evaluate a reproducible as-of-block search against published poisoning cases and measure false positives. No such detection claim is made for this sprint.
