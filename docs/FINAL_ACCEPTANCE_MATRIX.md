@@ -1,5 +1,7 @@
 # Final judge-facing verification matrix — 2026-10-24
 
+> **Historical release snapshot.** The 25 October judging upgrade has newer fresh-provider evidence and 150 automated/26 browser checks. Use [Sprint 2 judging evidence](submission/JUDGING_EVIDENCE.md) for current status; this matrix is retained to preserve the earlier release record.
+
 Branch `feat/scoutguard-final-integration` consolidates main `f424779` and hardening `dc179f9` and was released through PR #2 at application merge `160fff4`. Latest 139-test CI/deployment evidence is in [approved release verification](evidence/2026-10-24-approved-release.md). Local verification is distinct from the existing production release, recorded evidence, and blocked external checks. “Verified local” does not mean deployed or measured security efficacy. See the comprehensive completion report for exact final counts.
 
 ## Five judge requests

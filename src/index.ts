@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { ScoutGuard } from './core/scoutguard.js';
 import { PoisoningDetector } from './core/poisoning-detector.js';
 import { BlockscoutClient, SUPPORTED_CHAINS } from './core/blockscout-client.js';
+import { classifyProviderSource } from './core/provider-source.js';
 import { normalizePayment } from './core/payment-normalizer.js';
 import { DEFAULT_AGENT_POLICIES } from './core/policy-engine.js';
 import { timingSafeEqual } from 'node:crypto';
@@ -114,8 +115,9 @@ async function evaluateRequest(req: Request, res: Response, publicMode = false) 
     providerCooldownUntil = Date.now() + (options.cooldownMs ?? 30_000);
   }
   res.setHeader('Cache-Control', 'no-store');
+  const source = classifyProviderSource(evaluation.providerTrace);
   return publicMode
-    ? res.json({ mode: 'LIVE', source: process.env.BLOCKSCOUT_API_KEY ? 'BLOCKSCOUT_PRO' : 'BLOCKSCOUT_PUBLIC_API', evaluation })
+    ? res.json({ mode: 'LIVE', source, evaluation })
     : res.json(evaluation);
 }
 

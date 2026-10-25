@@ -1,0 +1,167 @@
+{
+  "mode": "LIVE",
+  "source": "BLOCKSCOUT_PRO",
+  "evaluatedAt": "2026-10-25T07:15:56.326Z",
+  "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+  "chainId": 1,
+  "candidate": {
+    "from": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+    "to": "0x3F8702cfB1662195Fcc98593789682dA91DfaaE3",
+    "value": "0.1",
+    "chainId": 1,
+    "asset": "NATIVE",
+    "transactionTo": "0x3F8702cfB1662195Fcc98593789682dA91DfaaE3",
+    "transactionValue": "0.1",
+    "rawAmount": "100000000000000000"
+  },
+  "decision": "BLOCK",
+  "riskScore": 100,
+  "trace": [
+    {
+      "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+      "chainId": 1,
+      "endpoint": "ADDRESS_COUNTERS",
+      "source": "BLOCKSCOUT_PRO",
+      "timestamp": "2026-10-25T07:15:46.294Z",
+      "durationMs": 2566,
+      "httpStatus": 200
+    },
+    {
+      "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+      "chainId": 1,
+      "endpoint": "ADDRESS_DETAILS",
+      "source": "BLOCKSCOUT_PRO",
+      "timestamp": "2026-10-25T07:15:46.555Z",
+      "durationMs": 2376,
+      "httpStatus": 200
+    },
+    {
+      "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+      "chainId": 1,
+      "endpoint": "SENDER_TRANSACTIONS",
+      "source": "BLOCKSCOUT_PRO",
+      "page": 1,
+      "timestamp": "2026-10-25T07:15:46.803Z",
+      "durationMs": 4023,
+      "errorCategory": "TIMEOUT"
+    },
+    {
+      "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+      "chainId": 1,
+      "endpoint": "SENDER_TOKEN_TRANSFERS",
+      "source": "BLOCKSCOUT_PRO",
+      "page": 1,
+      "timestamp": "2026-10-25T07:15:50.826Z",
+      "durationMs": 3326,
+      "httpStatus": 200,
+      "recordCount": 50,
+      "hasNextPage": true
+    },
+    {
+      "evaluationId": "ea98d30d-50ad-4822-9570-4b8b75983265",
+      "chainId": 1,
+      "endpoint": "SENDER_TOKEN_TRANSFERS",
+      "source": "BLOCKSCOUT_PRO",
+      "page": 2,
+      "timestamp": "2026-10-25T07:15:54.155Z",
+      "durationMs": 2167,
+      "errorCategory": "TIMEOUT"
+    }
+  ],
+  "coverage": {
+    "chainId": 1,
+    "sender": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+    "pagesScanned": {
+      "transactions": 0,
+      "tokenTransfers": 1
+    },
+    "recordsInspected": 50,
+    "uniqueCounterparties": 1,
+    "outgoingNativeTransfers": 0,
+    "outgoingTokenTransfers": 2,
+    "duplicatesSkipped": 0,
+    "incomingOnlyAddresses": 32,
+    "zeroValueInteractions": 0,
+    "paginationComplete": false,
+    "truncated": true,
+    "stopReasons": [
+      "TIMEOUT",
+      "CRITICAL_HISTORY_UNAVAILABLE"
+    ],
+    "timeBudgetExhausted": true,
+    "requestBudgetExhausted": false,
+    "providerCalls": 3,
+    "providerErrors": [
+      {
+        "endpoint": "transactions",
+        "code": "TIMEOUT"
+      },
+      {
+        "endpoint": "tokenTransfers",
+        "code": "TIMEOUT"
+      }
+    ],
+    "fetchedAt": "2026-10-25T07:15:46.373Z",
+    "limits": {
+      "maxPages": 3,
+      "maxRecords": 300,
+      "maxProviderCalls": 8,
+      "maxDurationMs": 10000
+    },
+    "oldestEvidenceAt": "2026-02-23T18:20:47.000000Z",
+    "newestEvidenceAt": "2026-10-07T18:42:59.000000Z"
+  },
+  "checks": [
+    {
+      "id": "SEC-FAIL-CLOSED",
+      "name": "Fail-Closed Security Interceptor",
+      "status": "FAIL",
+      "scoreImpact": 100,
+      "detail": "Security engine encountered an unexpected error: Blockscout unavailable (CRITICAL_HISTORY_UNAVAILABLE). Halting transaction fail-closed.",
+      "evidenceUrl": "https://eth.blockscout.com/address/0x3F8702cfB1662195Fcc98593789682dA91DfaaE3"
+    }
+  ],
+  "observedCounterparties": [
+    {
+      "address": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+      "name": "Observed 0x3f87…aae3",
+      "category": "VENDOR",
+      "verifiedSince": "2026-05-21T22:17:35.000000Z",
+      "totalTransfers": 2,
+      "source": "BLOCKSCOUT_HISTORY",
+      "chainId": 1,
+      "relationship": "OUTBOUND_ERC20",
+      "evidenceTxHash": "0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f"
+    }
+  ],
+  "sampleHistoricalEvents": [
+    {
+      "chainId": 1,
+      "address": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+      "relationship": "OUTBOUND_ERC20",
+      "direction": "OUTGOING",
+      "transactionHash": "0x72b14bf09379c0de3c621035fe341a5ae9726c0dd5732ea3e2096c8e232eee9f",
+      "timestamp": "2026-05-21T22:17:35.000000Z",
+      "blockNumber": 25146561,
+      "rawAmount": "200000000",
+      "tokenAddress": "0x772725f6979c55144db79d13a443580cbb3907b4",
+      "logIndex": 498,
+      "initiatorVerified": false
+    },
+    {
+      "chainId": 1,
+      "address": "0x3f8702cfb1662195fcc98593789682da91dfaae3",
+      "relationship": "OUTBOUND_ERC20",
+      "direction": "OUTGOING",
+      "transactionHash": "0x13fa2190a59c4145ca60893b862cf43608a03c50c6576cb8e7380c8b2d1eba32",
+      "timestamp": "2026-05-21T21:54:47.000000Z",
+      "blockNumber": 25146447,
+      "rawAmount": "8000000000000",
+      "tokenAddress": "0x772725f6979c55144db79d13a443580cbb3907b4",
+      "logIndex": 1006,
+      "initiatorVerified": false
+    }
+  ],
+  "receiptDigest": "0x09a5168328d067a3b9d4fd285b01bbebdad011d6027d665fdea40d125e1d9137",
+  "captureNote": "Fresh local application evaluation using the configured Blockscout PRO key. The candidate was unsigned and not broadcast. Only a bounded history window was inspected."
+}

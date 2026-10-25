@@ -11,7 +11,8 @@ import {
   KnownCounterparty,
   SecurityCheckResult,
   HistoryLimits,
-  SenderHistory
+  SenderHistory,
+  ProviderObservations
 } from '../types/index.js';
 
 export class ScoutGuard {
@@ -55,6 +56,7 @@ export class ScoutGuard {
     let explorerUrl = '';
     let payment: TransactionCandidate = tx && typeof tx === 'object' ? tx : { from: '', to: '', value: '', chainId: 0 };
     let history: SenderHistory | undefined;
+    let providerObservations: ProviderObservations | undefined;
     const budget = createProviderBudget();
     const cancel = () => budget.controller.abort();
     if (options.signal?.aborted) cancel();
@@ -67,11 +69,22 @@ export class ScoutGuard {
       const token = payment.tokenAddress ? this.blockscout.getTokenConfig(payment.chainId, payment.tokenAddress) : undefined;
       explorerUrl = this.blockscout.getExplorerAddressUrl(payment.chainId, payment.to);
       // A missing upstream response must never be interpreted as clean history.
-      const [counters, details, senderHistory] = await Promise.all([
+      const requests = [
         this.blockscout.getAddressCounters(payment.chainId, payment.to, budget),
         this.blockscout.getAddressDetails(payment.chainId, payment.to, budget),
         this.blockscout.getSenderHistory(payment.chainId, payment.from, this.historyLimits, budget)
-      ]);
+      ] as const;
+      let counters: Awaited<typeof requests[0]>, details: Awaited<typeof requests[1]>, senderHistory: Awaited<typeof requests[2]>;
+      try {
+        [counters, details, senderHistory] = await Promise.all(requests);
+      } catch (error) {
+        // Stop sibling work, then wait for every in-flight trace entry before hashing the receipt.
+        budget.controller.abort();
+        const settled = await Promise.allSettled(requests);
+        const failedHistory = settled[2];
+        if (failedHistory.status === 'rejected' && failedHistory.reason instanceof HistoryUnavailableError) history = failedHistory.reason.history;
+        throw error;
+      }
       history = senderHistory;
       const counterparties = new Map(history.counterparties.map(counterparty => [counterparty.address.toLowerCase(), counterparty]));
       for (const counterparty of this.knownCounterparties) {
@@ -81,6 +94,10 @@ export class ScoutGuard {
       const contractSecurity = details.isContract
         ? await this.blockscout.getContractSecurity(payment.chainId, payment.to, budget)
         : { isContract: false, isVerified: false };
+      providerObservations = { recipientCounters: counters,
+        recipientDetails: { isContract: details.isContract, isScamOrPhishing: details.isScamOrPhishing,
+          name: details.name, tags: details.tags },
+        ...(details.isContract ? { recipientContract: contractSecurity } : {}) };
 
       // 2. Check 1: Address Poisoning & Vanity Collision
       const poisoningCheck = this.poisoningDetector.evaluatePoisoningRisk(
@@ -120,6 +137,7 @@ export class ScoutGuard {
       if (token) {
         const tokenExplorerUrl = this.blockscout.getExplorerAddressUrl(payment.chainId, token.address);
         const tokenSecurity = await this.blockscout.getContractSecurity(payment.chainId, token.address, budget);
+        providerObservations.tokenContract = tokenSecurity;
         checks.push({
           id: tokenSecurity.isVerified ? 'SEC-TOKEN-USDC' : 'SEC-TOKEN-UNVERIFIED',
           name: 'Supported Stablecoin Contract',
@@ -147,11 +165,15 @@ export class ScoutGuard {
         synthesized.riskScore,
         checks,
         explorerUrl,
-        history.coverage
+        history.coverage,
+        budget.trace,
+        providerObservations
       );
 
       return {
         history,
+        providerTrace: structuredClone(budget.trace),
+        providerObservations: structuredClone(providerObservations),
         decision: synthesized.decision,
         riskScore: synthesized.riskScore,
         reasons: synthesized.reasons,
@@ -180,11 +202,15 @@ export class ScoutGuard {
         100,
         [failClosedCheck],
         explorerUrl,
-        history?.coverage
+        history?.coverage,
+        budget.trace,
+        providerObservations
       );
 
       return {
         history,
+        providerTrace: structuredClone(budget.trace),
+        providerObservations: providerObservations && structuredClone(providerObservations),
         decision: 'BLOCK',
         riskScore: 100,
         reasons: [`FAIL-CLOSED: System aborted transaction for security safety. (${errorMsg})`],

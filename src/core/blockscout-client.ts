@@ -1,4 +1,4 @@
-import { AddressCounterData, ContractSecurityData, KnownCounterparty, TokenConfig, SenderHistory, HistoryLimits, CounterpartyEvidence } from '../types/index.js';
+import { AddressCounterData, ContractSecurityData, KnownCounterparty, TokenConfig, SenderHistory, HistoryLimits, CounterpartyEvidence, ProviderRequestTrace } from '../types/index.js';
 
 import { ProviderBudget, ProviderError, createProviderBudget, requestJson } from './provider-budget.js';
 
@@ -101,6 +101,15 @@ export class BlockscoutClient {
     return url.toString();
   }
 
+  private traceMetadata(chainId: number, endpoint: ProviderRequestTrace['endpoint'], page?: number) {
+    return { chainId, endpoint, source: (this.apiKey ? 'BLOCKSCOUT_PRO' : 'BLOCKSCOUT_PUBLIC_API') as ProviderRequestTrace['source'], page };
+  }
+
+  private markSchemaError(budget: ProviderBudget, endpoint: ProviderRequestTrace['endpoint'], code: string): void {
+    const request = [...budget.trace].reverse().find(entry => entry.endpoint === endpoint && entry.httpStatus === 200 && !entry.errorCategory);
+    if (request) request.errorCategory = code;
+  }
+
   public getChainConfig(chainId: number): ChainConfig {
     const chain = SUPPORTED_CHAINS[chainId];
     if (!chain) throw new Error(`Unsupported chain ID: ${chainId}`);
@@ -178,7 +187,8 @@ export class BlockscoutClient {
         for (const [key, value] of Object.entries(state.cursor)) url.searchParams.set(key, value);
         coverage.providerCalls++;
         try {
-          const payload = await requestJson(url.toString(), budget);
+          const payload = await requestJson(url.toString(), budget, this.traceMetadata(chainId,
+            state.key === 'transactions' ? 'SENDER_TRANSACTIONS' : 'SENDER_TOKEN_TRANSFERS', coverage.pagesScanned[state.key] + 1));
           if (!Array.isArray(payload.items)) throw new ProviderError('MALFORMED_HISTORY');
           coverage.pagesScanned[state.key]++;
           for (const item of payload.items) {
@@ -255,6 +265,8 @@ export class BlockscoutClient {
           state.seen.add(signature); state.cursor = cursor;
         } catch (error) {
           const code = error instanceof ProviderError ? error.code : 'INVALID_OR_UNAVAILABLE_RESPONSE';
+          if (['MALFORMED_HISTORY', 'MALFORMED_CURSOR', 'REPEATED_CURSOR'].includes(code)) this.markSchemaError(budget,
+            state.key === 'transactions' ? 'SENDER_TRANSACTIONS' : 'SENDER_TOKEN_TRANSFERS', code);
           coverage.providerErrors.push({ endpoint: state.key, code }); stop(code); state.done = true;
           if (/TIME/.test(code)) coverage.timeBudgetExhausted = true;
           if (code === 'REQUEST_BUDGET') coverage.requestBudgetExhausted = true;
@@ -275,23 +287,32 @@ export class BlockscoutClient {
   }
 
   public async getAddressCounters(chainId: number, address: string, budget = createProviderBudget()): Promise<AddressCounterData> {
-    const data = await requestJson(this.v2Url(chainId, `addresses/${address}/counters`), budget);
+    const data = await requestJson(this.v2Url(chainId, `addresses/${address}/counters`), budget,
+      this.traceMetadata(chainId, 'ADDRESS_COUNTERS'));
     const count = (value: unknown) => {
       if ((typeof value !== 'string' && typeof value !== 'number') || !/^\d+$/.test(String(value))
         || !Number.isSafeInteger(Number(value))) throw new ProviderError('MALFORMED_COUNTERS');
       return Number(value);
     };
-    return { transactionsCount: count(data.transactions_count), tokenTransfersCount: count(data.token_transfers_count),
-      gasUsageCount: count(data.gas_usage_count ?? '0'), isContract: false };
+    try {
+      return { transactionsCount: count(data.transactions_count), tokenTransfersCount: count(data.token_transfers_count),
+        gasUsageCount: count(data.gas_usage_count ?? '0'), isContract: false };
+    } catch (error) {
+      this.markSchemaError(budget, 'ADDRESS_COUNTERS', 'MALFORMED_COUNTERS'); throw error;
+    }
   }
 
   public async getAddressDetails(chainId: number, address: string, budget = createProviderBudget()): Promise<{
     isContract: boolean; isScamOrPhishing: boolean; name?: string; tags: string[]; reputationScore: number;
   }> {
-    const data = await requestJson(this.v2Url(chainId, `addresses/${address}`), budget);
+    const data = await requestJson(this.v2Url(chainId, `addresses/${address}`), budget,
+      this.traceMetadata(chainId, 'ADDRESS_DETAILS'));
     if (typeof data.is_contract !== 'boolean' || (data.is_scam !== undefined && typeof data.is_scam !== 'boolean')
       || (data.public_tags != null && (!Array.isArray(data.public_tags) || data.public_tags.some((tag: any) =>
-        !tag || (typeof tag.label !== 'string' && typeof tag.tag !== 'string'))))) throw new ProviderError('MALFORMED_ADDRESS');
+        !tag || (typeof tag.label !== 'string' && typeof tag.tag !== 'string'))))) {
+      this.markSchemaError(budget, 'ADDRESS_DETAILS', 'MALFORMED_ADDRESS');
+      throw new ProviderError('MALFORMED_ADDRESS');
+    }
     const tags: string[] = (data.public_tags || []).map((tag: any) => tag.label || tag.tag);
     const isScam = data.is_scam === true || tags.some(tag => /scam|phishing|drainer|hack|exploit/i.test(tag));
     return { isContract: data.is_contract, isScamOrPhishing: isScam,
@@ -300,9 +321,13 @@ export class BlockscoutClient {
 
   public async getContractSecurity(chainId: number, address: string, budget = createProviderBudget()): Promise<ContractSecurityData> {
     try {
-      const data = await requestJson(this.v2Url(chainId, `smart-contracts/${address}`), budget);
+      const data = await requestJson(this.v2Url(chainId, `smart-contracts/${address}`), budget,
+        this.traceMetadata(chainId, 'SMART_CONTRACT'));
       if ((data.is_verified !== undefined && typeof data.is_verified !== 'boolean')
-        || (data.source_code !== undefined && data.source_code !== null && typeof data.source_code !== 'string')) throw new ProviderError('MALFORMED_CONTRACT');
+        || (data.source_code !== undefined && data.source_code !== null && typeof data.source_code !== 'string')) {
+        this.markSchemaError(budget, 'SMART_CONTRACT', 'MALFORMED_CONTRACT');
+        throw new ProviderError('MALFORMED_CONTRACT');
+      }
       // Source verification is not a code audit. Reject truthy strings or arbitrary objects.
       const isVerified = data.is_verified === true || (data.is_verified === undefined && typeof data.source_code === 'string' && data.source_code.trim().length > 0);
       return { isContract: true, isVerified, contractName: typeof data.name === 'string' ? data.name : undefined,

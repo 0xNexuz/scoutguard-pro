@@ -2,7 +2,11 @@
 
 **A pre-signing payment check for EVM agents and treasury tools.** ScoutGuard inspects an unsigned native or canonical USDC transfer, retrieves Blockscout evidence, applies a deterministic policy, and returns `PASS`, `FLAG`, or `BLOCK`. It never holds a wallet key, signs, or broadcasts.
 
-[Open the dashboard](https://scoutguard.vercel.app/) · [Verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md) · [Release evidence](docs/evidence/2026-10-24-approved-release.md)
+[Open the dashboard](https://scoutguard.vercel.app/) · [Judge quickstart](docs/submission/JUDGE_START_HERE.md) · [Sprint 2 evidence](docs/submission/JUDGING_EVIDENCE.md) · [Verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md)
+
+> **Release verification:** The live evidence inspector and live-first layout were verified in PR #5. Check the deployed dashboard for “Blockscout Intelligence — Live Evidence” before treating the hosted URL as this release. The project owner has the Craftora, X, and recording copy in chat.
+
+![ScoutGuard Sprint 2 live-first homepage, captured locally without a provider request](docs/images/sprint2-home.png)
 
 ![Local browser capture of ScoutGuard's recorded investigation replay](docs/images/recorded-replay.png)
 
@@ -12,7 +16,7 @@
 
 | Experience | Where | What happens |
 | --- | --- | --- |
-| **Live evaluation** | Dashboard → Run live Blockscout check | A fresh, bounded Ethereum lookup for an unsigned ETH or canonical USDC payment. It uses provider requests and may return `FLAG` or fail-closed `BLOCK`. |
+| **Live evaluation** | Dashboard → Run live Blockscout check | A fresh, bounded Ethereum lookup for an unsigned ETH or canonical USDC payment. The new inspector shows actual upstream request statuses, parsed observations, relationship evidence, checks and an export. It may return `FLAG` or fail-closed `BLOCK`. |
 | **Recorded live evaluations** | Dashboard → Recorded replay | Five-stage playback of three saved, partial production observations. Pause, inspect the graph and checks, follow Explorer links, and download a sanitized excerpt. No new Blockscout requests. |
 | **Simulated attacks** | Dashboard → Simulated attacks | Fixture-driven vendor, look-alike, unverified-contract, phishing-tag, and cap-breach examples. These are labeled simulations. |
 
@@ -30,6 +34,8 @@ npm start
 ```
 
 Open `http://localhost:3030`. Replay and simulations work without provider credentials. For fresh Blockscout checks, copy `.env.example` to `.env` and set `BLOCKSCOUT_API_KEY`. Without it, the app attempts public Explorer endpoints; if required data is unavailable, the payment cannot pass. Keep TLS verification enabled.
+
+On Windows, if Node reports `UNABLE_TO_VERIFY_LEAF_SIGNATURE` while the browser can reach Blockscout, use Node's system CA support (`NODE_USE_SYSTEM_CA=1`) with TLS verification still enabled. Do not disable certificate validation or expose the provider key in browser code.
 
 Set a long random `SCOUTGUARD_SERVICE_KEY` for the protected agent API. Its policy identity is `SCOUTGUARD_AGENT_ID` (default `procurement-bot-01`). A request for another policy returns 403 before provider access. Use a separate deployment and key for a different policy; the single key is not a multi-tenant identity system. Production requires both the service and Blockscout keys. Confirmed Vercel previews may start without them; protected access remains locked, while the public form can still attempt public Explorer requests.
 
@@ -56,9 +62,9 @@ const data = new Interface(['function transfer(address,uint256)'])
 const candidate = { from: sender, to: USDC_ETHEREUM, value: '0', data, chainId: 1 };
 ```
 
-The public route returns `{ mode: "LIVE", source, evaluation }`; `source` is `BLOCKSCOUT_PRO` or `BLOCKSCOUT_PUBLIC_API`. Protected `POST /api/evaluate` takes the same candidate plus `x-scoutguard-key` and returns the evaluation directly. Send it only from a trusted server over HTTPS. `GET /api/counterparties` requires the same key because configured counterparties can be private.
+The public route returns `{ mode: "LIVE", source, evaluation }`. `source` is derived from successful per-request telemetry: `BLOCKSCOUT_PRO`, `BLOCKSCOUT_PUBLIC_API`, `MIXED_BLOCKSCOUT_SOURCES`, or a `_PARTIAL` variant when some requests failed; fully failed or untraced results use `BLOCKSCOUT_UNAVAILABLE` or `NO_PROVIDER_TRACE`. An environment variable or local fixture cannot by itself claim a successful PRO lookup. `evaluation.providerTrace` records only sanitized endpoint IDs, chain, status, duration, timestamp, page and row counts, pagination and error categories; it never includes a credential-bearing URL. `evaluation.providerObservations` exposes the parsed address/counter/contract facts actually used by the check. Protected `POST /api/evaluate` takes the same candidate plus `x-scoutguard-key` and returns the evaluation directly. Send it only from a trusted server over HTTPS. `GET /api/counterparties` requires the same key because configured counterparties can be private.
 
-The receipt records the effective beneficiary, original transaction destination, exact base-unit amount, calldata, checks, history coverage, policy version, and Explorer address link. An agent must bind the response to the transaction it will sign and independently authorize it. The [mock adapter](src/integration/payment-agent.ts) demonstrates this. `npm run demo:agent` uses no wallet or network; its `SIGNED` result is a synthetic artifact, not signed EVM bytes.
+The receipt records the effective beneficiary, original transaction destination, exact base-unit amount, calldata, checks, history coverage, sanitized trace/observations, policy version, and Explorer address link. An agent must bind the response to the transaction it will sign and independently authorize it. The [mock adapter](src/integration/payment-agent.ts) demonstrates this. `npm run demo:agent` uses no wallet or network; its `SIGNED` result is a synthetic artifact, not signed EVM bytes.
 
 ## How decisions work
 
@@ -91,6 +97,8 @@ npm audit --audit-level=high
 ```
 
 `test:browser` uses an installed Chromium executable (`CHROMIUM_PATH` if needed), a loopback fixture server, and blocks external resources. Its live-form checks use **synthetic** provider data. The tests cover auth, fail-closed behavior, parsing, payment binding, history coverage, cancellation, replay provenance, responsive UI, and mock-agent enforcement. They do not prove a fresh production Blockscout evaluation or real-wallet safety. See the [verification matrix](docs/FINAL_ACCEPTANCE_MATRIX.md) for the evidence boundary.
+
+Manual genuine-provider checks are deliberately separate from CI. `node scripts/smoke-live.mjs --one-approved-case` makes one public live evaluation (or `--three-approved-cases` makes three). `scripts/capture-live-evidence.mjs` captures one traced localhost evaluation only when explicitly invoked with `SCOUTGUARD_SMOKE_ORIGIN=http://localhost:3030/` and `--one-approved-capture`. These commands consume provider requests. The [25 October successful local trace](docs/evidence/2026-10-25-successful-local-smoke.md) recorded eight real PRO HTTP 200 responses and a conservative `FLAG`; a later [timeout trace](docs/evidence/2026-10-25-local-provider-timeout.json) recorded the expected fail-closed `BLOCK`. Neither is a deployed-upgrade verification.
 
 ## Deployment and limits
 

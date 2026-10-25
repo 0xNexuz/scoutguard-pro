@@ -31,6 +31,8 @@ export function assertEvaluationBinding(evaluation: EvaluationResult, candidate:
   if (receipt.agentId !== (candidate.agentId ?? 'procurement-bot-01')) throw new Error('Agent binding mismatch');
   if (canonicalSerialize(receipt.transactionSummary) !== canonicalSerialize(paymentSummary(payment))) throw new Error('Transaction binding mismatch');
   if (canonicalSerialize(evaluation.checks) !== canonicalSerialize(receipt.checks)
+    || canonicalSerialize(evaluation.providerTrace) !== canonicalSerialize(receipt.providerTrace)
+    || canonicalSerialize(evaluation.providerObservations) !== canonicalSerialize(receipt.providerObservations)
     || evaluation.decision !== receipt.decision || evaluation.riskScore !== receipt.riskScore) throw new Error('Evaluation envelope mismatch');
   if (!Array.isArray(evaluation.checks) || !evaluation.checks.length || evaluation.checks.some(check =>
     !['PASS', 'WARN', 'FAIL'].includes(check.status) || !Number.isFinite(check.scoreImpact) || check.scoreImpact < 0 || check.scoreImpact > 100)) {

@@ -35,7 +35,7 @@ it('guest Ethereum ETH/USDC evaluations return LIVE provenance, exact binding an
     assert.equal(response.headers.get('cache-control'), 'no-store');
     const body = await response.json();
     assert.equal(body.mode, 'LIVE');
-    assert.equal(body.source, process.env.BLOCKSCOUT_API_KEY ? 'BLOCKSCOUT_PRO' : 'BLOCKSCOUT_PUBLIC_API');
+    assert.equal(body.source, 'NO_PROVIDER_TRACE'); // A stub must not be presented as a successful PRO call.
     assert.equal(body.evaluation.decision, 'PASS');
     assert.equal(body.evaluation.receipt.transactionSummary.to.toLowerCase(), recipient);
     assert.equal(body.evaluation.history.coverage.paginationComplete, true);
