@@ -1,5 +1,7 @@
 # ScoutGuard PRO — final consolidation and release-readiness report
 
+> **Historical 24 October report.** Its no-push/no-provider statements describe the earlier integration checkpoint. See [25 October judging evidence](submission/JUDGING_EVIDENCE.md) for the current feature branch, real local PRO trace and latest tests.
+
 Initial local-review report for `0704e80`, prepared 2026-10-24, Africa/Lagos. Subsequent approved release, 139-test regression run and deployment evidence are recorded in [approved-release evidence](evidence/2026-10-24-approved-release.md). This is an engineering self-review, not an official competition score or a claim of measured prevention efficacy.
 
 ## A. Executive verdict

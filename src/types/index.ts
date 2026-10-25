@@ -31,6 +31,28 @@ export interface SecurityCheckResult {
   metadata?: Record<string, unknown>;
 }
 
+/** Public, bounded metadata about actual upstream requests. No URL or credential is retained. */
+export interface ProviderRequestTrace {
+  evaluationId: string;
+  chainId: number;
+  endpoint: 'ADDRESS_COUNTERS' | 'ADDRESS_DETAILS' | 'SENDER_TRANSACTIONS' | 'SENDER_TOKEN_TRANSFERS' | 'SMART_CONTRACT';
+  source: 'BLOCKSCOUT_PRO' | 'BLOCKSCOUT_PUBLIC_API';
+  httpStatus?: number;
+  durationMs: number;
+  timestamp: string;
+  recordCount?: number;
+  hasNextPage?: boolean;
+  page?: number;
+  errorCategory?: string;
+}
+
+export interface ProviderObservations {
+  recipientCounters: AddressCounterData;
+  recipientDetails: { isContract: boolean; isScamOrPhishing: boolean; name?: string; tags: string[] };
+  recipientContract?: ContractSecurityData;
+  tokenContract?: ContractSecurityData;
+}
+
 export interface AuditReceipt {
   receiptId: string;
   timestamp: number;
@@ -53,6 +75,8 @@ export interface AuditReceipt {
   policyVersion: string;
   checks: SecurityCheckResult[];
   historyCoverage?: HistoryCoverage;
+  providerTrace?: ProviderRequestTrace[];
+  providerObservations?: ProviderObservations;
   integrityAlgorithm: 'SHA-256-UNKEYED';
   integrityHash: string;
   blockscoutExplorerUrl: string;
@@ -60,6 +84,8 @@ export interface AuditReceipt {
 
 export interface EvaluationResult {
   history?: SenderHistory;
+  providerTrace?: ProviderRequestTrace[];
+  providerObservations?: ProviderObservations;
   decision: GuardDecision;
   riskScore: number; // 0 to 100 (0 = clean, 100 = critical threat)
   reasons: string[];

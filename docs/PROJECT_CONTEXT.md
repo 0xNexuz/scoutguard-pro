@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** APPROVED APPLICATION RELEASED — qualified runtime checks complete
-- **Overall status:** PR #4 merged the access-control fixes and rewritten README to `main` at `cf0bf38`. Main CI and Vercel status passed; production Chrome returned 200 for the page/health and 401 for unauthenticated counterparties. Fresh provider evaluation and distributed quota remain unresolved.
-- **Last updated date:** 2026-10-24 (Africa/Lagos)
+- **Current workflow stage:** SPRINT 2 JUDGING UPGRADE — local implementation and evidence review
+- **Overall status:** Remote `main` baseline `26dffe3` is deployed. Three fresh public production checks on 25 Oct returned ETH `FLAG`, 250 USDC `FLAG`, and 3,000 USDC `BLOCK` under bounded history/policy. A separate upgraded local check recorded eight genuine PRO HTTP 200 responses, while later timeout attempts blocked conservatively. The live evidence inspector, relationship search, submission copy and demo package are implemented on an unreleased feature branch. Production deployment of this upgrade, Craftora update and new video remain pending.
+- **Last updated date:** 2026-10-25 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** Application and audit hardening are released on remote `main` through PR #2 and PR #4. The audit used a source archive because this Windows Git client's HTTPS certificate chain is unavailable.
+- **Branch:** `feat/scoutguard-final-judging-upgrade`, created from verified remote `main` `26dffe3c423cc90d7b0009da1dc690593d9c1626`. Feature branch publication and review are pending final verification; this branch disables Vercel Git deployment.
 - **Integration source heads:** audit baseline `eb8221a450c6e9d805c5699ec423b5f94807003e`, PR #4 application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`. Earlier hardening source was `dc179f92691b101174487f50d0727c04a41d7394`.
-- **Working tree:** audit source was extracted from the verified GitHub `main` archive at `eb8221a`; the older desktop Git checkout remains on `replay-no-deploy` and must not be mistaken for current `main`.
+- **Working tree:** Actual Git checkout under `work/scoutguard-pro`. Verify the branch, `HEAD` and status on each continuation; no remote publication is assumed from a local commit.
 - **Relevant remote or PR:** PR #1 replay, PR #2 final integration, and PR #4 access-control audit are merged. Audit application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`.
-- **Last verified milestone:** PR #4 main run 40134184049 passed, Vercel status succeeded, and production Chrome observed page/health 200 and counterparty route 401 without a key. Local audit revision passed 142 tests, 25 Chromium checks, build, strict types, mock-agent demo, and cached vulnerability audit. See `docs/AUDIT_2026-10-24.md`.
+- **Last verified milestone:** On 25 Oct, baseline production returned three conservative live results; a later upgraded local run recorded eight actual Blockscout PRO HTTP 200 responses and 300 rows inspected with a `FLAG` for partial history. The final local upgrade passed 151 automated tests, 26 browser checks, build, strict types, mock-agent demo and zero-vulnerability npm audit. See `docs/submission/JUDGING_EVIDENCE.md` and `docs/evidence/2026-10-25-successful-local-smoke.md`.
 
 ## Hackathon Context
 
@@ -292,3 +292,12 @@ Early planning estimates below are historical internal judgments, not official c
 - **Publication:** PR #4 merged at `cf0bf38`; main run 40134184049 and Vercel status succeeded.
 - **Production read-only check:** Normal headless Chrome observed `/` 200, `/api/health` 200, and unauthenticated `/api/counterparties` 401 without bypassing HTTPS errors. No fresh Blockscout evaluation was made.
 - **Status:** MERGED, CI VERIFIED, and PRODUCTION READ-ONLY CHECK VERIFIED. Protected policy selection is covered locally, not with a production service key.
+
+### 2026-10-25 — Final Sprint 2 judging upgrade
+
+- **Authorization:** User supplied a detailed Sprint 2 upgrade brief and explicitly requested implementation with approval. The brief requires a reviewable branch before any production merge/deployment; Craftora and X publication remain user-owned, and the user previously reserved video recording for themselves.
+- **Baseline:** Verified GitHub `main` `26dffe3`; the Craftora page still described 17 tests. Three fresh public production evaluations returned ETH `FLAG`, 250 USDC `FLAG`, and 3,000 USDC `BLOCK`. Their old source label was configuration-derived, so upstream HTTP statuses were not claimed from it.
+- **Implementation:** Server-side sanitized provider telemetry, response-derived source labels, parsed observations, digest-bound evidence, stable cancellation traces, live relationship search/export, live-first homepage and clear observation/analysis/policy layers. Vercel Git deployment is disabled for the feature branch. Existing agent auth, fail-closed policy, recorded archive and simulation modes are preserved.
+- **Genuine provider proof:** One upgraded local ETH check using system CA trust recorded eight PRO HTTP 200 responses, 300 inspected rows and a conservative `FLAG` from `PAGE_LIMIT`. A later local timeout returned `BLOCK` with explicit failed endpoint categories. No API key, credential URL or provider response body was stored in the trace.
+- **Presentation:** Prepared final/short Craftora text, judge quickstart, evidence matrix, change map, X drafts and a 110-second video recording package. The historical Poison-Hunter replay remains conditional because automatic recovery was not established.
+- **Release boundary:** Branch/PR review first. Do not describe this upgrade as deployed or the Craftora copy as published until independently confirmed after release. Final local verification: 151/151 automated tests, 26/26 browser checks, build/types/demo/audit passed; remote branch and CI status still need confirmation.

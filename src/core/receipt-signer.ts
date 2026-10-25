@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'crypto';
-import { AuditReceipt, GuardDecision, TransactionCandidate, SecurityCheckResult, HistoryCoverage } from '../types/index.js';
+import { AuditReceipt, GuardDecision, TransactionCandidate, SecurityCheckResult, HistoryCoverage, ProviderRequestTrace, ProviderObservations } from '../types/index.js';
 
 /** Stable key order, including nested evidence metadata. Arrays preserve their order. */
 function canonicalize(value: any): any {
@@ -24,7 +24,8 @@ function digest(receipt: Omit<AuditReceipt, 'integrityHash'> | AuditReceipt): st
 // Retains the original class name for compatibility. This is NOT an authenticated signature.
 export class ReceiptSigner {
   public generateReceipt(tx: TransactionCandidate, decision: GuardDecision, riskScore: number,
-    checks: SecurityCheckResult[], blockscoutExplorerUrl: string, historyCoverage?: HistoryCoverage): AuditReceipt {
+    checks: SecurityCheckResult[], blockscoutExplorerUrl: string, historyCoverage?: HistoryCoverage,
+    providerTrace?: ProviderRequestTrace[], providerObservations?: ProviderObservations): AuditReceipt {
     const timestamp = Date.now();
     const receipt = {
       receiptId: `rcpt_${randomUUID().replace(/-/g, '').slice(0, 16)}`,
@@ -32,7 +33,9 @@ export class ReceiptSigner {
       agentId: tx.agentId || 'procurement-bot-01',
       policyVersion: 'v1.3.0-sprint2-hardening', integrityAlgorithm: 'SHA-256-UNKEYED' as const,
       transactionSummary: paymentSummary(tx),
-      checks: structuredClone(checks), historyCoverage: historyCoverage && structuredClone(historyCoverage), blockscoutExplorerUrl
+      checks: structuredClone(checks), historyCoverage: historyCoverage && structuredClone(historyCoverage),
+      providerTrace: providerTrace && structuredClone(providerTrace),
+      providerObservations: providerObservations && structuredClone(providerObservations), blockscoutExplorerUrl
     };
     return { ...receipt, integrityHash: digest(receipt) };
   }

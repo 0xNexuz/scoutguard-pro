@@ -55,6 +55,21 @@ try {
     assert.match(await page.locator('#live-coverage').innerText(), /Pagination completed/);
     assert.equal(await page.locator('#live-links a').count(), 2);
   });
+  await check('live evidence inspector distinguishes untraced fixtures and exports a sanitized receipt', async () => {
+    await page.locator('.live-intel-title').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#live-intelligence').innerText(), /No upstream request trace was retained/);
+    assert.equal(await page.locator('.live-intel-trace li').count(), 0);
+    assert.equal(await page.locator('.live-intel-node').count(), 2);
+    await page.locator('.live-intel-node').nth(1).click();
+    assert.match(await page.locator('.live-intel-node-detail').innerText(), /0x3f8702cfb1662195fcc98593789682da91dfaae3/);
+    const download = page.waitForEvent('download'); await page.locator('.live-intel-download').click();
+    const file = await download; await file.saveAs(`${artifacts}/live-fixture-evidence.json`);
+    const receipt = JSON.parse(await readFile(`${artifacts}/live-fixture-evidence.json`, 'utf8'));
+    assert.equal(receipt.source, 'NO_PROVIDER_TRACE');
+    assert.deepEqual(receipt.providerTrace, []);
+    assert.equal(receipt.receipt.integrityAlgorithm, 'SHA-256-UNKEYED');
+    await page.screenshot({ path: `${artifacts}/live-inspector-1280.png`, fullPage: false, animations: 'disabled' });
+  });
   await check('USDC form → ABI recipient/amount → canonical contract check → PASS (fixture)', async () => {
     const body = await candidate('usdc', 'PASS');
     assert.equal(body.evaluation.receipt.transactionSummary.rawAmount, '250000000');
@@ -175,7 +190,7 @@ try {
     await page.setViewportSize({ width, height: 900 });
     await page.locator('[data-replay-stage="2"]').click();
     const layout = await page.evaluate(() => ({ viewport: innerWidth, scroll: document.documentElement.scrollWidth,
-      outside: [...document.querySelectorAll('.site-header a, #live-from, #live-to, #live-submit, .graph-node-controls button, #replay-download')].filter(node => { const r = node.getBoundingClientRect(); return r.width && (r.right > innerWidth + 1 || r.left < -1); }).map(node => node.id || node.className) }));
+      outside: [...document.querySelectorAll('.site-header a, #live-from, #live-to, #live-submit, .live-intel-node, .live-intel-download, .graph-node-controls button, #replay-download')].filter(node => { const r = node.getBoundingClientRect(); return r.width && (r.right > innerWidth + 1 || r.left < -1); }).map(node => node.id || node.className) }));
     if (layout.scroll > width) {
       layout.allOutside = await page.evaluate(() => [...document.querySelectorAll('body *')].filter(node => { const r = node.getBoundingClientRect(); return r.width && (r.right > innerWidth + 1 || r.left < -1); }).map(node => ({tag:node.tagName,id:node.id,cls:String(node.className).slice(0,90),right:node.getBoundingClientRect().right,left:node.getBoundingClientRect().left,text:node.textContent.slice(0,40)})).slice(0,30));
     }
@@ -188,6 +203,16 @@ try {
     await page.setViewportSize({ width: 390, height: 844 });
     await complete(); await candidate('observed', 'PASS'); await candidate('usdc', 'PASS');
     assert.equal(await page.locator('#live-submit').isEnabled(), true);
+    await page.locator('.live-intel-title').waitFor({ state: 'visible' });
+    await page.locator('.live-intel-node').first().click();
+    assert.equal(await page.locator('.live-intel-node').first().getAttribute('aria-pressed'), 'true');
+    await page.locator('.live-intel-search').fill('proposed beneficiary');
+    assert.equal(await page.locator('.live-intel-node').count(), 1);
+    assert.ok(await page.locator('.live-intel-node').first().evaluate(node => node.getBoundingClientRect().height >= 44));
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await page.screenshot({ path: `${artifacts}/live-inspector-390.png`, fullPage: false, animations: 'disabled' });
+    await page.setViewportSize({ width: 320, height: 844 });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   });
   await check('reduced motion removes graph/stage animation without disabling manual controls', async () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -216,8 +241,14 @@ try {
   });
 } catch (error) { console.error(error); process.exitCode = 1; }
 finally {
-  await browser?.close(); child.kill('SIGTERM');
   await writeFile(`${artifacts}/results.json`, JSON.stringify({ mode: 'LOCAL_FIXTURE_BROWSER_VERIFICATION', checks,
     pass: checks.filter(check => check.status === 'PASS').length, fail: checks.filter(check => check.status === 'FAIL').length,
     consoleErrors, externalRequests, actualBlockscoutChecks: 0, terminal }, null, 2));
+  child.kill('SIGTERM');
+  if (browser) {
+    let timer;
+    await Promise.race([browser.close(), new Promise(resolve => { timer = setTimeout(resolve, 3000); })]);
+    clearTimeout(timer);
+    if (browser.isConnected()) browser.process()?.kill();
+  }
 }

@@ -70,6 +70,7 @@ selectSpecimen('legitimate-vendor');
 
 const ETHEREUM_USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 const liveForm = document.getElementById('live-evaluation-form');
+let latestLiveRenderId = 0;
 const liveCases = {
   observed: { from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be', to: '0x3f8702cfb1662195fcc98593789682da91dfaae3', asset: 'ETH', value: '0.1' },
   usdc: { from: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be', to: '0x3f8702cfb1662195fcc98593789682da91dfaae3', asset: 'USDC', value: '250' },
@@ -97,6 +98,7 @@ function evidenceLink(label, href) {
 }
 
 function renderLiveEvaluation(payload, candidate) {
+  const renderId = ++latestLiveRenderId;
   const evaluation = payload.evaluation;
   if (evaluation?.receipt?.policyVersion !== 'v1.3.0-sprint2-hardening' || evaluation.receipt.integrityAlgorithm !== 'SHA-256-UNKEYED') {
     throw new Error('Unsupported API receipt version. A matching application release is required.');
@@ -172,6 +174,12 @@ function renderLiveEvaluation(payload, candidate) {
 
   document.getElementById('live-empty').classList.add('hidden');
   document.getElementById('live-result').classList.remove('hidden');
+  import('./live-evidence.js').then(module => {
+    if (renderId === latestLiveRenderId) module.renderLiveEvidence(payload);
+  }).catch(() => {
+    if (renderId !== latestLiveRenderId) return;
+    document.getElementById('live-intelligence').textContent = 'The evidence inspector could not load. The verdict above remains fail-closed; download and review are unavailable in this browser session.';
+  });
 }
 
 document.getElementById('live-asset')?.addEventListener('change', event => {
@@ -187,7 +195,9 @@ liveForm?.addEventListener('submit', async event => {
   const value = document.getElementById('live-value').value.trim();
   const asset = document.getElementById('live-asset').value;
   errorBox.classList.add('hidden');
+  latestLiveRenderId++;
   document.getElementById('live-result').classList.add('hidden');
+  document.getElementById('live-intelligence').replaceChildren();
   document.getElementById('live-empty').classList.remove('hidden');
   if (!/^0x[a-fA-F0-9]{40}$/.test(from) || !/^0x[a-fA-F0-9]{40}$/.test(to) || !/^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value) || Number(value) <= 0) {
     errorBox.textContent = 'Enter valid 0x sender and recipient addresses and a positive decimal amount.';
@@ -221,7 +231,7 @@ liveForm?.addEventListener('submit', async event => {
     if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
     renderLiveEvaluation(payload, { ...candidate, from, tokenAddress: asset === 'USDC' ? ETHEREUM_USDC : undefined });
   } catch (error) {
-    errorBox.textContent = `Live check could not complete: ${error.message} You can correct the addresses or retry after one minute.`;
+    errorBox.textContent = `Live check could not complete: ${error.message} Automatic approval was withheld. Correct the addresses or retry after one minute; a separate recorded investigation is available below.`;
     errorBox.classList.remove('hidden');
     errorBox.focus();
   } finally {
