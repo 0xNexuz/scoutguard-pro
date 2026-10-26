@@ -75,7 +75,7 @@ The receipt records the effective beneficiary, original transaction destination,
 
 Default procurement policy: native cap 2.5 and review above 1; USDC cap 2,500 and review above 1,000. These are asset-specific amounts, not exchange-rate comparisons. Public evaluations use this policy.
 
-Default provider bounds: three history pages per endpoint, 300 combined rows, eight history calls, 12 total provider calls, 10-second evaluation deadline, four-second request timeout, 2 MB response limit, and 250 ms process-local spacing. The public route also has five requests/minute/client, 20/minute/process, two concurrent evaluations, and a provider-failure cooldown. JSON is limited to 16 KB. These controls are **not** a deployment-wide quota across instances or cold starts.
+Protected agent evaluations retain the default provider bounds: three history pages per endpoint, 300 combined rows, eight history calls, 12 total provider calls, 10-second evaluation deadline, four-second request timeout, 2 MB response limit, and 250 ms process-local spacing. The public form uses a smaller sample of two pages per history endpoint and 200 combined rows, with a bounded 18-second evaluation window and 6.5-second request timeout to accommodate slower upstream responses. Incomplete history still requires review; missing critical data still blocks. The public route also has five requests/minute/client, 20/minute/process, two concurrent evaluations, and a provider-failure cooldown. JSON is limited to 16 KB. These controls are **not** a deployment-wide quota across instances or cold starts.
 
 ## Evidence and replay provenance
 

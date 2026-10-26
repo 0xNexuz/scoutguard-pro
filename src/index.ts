@@ -60,6 +60,7 @@ const aggregateLimit = rateLimit({ windowMs: 60_000, limit: options.aggregateLim
   message: { error: 'Public provider budget reached. Try again later.' } });
 let activePublicRequests = 0;
 let providerCooldownUntil = 0;
+let providerCooldownReason = 'UNAVAILABLE';
 
 function parseCandidate(body: unknown, publicMode = false): TransactionCandidate | undefined {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return undefined;
@@ -108,11 +109,17 @@ async function evaluateRequest(req: Request, res: Response, publicMode = false) 
   const disconnect = () => { if (!res.writableEnded) controller.abort(); };
   req.once('aborted', disconnect); res.once('close', disconnect);
   let evaluation;
-  try { evaluation = await guard.evaluateTransaction(candidate, { signal: controller.signal }); }
+  try { evaluation = await guard.evaluateTransaction(candidate, { signal: controller.signal, publicProfile: publicMode }); }
   finally { req.off('aborted', disconnect); res.off('close', disconnect); }
   if (res.destroyed) return;
-  if (publicMode && (evaluation.checks.some(check => check.id === 'SEC-FAIL-CLOSED') || evaluation.history?.coverage.providerErrors.length)) {
+  // A later history-page error can still produce a review-required result. Only a
+  // critical failure or upstream rate limit pauses other public evaluations.
+  const criticalFailure = evaluation.checks.some(check => check.id === 'SEC-FAIL-CLOSED');
+  const upstreamRateLimit = evaluation.providerTrace?.some(entry => entry.errorCategory === 'HTTP_429');
+  if (publicMode && (criticalFailure || upstreamRateLimit)) {
     providerCooldownUntil = Date.now() + (options.cooldownMs ?? 30_000);
+    providerCooldownReason = evaluation.providerTrace?.find(entry => entry.errorCategory && entry.errorCategory !== 'CANCELLED')?.errorCategory
+      || evaluation.history?.coverage.providerErrors[0]?.code || 'UNAVAILABLE';
   }
   res.setHeader('Cache-Control', 'no-store');
   const source = classifyProviderSource(evaluation.providerTrace);
@@ -259,8 +266,10 @@ app.get('/api/research-case/poisoning', (req, res) => {
 // Small, judge-friendly public path. It is limited to Ethereum and five checks per minute per client.
 app.post('/api/evaluate/public', publicEvaluationLimit, aggregateLimit, async (req, res) => {
   if (Date.now() < providerCooldownUntil) {
-    res.setHeader('Retry-After', String(Math.max(1, Math.ceil((providerCooldownUntil - Date.now()) / 1000))));
-    return res.status(503).json({ error: 'Provider temporarily unavailable. Evaluation is unavailable; do not execute.' });
+    const retryAfterSeconds = Math.max(1, Math.ceil((providerCooldownUntil - Date.now()) / 1000));
+    res.setHeader('Retry-After', String(retryAfterSeconds));
+    return res.status(503).json({ code: 'PROVIDER_COOLDOWN', error: 'A previous Blockscout request failed. Live checks are briefly paused; no payment was approved.',
+      upstreamErrorCategory: providerCooldownReason, retryAfterSeconds });
   }
   if (activePublicRequests >= (options.maxConcurrent ?? 2)) {
     res.setHeader('Retry-After', '5');
