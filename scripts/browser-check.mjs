@@ -108,6 +108,16 @@ try {
     await page.waitForFunction(() => document.querySelector('#live-error').textContent.includes('limit reached') && !document.querySelector('#live-submit').disabled);
     await page.unroute('**/api/evaluate/public');
   });
+  await check('provider cooldown shows timeout cause and retry time without blaming addresses', async () => {
+    await page.route('**/api/evaluate/public', route => route.fulfill({ status: 503, contentType: 'application/json',
+      headers: { 'Retry-After': '12' }, body: JSON.stringify({ code: 'PROVIDER_COOLDOWN', upstreamErrorCategory: 'TIMEOUT' }) }));
+    await page.locator('#live-submit').click();
+    await page.waitForFunction(() => document.querySelector('#live-error').textContent.includes('timed out') && !document.querySelector('#live-submit').disabled);
+    const message = await page.locator('#live-error').innerText();
+    assert.match(message, /12 seconds/);
+    assert.doesNotMatch(message, /Correct the addresses/);
+    await page.unroute('**/api/evaluate/public');
+  });
   await check('legacy or incomplete-PASS API responses cannot display a fresh approval', async () => {
     const valid = structuredClone(healthyEvaluation);
     for (const legacy of [true, false]) {

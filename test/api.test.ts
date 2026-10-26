@@ -5,7 +5,7 @@ import { Server } from 'node:http';
 import { Interface } from 'ethers';
 import { createApp } from '../src/index.js';
 import { ScoutGuard } from '../src/core/scoutguard.js';
-import { fixtureClient, sender, recipient, usdc } from './fixtures/blockscout.js';
+import { completeHistory, fixtureClient, sender, recipient, usdc } from './fixtures/blockscout.js';
 const servers: Server[] = [];
 const oldKey = process.env.SCOUTGUARD_SERVICE_KEY;
 const oldVercel = process.env.VERCEL;
@@ -124,7 +124,45 @@ it('provider failures BLOCK without leaking credentials and trigger cooldown wit
   const second = await post(native);
   assert.equal(second.status, 503);
   assert.ok(second.headers.get('retry-after'));
+  const cooldown = await second.json();
+  assert.equal(cooldown.code, 'PROVIDER_COOLDOWN');
+  assert.equal(cooldown.upstreamErrorCategory, 'UNAVAILABLE');
+  assert.ok(cooldown.retryAfterSeconds > 0);
   assert.equal(calls, 1);
+});
+it('a partial history FLAG does not put other public checks into provider cooldown', async () => {
+  const client = fixtureClient();
+  client.getSenderHistory = async () => completeHistory({ paginationComplete: false, truncated: true,
+    stopReasons: ['TIMEOUT'], providerErrors: [{ endpoint: 'transactions', code: 'TIMEOUT' }] });
+  const { post } = await setup({ guard: new ScoutGuard({ blockscoutClient: client }) });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await post(native);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).evaluation.decision, 'FLAG');
+  }
+});
+it('public scan uses a smaller history sample with a longer request budget while protected limits stay intact', async () => {
+  process.env.SCOUTGUARD_SERVICE_KEY = 'test-service-key';
+  const client = fixtureClient();
+  const observed: Array<{ pages: number | undefined; rows: number | undefined; requestTimeoutMs: number; remainingMs: number }> = [];
+  client.getSenderHistory = async (_chainId, _sender, limits, budget) => {
+    assert.ok(limits);
+    assert.ok(budget);
+    observed.push({ pages: limits.maxPages, rows: limits.maxRecords, requestTimeoutMs: budget.requestTimeoutMs,
+      remainingMs: budget.deadline - Date.now() });
+    return completeHistory();
+  };
+  const { post } = await setup({ guard: new ScoutGuard({ blockscoutClient: client }) });
+  assert.equal((await post(native)).status, 200);
+  assert.equal((await post(native, '/api/evaluate', { 'x-scoutguard-key': 'test-service-key' })).status, 200);
+  assert.equal(observed[0].pages, 2);
+  assert.equal(observed[0].rows, 200);
+  assert.equal(observed[0].requestTimeoutMs, 6_500);
+  assert.ok(observed[0].remainingMs > 10_000 && observed[0].remainingMs <= 18_000);
+  assert.equal(observed[1].pages, undefined);
+  assert.equal(observed[1].rows, undefined);
+  assert.equal(observed[1].requestTimeoutMs, 4_000);
+  assert.ok(observed[1].remainingMs > 0 && observed[1].remainingMs <= 10_000);
 });
 it('per-IP limiter returns 429 and direct requests cannot evade it by forging forwarded IPs', async () => {
   delete process.env.VERCEL;

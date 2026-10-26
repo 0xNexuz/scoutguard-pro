@@ -228,10 +228,18 @@ liveForm?.addEventListener('submit', async event => {
       body: JSON.stringify(candidate)
     });
     const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 503 && payload.code === 'PROVIDER_COOLDOWN') {
+        const seconds = Math.min(60, Math.max(1, Number.parseInt(response.headers.get('Retry-After'), 10) || 30));
+        const cause = ['TIMEOUT', 'TIME_BUDGET'].includes(payload.upstreamErrorCategory) ? 'timed out'
+          : payload.upstreamErrorCategory === 'HTTP_429' ? 'was rate limited' : 'failed';
+        throw new Error(`A previous Blockscout request ${cause}. Retry in about ${seconds} seconds.`);
+      }
+      throw new Error(payload.error || `HTTP ${response.status}`);
+    }
     renderLiveEvaluation(payload, { ...candidate, from, tokenAddress: asset === 'USDC' ? ETHEREUM_USDC : undefined });
   } catch (error) {
-    errorBox.textContent = `Live check could not complete: ${error.message} Automatic approval was withheld. Correct the addresses or retry after one minute; a separate recorded investigation is available below.`;
+    errorBox.textContent = `Live check could not complete: ${error.message} Automatic approval was withheld. A separate recorded investigation is available below.`;
     errorBox.classList.remove('hidden');
     errorBox.focus();
   } finally {

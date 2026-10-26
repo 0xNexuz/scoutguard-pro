@@ -51,13 +51,20 @@ export class ScoutGuard {
   /**
    * Main evaluation entrypoint: Evaluates an agent's pre-flight transaction against all security layers
    */
-  public async evaluateTransaction(tx: TransactionCandidate, options: { signal?: AbortSignal } = {}): Promise<EvaluationResult> {
+  public async evaluateTransaction(tx: TransactionCandidate, options: { signal?: AbortSignal; publicProfile?: boolean } = {}): Promise<EvaluationResult> {
     const checks: SecurityCheckResult[] = [];
     let explorerUrl = '';
     let payment: TransactionCandidate = tx && typeof tx === 'object' ? tx : { from: '', to: '', value: '', chainId: 0 };
     let history: SenderHistory | undefined;
     let providerObservations: ProviderObservations | undefined;
-    const budget = createProviderBudget();
+    // The public form favors a shorter, explicitly incomplete sample with more time per
+    // request. The protected agent path retains its existing limits and policy.
+    const budget = createProviderBudget(options.publicProfile
+      ? { deadline: Date.now() + 18_000, requestTimeoutMs: 6_500 }
+      : {});
+    const historyLimits = options.publicProfile
+      ? { ...this.historyLimits, maxPages: 2, maxRecords: 200, maxProviderCalls: 4, maxDurationMs: 18_000 }
+      : this.historyLimits;
     const cancel = () => budget.controller.abort();
     if (options.signal?.aborted) cancel();
     options.signal?.addEventListener('abort', cancel, { once: true });
@@ -72,7 +79,7 @@ export class ScoutGuard {
       const requests = [
         this.blockscout.getAddressCounters(payment.chainId, payment.to, budget),
         this.blockscout.getAddressDetails(payment.chainId, payment.to, budget),
-        this.blockscout.getSenderHistory(payment.chainId, payment.from, this.historyLimits, budget)
+        this.blockscout.getSenderHistory(payment.chainId, payment.from, historyLimits, budget)
       ] as const;
       let counters: Awaited<typeof requests[0]>, details: Awaited<typeof requests[1]>, senderHistory: Awaited<typeof requests[2]>;
       try {

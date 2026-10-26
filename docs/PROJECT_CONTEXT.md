@@ -7,17 +7,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project name:** ScoutGuard PRO (AgentFinOps Security Layer)
 - **Repository:** `https://github.com/0xNexuz/scoutguard-pro` (current checkout under this task's `work/scoutguard-pro`)
 - **Project description:** Real-time pre-execution security oracle and policy firewall for autonomous AI payment agents and Web3 treasuries using Blockscout PRO API.
-- **Current workflow stage:** SPRINT 2 JUDGING UPGRADE — local implementation and evidence review
-- **Overall status:** Remote `main` baseline `26dffe3` is deployed. Three fresh public production checks on 25 Oct returned ETH `FLAG`, 250 USDC `FLAG`, and 3,000 USDC `BLOCK` under bounded history/policy. A separate upgraded local check recorded eight genuine PRO HTTP 200 responses, while later timeout attempts blocked conservatively. The live evidence inspector, relationship search, submission copy and demo package are implemented on an unreleased feature branch. Production deployment of this upgrade, Craftora update and new video remain pending.
-- **Last updated date:** 2026-10-25 (Africa/Lagos)
+- **Current workflow stage:** SPRINT 2 JUDGING UPGRADE — production verification and provider reliability follow-up
+- **Overall status:** PR #5 merged as `0fe7097` and the upgraded dashboard, live evidence script, health route and protected-route denial were verified on production on 25 Oct. Three earlier public production checks returned ETH `FLAG`, 250 USDC `FLAG`, and 3,000 USDC `BLOCK`. A separate upgraded local check recorded eight genuine PRO HTTP 200 responses; later provider timeouts blocked conservatively. On 27 Oct the user reported the public provider cooldown message. A local public-only reliability and error-copy fix is in progress; no new paid provider check has been made. Craftora, X and video publication remain user-owned.
+- **Last updated date:** 2026-10-27 (Africa/Lagos)
 
 ## Git State
 
-- **Branch:** `feat/scoutguard-final-judging-upgrade`, created from verified remote `main` `26dffe3c423cc90d7b0009da1dc690593d9c1626`. Feature branch publication and review are pending final verification; this branch disables Vercel Git deployment.
+- **Branch:** `fix/public-live-provider-timeouts`, created from merged production `main` `0fe7097dc909803a73abecfc60028ed88474000a`. The earlier `feat/scoutguard-final-judging-upgrade` branch was merged through PR #5.
 - **Integration source heads:** audit baseline `eb8221a450c6e9d805c5699ec423b5f94807003e`, PR #4 application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`. Earlier hardening source was `dc179f92691b101174487f50d0727c04a41d7394`.
 - **Working tree:** Actual Git checkout under `work/scoutguard-pro`. Verify the branch, `HEAD` and status on each continuation; no remote publication is assumed from a local commit.
-- **Relevant remote or PR:** PR #1 replay, PR #2 final integration, and PR #4 access-control audit are merged. Audit application merge `cf0bf3878388a4b68043feefa404a08afe4d2379`.
-- **Last verified milestone:** On 25 Oct, baseline production returned three conservative live results; a later upgraded local run recorded eight actual Blockscout PRO HTTP 200 responses and 300 rows inspected with a `FLAG` for partial history. The final local upgrade passed 151 automated tests, 26 browser checks, build, strict types, mock-agent demo and zero-vulnerability npm audit. See `docs/submission/JUDGING_EVIDENCE.md` and `docs/evidence/2026-10-25-successful-local-smoke.md`.
+- **Relevant remote or PR:** PR #1 replay, PR #2 final integration, PR #4 access-control audit and PR #5 judging upgrade are merged. PR #5 merge `0fe7097` was verified live by homepage/health/protected-route/static-script responses.
+- **Last verified milestone:** On 27 Oct, the public-only reliability fix passed 153 automated tests, 27 fixture browser checks, build and strict types. Browser checks made zero Blockscout requests. The earlier upgraded local run recorded eight actual PRO HTTP 200 responses and 300 rows inspected with a `FLAG` for partial history. See `docs/submission/JUDGING_EVIDENCE.md` and `docs/evidence/2026-10-25-successful-local-smoke.md`.
 
 ## Hackathon Context
 
@@ -301,3 +301,9 @@ Early planning estimates below are historical internal judgments, not official c
 - **Genuine provider proof:** One upgraded local ETH check using system CA trust recorded eight PRO HTTP 200 responses, 300 inspected rows and a conservative `FLAG` from `PAGE_LIMIT`. A later local timeout returned `BLOCK` with explicit failed endpoint categories. No API key, credential URL or provider response body was stored in the trace.
 - **Presentation:** Judge quickstart, evidence matrix and change map remain in the repository. Final/short Craftora text, X drafts and the video recording storyboard were moved to the owner-facing chat at the user's request. The historical Poison-Hunter replay remains conditional because automatic recovery was not established.
 - **Release boundary:** Draft PR #5 at `0a6ba81` is pushed and mergeable; build/test and GitGuardian checks passed. Do not describe this upgrade as deployed or the Craftora copy as published until independently confirmed after release. Final local verification: 151/151 automated tests, 26/26 browser checks, build/types/demo/audit passed.
+
+### 2026-10-27 — Public live-check cooldown follow-up
+
+- **User report:** A screenshot showed `Provider temporarily unavailable` on the live form. That exact message is the 30-second cooldown response after an earlier Blockscout failure; it does not establish an invalid address. The first failure's safe trace would distinguish timeout, rate limit or another upstream error. Earlier local evidence includes four-second sender-history timeouts.
+- **Local fix:** The public form samples at most two pages per history endpoint and 200 rows, with an 18-second overall budget and 6.5-second per-request timeout. The protected agent evaluation keeps its prior limits. Partial history stays review-required; critical missing evidence still blocks. Cooldown now follows critical failure or upstream 429, and its response and UI expose a safe reason and retry delay without blaming the submitted address.
+- **Verification:** 153 automated tests, 27 fixture browser checks, build and strict types passed with TLS verification enabled. Browser tests made zero provider calls. No fresh production provider result is claimed for this fix.
