@@ -118,6 +118,14 @@ try {
     assert.doesNotMatch(message, /Correct the addresses/);
     await page.unroute('**/api/evaluate/public');
   });
+  await check('broken live connection gives a retry instruction without approving payment', async () => {
+    await page.route('**/api/evaluate/public', route => route.abort('failed'));
+    await page.locator('#live-submit').click();
+    await page.waitForFunction(() => document.querySelector('#live-error').textContent.includes('live service connection ended') && !document.querySelector('#live-submit').disabled);
+    assert.equal(await page.locator('#live-result').isVisible(), false);
+    assert.doesNotMatch(await page.locator('#live-error').innerText(), /Failed to fetch/);
+    await page.unroute('**/api/evaluate/public');
+  });
   await check('legacy or incomplete-PASS API responses cannot display a fresh approval', async () => {
     const valid = structuredClone(healthyEvaluation);
     for (const legacy of [true, false]) {

@@ -239,7 +239,10 @@ liveForm?.addEventListener('submit', async event => {
     }
     renderLiveEvaluation(payload, { ...candidate, from, tokenAddress: asset === 'USDC' ? ETHEREUM_USDC : undefined });
   } catch (error) {
-    errorBox.textContent = `Live check could not complete: ${error.message} Automatic approval was withheld. A separate recorded investigation is available below.`;
+    const explanation = error instanceof TypeError || error instanceof SyntaxError
+      ? 'The live service connection ended before a valid evaluation was returned. Retry shortly.'
+      : error.message;
+    errorBox.textContent = `Live check could not complete: ${explanation} Automatic approval was withheld. A separate recorded investigation is available below.`;
     errorBox.classList.remove('hidden');
     errorBox.focus();
   } finally {
