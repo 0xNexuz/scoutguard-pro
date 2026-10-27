@@ -62,6 +62,34 @@ it('empty history is explicitly complete only after both terminal pages', async 
   assert.equal(result.coverage.paginationComplete, true);
   assert.equal(result.coverage.uniqueCounterparties, 0);
 });
+it('public profile starts both critical history pages before waiting for either response', async () => {
+  const replies: Array<(response: Response) => void> = [];
+  globalThis.fetch = async () => new Promise<Response>(resolve => {
+    replies.push(resolve);
+    if (replies.length === 2) replies.forEach(reply => reply(json(page())));
+  });
+  const scope = createProviderBudget({ minIntervalMs: 0, parallelHistoryFirstPages: true,
+    requestTimeoutMs: 500, deadline: Date.now() + 1000 });
+  const result = await client.getSenderHistory(1, sender,
+    { maxPages: 2, maxRecords: 200, maxProviderCalls: 4, maxDurationMs: 1000 }, scope);
+  assert.equal(replies.length, 2);
+  assert.deepEqual(result.coverage.pagesScanned, { transactions: 1, tokenTransfers: 1 });
+  assert.equal(result.coverage.providerCalls, 2);
+  assert.equal(result.coverage.paginationComplete, true);
+});
+it('public parallel first-page timeout retains native evidence but fails closed', async () => {
+  globalThis.fetch = async input => String(input).includes('token-transfers')
+    ? Promise.reject(new DOMException('provider timed out', 'TimeoutError'))
+    : json(page([nativeRow()]));
+  const scope = createProviderBudget({ minIntervalMs: 0, parallelHistoryFirstPages: true });
+  await assert.rejects(client.getSenderHistory(1, sender, {}, scope), error => {
+    assert.equal((error as any).code, 'CRITICAL_HISTORY_UNAVAILABLE');
+    assert.equal((error as any).history.coverage.pagesScanned.transactions, 1);
+    assert.equal((error as any).history.coverage.pagesScanned.tokenTransfers, 0);
+    assert.equal((error as any).history.coverage.providerErrors[0].code, 'TIMEOUT');
+    return true;
+  });
+});
 for (const [limits, reason] of [
   [{ maxPages: 1 }, 'PAGE_LIMIT'], [{ maxRecords: 2 }, 'RECORD_LIMIT'], [{ maxProviderCalls: 2 }, 'REQUEST_BUDGET']
 ] as const) it(`bounds ongoing cursors with ${reason}`, async () => {

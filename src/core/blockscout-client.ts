@@ -165,6 +165,20 @@ export class BlockscoutClient {
       { key: 'transactions' as const, route: `addresses/${cleanSender}/transactions`, cursor: {} as Record<string, string>, done: false, seen: new Set<string>() },
       { key: 'tokenTransfers' as const, route: `addresses/${cleanSender}/token-transfers?type=ERC-20`, cursor: {} as Record<string, string>, done: false, seen: new Set<string>() }
     ];
+    // For the public evaluator, start both critical first pages together. Each request
+    // still passes through the shared pacing, call limit and deadline. Settling to a
+    // value here prevents an unhandled rejection while the other page is processed.
+    const firstPages = new Map<typeof states[number]['key'], Promise<{ payload?: any; error?: unknown }>>();
+    if (budget.parallelHistoryFirstPages) {
+      for (const state of states) {
+        if (coverage.providerCalls >= limits.maxProviderCalls || budget.calls >= budget.maxCalls) break;
+        coverage.providerCalls++;
+        const url = this.v2Url(chainId, state.route);
+        firstPages.set(state.key, requestJson(url, budget, this.traceMetadata(chainId,
+          state.key === 'transactions' ? 'SENDER_TRANSACTIONS' : 'SENDER_TOKEN_TRANSFERS', 1))
+          .then(payload => ({ payload }), error => ({ error })));
+      }
+    }
     const aggregate = new Map<string, KnownCounterparty>();
     const evidence: CounterpartyEvidence[] = [];
     const seenEvents = new Set<string>();
@@ -177,18 +191,22 @@ export class BlockscoutClient {
     while (states.some(state => !state.done)) {
       for (const state of states) {
         if (state.done) continue;
+        const firstPage = coverage.pagesScanned[state.key] === 0 ? firstPages.get(state.key) : undefined;
         if (coverage.pagesScanned[state.key] >= limits.maxPages) { stop('PAGE_LIMIT'); state.done = true; continue; }
         if (coverage.recordsInspected >= limits.maxRecords) { stop('RECORD_LIMIT'); state.done = true; continue; }
-        if (coverage.providerCalls >= limits.maxProviderCalls || budget.calls >= budget.maxCalls) {
+        if (!firstPage && (coverage.providerCalls >= limits.maxProviderCalls || budget.calls >= budget.maxCalls)) {
           coverage.requestBudgetExhausted = true; stop('REQUEST_BUDGET'); state.done = true; continue;
         }
-        if (Date.now() >= budget.deadline) { coverage.timeBudgetExhausted = true; stop('TIME_BUDGET'); state.done = true; continue; }
+        if (!firstPage && Date.now() >= budget.deadline) { coverage.timeBudgetExhausted = true; stop('TIME_BUDGET'); state.done = true; continue; }
         const url = new URL(this.v2Url(chainId, state.route));
         for (const [key, value] of Object.entries(state.cursor)) url.searchParams.set(key, value);
-        coverage.providerCalls++;
+        if (!firstPage) coverage.providerCalls++;
         try {
-          const payload = await requestJson(url.toString(), budget, this.traceMetadata(chainId,
+          const prefetched = firstPage && await firstPage;
+          if (prefetched?.error) throw prefetched.error;
+          const payload = prefetched ? prefetched.payload : await requestJson(url.toString(), budget, this.traceMetadata(chainId,
             state.key === 'transactions' ? 'SENDER_TRANSACTIONS' : 'SENDER_TOKEN_TRANSFERS', coverage.pagesScanned[state.key] + 1));
+          if (firstPage) firstPages.delete(state.key);
           if (!Array.isArray(payload.items)) throw new ProviderError('MALFORMED_HISTORY');
           coverage.pagesScanned[state.key]++;
           for (const item of payload.items) {

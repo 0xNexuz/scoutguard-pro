@@ -60,7 +60,7 @@ export class ScoutGuard {
     // The public form favors a shorter, explicitly incomplete sample with more time per
     // request. The protected agent path retains its existing limits and policy.
     const budget = createProviderBudget(options.publicProfile
-      ? { deadline: Date.now() + 18_000, requestTimeoutMs: 6_500 }
+      ? { deadline: Date.now() + 18_000, requestTimeoutMs: 9_000, parallelHistoryFirstPages: true }
       : {});
     const historyLimits = options.publicProfile
       ? { ...this.historyLimits, maxPages: 2, maxRecords: 200, maxProviderCalls: 4, maxDurationMs: 18_000 }

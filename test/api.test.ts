@@ -144,11 +144,12 @@ it('a partial history FLAG does not put other public checks into provider cooldo
 it('public scan uses a smaller history sample with a longer request budget while protected limits stay intact', async () => {
   process.env.SCOUTGUARD_SERVICE_KEY = 'test-service-key';
   const client = fixtureClient();
-  const observed: Array<{ pages: number | undefined; rows: number | undefined; requestTimeoutMs: number; remainingMs: number }> = [];
+  const observed: Array<{ pages: number | undefined; rows: number | undefined; requestTimeoutMs: number; parallel: boolean; remainingMs: number }> = [];
   client.getSenderHistory = async (_chainId, _sender, limits, budget) => {
     assert.ok(limits);
     assert.ok(budget);
     observed.push({ pages: limits.maxPages, rows: limits.maxRecords, requestTimeoutMs: budget.requestTimeoutMs,
+      parallel: budget.parallelHistoryFirstPages,
       remainingMs: budget.deadline - Date.now() });
     return completeHistory();
   };
@@ -157,11 +158,13 @@ it('public scan uses a smaller history sample with a longer request budget while
   assert.equal((await post(native, '/api/evaluate', { 'x-scoutguard-key': 'test-service-key' })).status, 200);
   assert.equal(observed[0].pages, 2);
   assert.equal(observed[0].rows, 200);
-  assert.equal(observed[0].requestTimeoutMs, 6_500);
+  assert.equal(observed[0].requestTimeoutMs, 9_000);
+  assert.equal(observed[0].parallel, true);
   assert.ok(observed[0].remainingMs > 10_000 && observed[0].remainingMs <= 18_000);
   assert.equal(observed[1].pages, undefined);
   assert.equal(observed[1].rows, undefined);
   assert.equal(observed[1].requestTimeoutMs, 4_000);
+  assert.equal(observed[1].parallel, false);
   assert.ok(observed[1].remainingMs > 0 && observed[1].remainingMs <= 10_000);
 });
 it('per-IP limiter returns 429 and direct requests cannot evade it by forging forwarded IPs', async () => {

@@ -12,10 +12,11 @@ export interface ProviderBudget {
   nextRequestAt: number;
   minIntervalMs: number;
   requestTimeoutMs: number;
+  parallelHistoryFirstPages: boolean;
 }
 export function createProviderBudget(overrides: Partial<ProviderBudget> = {}): ProviderBudget {
   return { evaluationId: randomUUID(), trace: [], controller: new AbortController(), deadline: Date.now() + 10_000, maxCalls: 12, calls: 0, nextRequestAt: 0,
-    minIntervalMs: 250, requestTimeoutMs: 4000, ...overrides };
+    minIntervalMs: 250, requestTimeoutMs: 4000, parallelHistoryFirstPages: false, ...overrides };
 }
 export class ProviderError extends Error {
   constructor(public readonly code: string) { super(`Blockscout unavailable (${code})`); }
